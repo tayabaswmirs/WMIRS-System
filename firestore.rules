@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper to check if a request is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper to check if the authenticated user is accessing their own document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Helper to check if the authenticated user is an administrator
+    function isAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Rules for the users collection
+    match /users/{userId} {
+      // Anyone authenticated can read their own profile, admins can read all profiles
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // When creating a profile, the user must be authenticated as that UID and must register with role 'user'
+      allow create: if isAuthenticated() && 
+                    isOwner(userId) && 
+                    request.resource.data.role == 'user';
+                    
+      // When updating, users can edit their profile details but CANNOT modify their own role. Admins can update anything.
+      allow update: if (isOwner(userId) && request.resource.data.role == resource.data.role) || isAdmin();
+      
+      // Deleting profiles is restricted solely to administrators
+      allow delete: if isAdmin();
+    }
+  }
+}
