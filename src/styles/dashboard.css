@@ -1438,8 +1438,42 @@
 }
 
 /* ══════════════════════════════════════════════════════════════
+   GLOBAL LOADING LOCK & DISABLED STATES
+   ══════════════════════════════════════════════════════════════ */
+
+/* Container lock: grays out everything and disables user selection during loading */
+.um-loading-locked {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+/* Accessible global styling for all disabled input fields */
+input:disabled,
+select:disabled,
+textarea:disabled,
+.um-form-input:disabled {
+  opacity: 0.62 !important;
+  background-color: var(--c-surface-soft) !important;
+  color: var(--c-muted) !important;
+  border-color: var(--c-hairline) !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+
+/* Accessible global styling for all disabled buttons */
+button:disabled,
+.um-btn-confirm:disabled,
+.um-btn-secondary:disabled,
+.um-action-btn--disabled {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
    RESPONSIVE
    ══════════════════════════════════════════════════════════════ */
+
 
 
 @media (max-width: 1023px) {

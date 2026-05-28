@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import useLoadingLock from "../../hooks/useLoadingLock";
 
 export default function UserEditModal({ isOpen, user, onClose, onSave, isSaving }) {
+  const modalRef = useRef(null);
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  useLoadingLock(modalRef, isSaving);
 
   if (!isOpen) return null;
 
@@ -39,13 +43,13 @@ export default function UserEditModal({ isOpen, user, onClose, onSave, isSaving 
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,30,43,0.65)] backdrop-blur-[3px] transition-opacity duration-200"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(0,30,43,0.65)] backdrop-blur-[3px] transition-opacity duration-200"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
       onKeyDown={(e) => { if (e.key === "Escape" && !isSaving) onClose(); }}
     >
-      <div className="um-edit-panel">
+      <div ref={modalRef} className="um-edit-panel">
         
         {/* Close Button */}
         <button

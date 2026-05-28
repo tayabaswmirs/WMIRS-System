@@ -33,7 +33,7 @@ export default function ConfirmModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,30,43,0.65)] backdrop-blur-[3px]"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(0,30,43,0.65)] backdrop-blur-[3px]"
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-modal-title"

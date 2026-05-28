@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import useLoadingLock from "../hooks/useLoadingLock";
 import wmirsLogo from "../assets/wmirs-logo.png";
 import "../styles/login.css";
 
 function Login() {
+  const formRef = useRef(null);
   const [isRegistering, setIsRegistering] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -17,6 +19,8 @@ function Login() {
 
   const { currentUser, userRole, loading: authLoading, login, register } = useAuth();
   const navigate = useNavigate();
+
+  useLoadingLock(formRef, formLoading);
 
   // Redirect authenticated users to their corresponding dashboard
   useEffect(() => {
@@ -218,7 +222,7 @@ function Login() {
           </div>
 
           {/* Auth Form */}
-          <form id="login-auth-form" onSubmit={handleSubmit} noValidate>
+          <form id="login-auth-form" ref={formRef} onSubmit={handleSubmit} noValidate>
 
             {isRegistering && (
               <div className="login-field">
