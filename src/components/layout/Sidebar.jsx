@@ -6,6 +6,7 @@ import "../../styles/dashboard.css";
 // Nav items configuration — role-gated items are flagged with adminOnly
 const NAV_ITEMS = [
   { id: "nav-dashboard",  icon: "dashboard",       label: "Dashboard",      path: "/dashboard",    adminPath: "/admin/dashboard" },
+  { id: "nav-users",      icon: "group",           label: "User Management", path: "/admin/users",  adminOnly: true },
 ];
 
 /**

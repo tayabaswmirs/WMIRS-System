@@ -365,7 +365,7 @@
 .dashboard-main {
   flex: 1;
   padding: var(--sp-xxl);
-  max-width: 1200px;
+  /* No max-width cap — let the content fill the space after the sidebar */
   width: 100%;
 }
 
@@ -613,5 +613,744 @@
 
   .dashboard-placeholder__card-title {
     font-size: 18px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   USER MANAGEMENT PAGE  —  um-* namespace
+   MongoDB Design Spec: clean table, plain header, zebra-stripe rows
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Page wrapper ────────────────────────────────────────────── */
+/* No extra padding — dashboard-main already provides 32px all around.
+   No max-width cap — the table should fill all available horizontal space. */
+.um-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xl);
+  width: 100%;
+}
+
+/* ── Plain white page header ─────────────────────────────────── */
+.um-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-xl);
+}
+
+.um-page-header__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.um-page-header__eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--c-green-dark);
+}
+
+.um-page-header__title {
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--c-ink);
+  letter-spacing: -0.4px;
+  line-height: 1.2;
+}
+
+/* ── Search bar ──────────────────────────────────────────────── */
+.um-search-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 300px;
+}
+
+.um-search-wrap__icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--c-stone);
+  font-size: 18px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.um-search-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 var(--sp-md) 0 44px;
+  background: var(--c-canvas);
+  border: 1px solid var(--c-hairline-strong);
+  border-radius: var(--r-md);
+  font-size: 14px;
+  font-family: var(--font-display);
+  color: var(--c-ink);
+  transition: border-color var(--transition), box-shadow var(--transition);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.um-search-input::placeholder {
+  color: var(--c-stone);
+}
+
+.um-search-input:focus {
+  border-color: var(--c-green-dark);
+  border-width: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 104, 74, 0.10);
+}
+
+/* ── Alert banners ───────────────────────────────────────────── */
+.um-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-sm);
+  padding: var(--sp-md) var(--sp-lg);
+  border-radius: var(--r-md);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  box-shadow: var(--shadow-1);
+}
+
+.um-alert__icon {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.um-alert--error {
+  background: var(--c-warn-bg);
+  border: 1px solid rgba(180, 130, 0, 0.25);
+  color: var(--c-warn-text);
+}
+
+.um-alert--success {
+  background: var(--c-surface-feature);
+  border: 1px solid rgba(0, 181, 69, 0.30);
+  color: var(--c-green-dark);
+}
+
+/* ── Loading state ───────────────────────────────────────────── */
+.um-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-md);
+  padding: var(--sp-xxxl) var(--sp-xl);
+  border: 1px solid var(--c-hairline);
+  border-radius: var(--r-lg);
+  background: var(--c-canvas);
+  box-shadow: var(--shadow-1);
+  min-height: 240px;
+}
+
+.um-loading-state__spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--c-hairline);
+  border-top-color: var(--c-green-dark);
+  border-radius: 50%;
+  animation: um-spin 0.7s linear infinite;
+}
+
+@keyframes um-spin {
+  to { transform: rotate(360deg); }
+}
+
+.um-loading-state__label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--c-slate);
+}
+
+/* ── Empty state ─────────────────────────────────────────────── */
+.um-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-sm);
+  padding: var(--sp-xxxl) var(--sp-xl);
+  border: 1px solid var(--c-hairline);
+  border-radius: var(--r-lg);
+  background: var(--c-canvas);
+  text-align: center;
+  min-height: 280px;
+}
+
+.um-empty-state__icon-wrap {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--r-xl);
+  background: var(--c-surface);
+  border: 1px solid var(--c-hairline);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--sp-xs);
+}
+
+.um-empty-state__icon {
+  font-size: 26px;
+  color: var(--c-stone);
+}
+
+.um-empty-state__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--c-ink);
+}
+
+.um-empty-state__desc {
+  font-size: 14px;
+  color: var(--c-steel);
+  max-width: 320px;
+  line-height: 1.55;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TABLE
+   ══════════════════════════════════════════════════════════════ */
+
+/* Outer container: border + rounded corners + scroll overflow */
+.um-table-wrap {
+  width: 100%;
+  border: 1px solid var(--c-hairline);
+  border-radius: var(--r-lg);
+  background: var(--c-canvas);
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
+}
+
+/* Horizontal scroll on narrow viewports */
+.um-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* The actual <table> */
+.um-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+  font-size: 14px;
+  font-family: var(--font-display);
+}
+
+/* ── Table head ──────────────────────────────────────────────── */
+.um-table__head {
+  border-bottom: 1px solid var(--c-hairline);
+}
+
+.um-table__th {
+  padding: 12px var(--sp-xl);
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--c-steel);
+  white-space: nowrap;
+  background: var(--c-surface);
+  /* No bottom border — the thead border handles it */
+}
+
+.um-table__th--name {
+  padding-left: var(--sp-xxl);
+}
+
+.um-table__th--right {
+  text-align: right;
+  padding-right: var(--sp-xxl);
+}
+
+/* ── Table rows ──────────────────────────────────────────────── */
+.um-table__row {
+  background: var(--c-canvas);
+  border-bottom: 1px solid var(--c-hairline-soft);
+  transition: background var(--transition);
+}
+
+/* Zebra stripe — every second row (#f9fbfa) */
+.um-table__row--even {
+  background: var(--c-surface);
+}
+
+.um-table__row:last-child {
+  border-bottom: none;
+}
+
+.um-table__row:hover {
+  background: rgba(0, 237, 100, 0.04);
+}
+
+/* ── Table cells ─────────────────────────────────────────────── */
+.um-table__cell {
+  padding: var(--sp-md) var(--sp-xl);
+  vertical-align: middle;
+  color: var(--c-ink);
+}
+
+.um-table__cell--name {
+  padding-left: var(--sp-xxl);
+  white-space: nowrap;
+}
+
+.um-table__cell--email {
+  white-space: nowrap;
+}
+
+.um-table__cell--role {
+  white-space: nowrap;
+}
+
+.um-table__cell--date {
+  white-space: nowrap;
+  color: var(--c-steel);
+  font-size: 13px;
+}
+
+.um-table__cell--actions {
+  padding-right: var(--sp-xxl);
+  white-space: nowrap;
+}
+
+/* ── Staff Member cell: avatar + name ────────────────────────── */
+.um-table__name-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+}
+
+.um-table__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.um-table__avatar--admin {
+  background: var(--c-teal-deep);
+  color: var(--c-green);
+}
+
+.um-table__avatar--staff {
+  background: var(--c-green-soft);
+  color: var(--c-green-dark);
+}
+
+.um-table__name-text {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c-ink);
+  flex-wrap: wrap;
+}
+
+.um-table__email {
+  font-size: 13px;
+  color: var(--c-slate);
+}
+
+/* "You" self-tag chip */
+.um-self-tag {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  padding: 1px 7px;
+  border-radius: var(--r-full);
+  background: var(--c-surface-soft);
+  color: var(--c-slate);
+  border: 1px solid var(--c-hairline);
+  line-height: 1.6;
+}
+
+/* ── Role badges ─────────────────────────────────────────────── */
+.um-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--r-full);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.um-role-badge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.um-role-badge--admin {
+  background: rgba(0, 30, 43, 0.90);
+  color: var(--c-green);
+  border: 1px solid rgba(0, 237, 100, 0.20);
+}
+
+.um-role-badge--staff {
+  background: var(--c-green-soft);
+  color: var(--c-green-dark);
+  border: 1px solid rgba(0, 104, 74, 0.20);
+}
+
+/* ── Actions cell ────────────────────────────────────────────── */
+.um-table__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-xs);
+}
+
+/* ── Action pill buttons ─────────────────────────────────────── */
+.um-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: var(--r-full);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-display);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition),
+              border-color var(--transition);
+  white-space: nowrap;
+  line-height: 1;
+  user-select: none;
+}
+
+.um-action-btn__icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.um-action-btn--edit {
+  background: transparent;
+  color: var(--c-slate);
+  border-color: var(--c-hairline-strong);
+}
+.um-action-btn--edit:hover {
+  background: var(--c-surface-soft);
+  color: var(--c-ink);
+  border-color: var(--c-stone);
+}
+
+.um-action-btn--promote {
+  background: var(--c-surface-feature);
+  color: var(--c-green-dark);
+  border-color: rgba(0, 104, 74, 0.25);
+}
+.um-action-btn--promote:hover {
+  background: var(--c-green-soft);
+  border-color: var(--c-green-dark);
+}
+
+.um-action-btn--demote {
+  background: transparent;
+  color: var(--c-slate);
+  border-color: var(--c-hairline-strong);
+}
+.um-action-btn--demote:hover {
+  background: var(--c-surface-soft);
+  color: var(--c-charcoal);
+  border-color: var(--c-stone);
+}
+
+.um-action-btn--delete {
+  background: transparent;
+  color: #dc2626;
+  border-color: rgba(220, 38, 38, 0.28);
+}
+.um-action-btn--delete:hover {
+  background: rgba(220, 38, 38, 0.05);
+  border-color: rgba(220, 38, 38, 0.45);
+}
+
+.um-action-btn--disabled {
+  background: transparent;
+  color: var(--c-muted);
+  border-color: var(--c-hairline);
+  cursor: not-allowed;
+  opacity: 0.50;
+}
+
+/* ── Table footer: row count ─────────────────────────────────── */
+.um-table__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-sm) var(--sp-xxl);
+  border-top: 1px solid var(--c-hairline-soft);
+  background: var(--c-surface);
+  gap: var(--sp-md);
+  flex-wrap: wrap;
+}
+
+.um-table__count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--c-stone);
+  letter-spacing: 0.2px;
+  flex-shrink: 0;
+}
+
+/* ── Pagination controls ──────────────────────────────────── */
+.um-pagination {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Shared base for page-number buttons and arrows */
+.um-pagination__page,
+.um-pagination__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 30px;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-display);
+  color: var(--c-slate);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition),
+              border-color var(--transition);
+  user-select: none;
+  line-height: 1;
+}
+
+.um-pagination__page:hover:not(:disabled),
+.um-pagination__arrow:hover:not(:disabled) {
+  background: var(--c-surface-soft);
+  color: var(--c-ink);
+  border-color: var(--c-hairline-strong);
+}
+
+/* Active page — filled dark pill */
+.um-pagination__page--active {
+  background: var(--c-ink);
+  color: var(--c-on-dark);
+  border-color: var(--c-ink);
+  cursor: default;
+}
+
+.um-pagination__page--active:hover {
+  background: var(--c-ink);
+  color: var(--c-on-dark);
+  border-color: var(--c-ink);
+}
+
+/* Disabled arrow (at first/last page) */
+.um-pagination__arrow:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Arrow icon sizing */
+.um-pagination__arrow .material-symbols-outlined {
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CONFIRM MODAL
+   ══════════════════════════════════════════════════════════════ */
+
+.um-confirm-panel {
+  width: 100%;
+  max-width: 420px;
+  margin: var(--sp-md);
+  background: var(--c-canvas);
+  border-radius: var(--r-xl);
+  border: 1px solid var(--c-hairline);
+  padding: var(--sp-xxl) var(--sp-xxl) var(--sp-xl);
+  box-shadow: var(--shadow-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-md);
+  text-align: center;
+  animation: um-modal-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes um-modal-in {
+  from { opacity: 0; transform: scale(0.95) translateY(4px); }
+  to   { opacity: 1; transform: scale(1)   translateY(0);    }
+}
+
+.um-confirm-icon-wrap {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.um-confirm-icon-wrap--danger {
+  background: rgba(220, 38, 38, 0.08);
+  border: 1.5px solid rgba(220, 38, 38, 0.20);
+}
+
+.um-confirm-icon-wrap--warning {
+  background: var(--c-warn-bg);
+  border: 1.5px solid rgba(148, 111, 63, 0.22);
+}
+
+.um-confirm-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--c-ink);
+  line-height: 1.3;
+  letter-spacing: -0.2px;
+}
+
+.um-confirm-message {
+  font-size: 14px;
+  color: var(--c-slate);
+  line-height: 1.6;
+  max-width: 340px;
+}
+
+.um-confirm-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-sm);
+  margin-top: var(--sp-sm);
+  width: 100%;
+}
+
+.um-btn-secondary {
+  padding: 9px 22px;
+  border-radius: var(--r-full);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-display);
+  border: 1px solid var(--c-hairline-strong);
+  background: transparent;
+  color: var(--c-slate);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+.um-btn-secondary:hover {
+  background: var(--c-surface-soft);
+  color: var(--c-ink);
+}
+.um-btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.um-btn-confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 22px;
+  border-radius: var(--r-full);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-display);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background var(--transition), opacity var(--transition);
+}
+.um-btn-confirm:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.um-btn-confirm--danger {
+  background: #dc2626;
+  color: #fff;
+  border-color: #dc2626;
+}
+.um-btn-confirm--danger:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.um-btn-confirm--warning {
+  background: var(--c-teal-deep);
+  color: var(--c-green);
+  border-color: var(--c-teal);
+}
+.um-btn-confirm--warning:hover:not(:disabled) {
+  background: var(--c-teal);
+}
+
+.um-spinner {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: um-spin 0.6s linear infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1023px) {
+  /* No um-page override needed — dashboard-main handles tablet padding */
+}
+
+@media (max-width: 767px) {
+  .um-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-md);
+  }
+
+  .um-search-wrap {
+    width: 100%;
+  }
+
+  .um-page-header__title {
+    font-size: 22px;
+  }
+
+  /* Hide label text on action buttons — icon only */
+  .um-action-btn__label {
+    display: none;
+  }
+
+  .um-action-btn {
+    padding: 6px 9px;
+  }
+
+  /* Hide less-critical table columns on mobile */
+  .um-table__cell--date,
+  .um-table__th:nth-child(4) {
+    display: none;
   }
 }
