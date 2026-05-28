@@ -106,6 +106,10 @@ export default function UserManagement() {
   const handleToggleRole = (user) => {
     setErrorMsg("");
     setSuccessMsg("");
+    if (user.role === "admin") {
+      setErrorMsg("Administrators cannot demote other administrators.");
+      return;
+    }
     setConfirmConfig(buildRoleConfirm(user));
     setPendingAction(() => async () => {
       const newRole = user.role === "admin" ? "user" : "admin";
@@ -120,6 +124,10 @@ export default function UserManagement() {
   const handleDeleteUser = (user) => {
     setErrorMsg("");
     setSuccessMsg("");
+    if (user.role === "admin") {
+      setErrorMsg("Administrators cannot delete other administrators.");
+      return;
+    }
     setConfirmConfig(buildDeleteConfirm(user));
     setPendingAction(() => async () => {
       await deleteUserAdmin(user.uid);

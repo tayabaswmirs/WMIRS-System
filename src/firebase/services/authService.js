@@ -3,7 +3,9 @@ import {
   signInWithEmailAndPassword, 
   signOut, 
   onAuthStateChanged, 
-  updateProfile 
+  updateProfile,
+  updatePassword,
+  updateEmail
 } from "firebase/auth";
 import { auth } from "../firebase";
 import { createUserProfile } from "./userService";
@@ -55,5 +57,26 @@ export const logoutUser = () => {
  */
 export const subscribeToAuthChanges = (callback) => {
   return onAuthStateChanged(auth, callback);
+};
+
+/**
+ * Updates the currently logged in user's authentication details (displayName and/or password).
+ * 
+ * @param {import("firebase/auth").User} user - Current user object
+ * @param {object} updates - Object containing new displayName or password
+ * @returns {Promise<void>}
+ */
+export const updateUserAuthProfile = async (user, updates) => {
+  const promises = [];
+  if (updates.name) {
+    promises.push(updateProfile(user, { displayName: updates.name }));
+  }
+  if (updates.password) {
+    promises.push(updatePassword(user, updates.password));
+  }
+  if (updates.email) {
+    promises.push(updateEmail(user, updates.email));
+  }
+  await Promise.all(promises);
 };
 

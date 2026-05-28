@@ -54,6 +54,13 @@ export const adminSetRole = onCall(
       throw new HttpsError("failed-precondition", "Administrators cannot modify their own role or claims.");
     }
 
+    // 4.5. Fellow Admin Safeguard
+    const targetDoc = await db.collection("users").doc(uid).get();
+    if (targetDoc.exists && targetDoc.data()?.role === "admin") {
+      logger.warn(`Admin ${callerUid} attempted to demote admin ${uid}. Blocked.`);
+      throw new HttpsError("failed-precondition", "Administrators cannot demote other administrators.");
+    }
+
     try {
       // 5. Update Firebase Authentication Custom Claims
       const isNewAdmin = role === "admin";

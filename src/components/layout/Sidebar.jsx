@@ -7,6 +7,7 @@ import "../../styles/dashboard.css";
 const NAV_ITEMS = [
   { id: "nav-dashboard",  icon: "dashboard",       label: "Dashboard",      path: "/dashboard",    adminPath: "/admin/dashboard" },
   { id: "nav-users",      icon: "group",           label: "User Management", path: "/admin/users",  adminOnly: true },
+  { id: "nav-profile",    icon: "manage_accounts", label: "Profile Settings", path: "/profile" },
 ];
 
 /**

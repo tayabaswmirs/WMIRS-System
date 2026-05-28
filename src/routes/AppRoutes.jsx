@@ -3,6 +3,7 @@ import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
 import AdminDashboard from "../pages/AdminDashboard";
 import UserManagement from "../pages/UserManagement";
+import Profile from "../pages/Profile";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { useAuth } from "../hooks/useAuth";
 
@@ -54,6 +55,15 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["admin"]}>
             <UserManagement />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/profile" 
+        element={
+          <ProtectedRoute allowedRoles={["user", "admin"]}>
+            <Profile />
           </ProtectedRoute>
         } 
       />

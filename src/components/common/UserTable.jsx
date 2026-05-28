@@ -62,6 +62,8 @@ function UserRow({ user, currentAdminUid, onEdit, onToggleRole, onDelete, isEven
   const isSelf      = user.uid === currentAdminUid;
   const displayName = user.name || "User";
   const initials    = getInitials(displayName);
+  const cannotModifyRole = isSelf || isAdmin;
+  const cannotDelete = isSelf || isAdmin;
 
   return (
     <tr
@@ -130,22 +132,22 @@ function UserRow({ user, currentAdminUid, onEdit, onToggleRole, onDelete, isEven
             id={`um-role-btn-${user.uid}`}
             type="button"
             className={`um-action-btn ${
-              isSelf
+              cannotModifyRole
                 ? "um-action-btn--disabled"
                 : isAdmin
                 ? "um-action-btn--demote"
                 : "um-action-btn--promote"
             }`}
             onClick={() => onToggleRole(user)}
-            disabled={isSelf}
+            disabled={cannotModifyRole}
             title={
               isSelf
                 ? "Self-role changes are blocked"
                 : isAdmin
-                ? "Revoke admin privileges"
+                ? "Administrators cannot demote other administrators"
                 : "Grant admin privileges"
             }
-            aria-disabled={isSelf}
+            aria-disabled={cannotModifyRole}
           >
             <span className="material-symbols-outlined um-action-btn__icon" aria-hidden="true">
               {isAdmin ? "shield_person" : "verified_user"}
@@ -158,11 +160,17 @@ function UserRow({ user, currentAdminUid, onEdit, onToggleRole, onDelete, isEven
           <button
             id={`um-delete-btn-${user.uid}`}
             type="button"
-            className={`um-action-btn ${isSelf ? "um-action-btn--disabled" : "um-action-btn--delete"}`}
+            className={`um-action-btn ${cannotDelete ? "um-action-btn--disabled" : "um-action-btn--delete"}`}
             onClick={() => onDelete(user)}
-            disabled={isSelf}
-            title={isSelf ? "Self-deletion is blocked" : "Delete user profile"}
-            aria-disabled={isSelf}
+            disabled={cannotDelete}
+            title={
+              isSelf
+                ? "Self-deletion is blocked"
+                : isAdmin
+                ? "Administrators cannot delete other administrators"
+                : "Delete user profile"
+            }
+            aria-disabled={cannotDelete}
           >
             <span className="material-symbols-outlined um-action-btn__icon" aria-hidden="true">delete</span>
             <span className="um-action-btn__label">Delete</span>

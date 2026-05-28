@@ -1,4 +1,4 @@
-import { doc, setDoc, getDoc, collection, getDocs, query, orderBy, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc, collection, getDocs, query, orderBy, serverTimestamp } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import { db, functions } from "../firebase";
 
@@ -87,6 +87,29 @@ export const setUserRoleAdmin = async (uid, role) => {
 export const deleteUserAdmin = async (uid) => {
   const deleteFn = httpsCallable(functions, "adminDeleteUser");
   const res = await deleteFn({ uid });
+  return res.data;
+};
+
+/**
+ * Updates a user's own Firestore profile (restricted to their own data by security rules).
+ * 
+ * @param {string} uid - Unique target User ID
+ * @param {object} profileUpdates - Fields to update (e.g. name, address)
+ * @returns {Promise<void>}
+ */
+export const updateUserProfile = async (uid, profileUpdates) => {
+  const userRef = doc(db, "users", uid);
+  return updateDoc(userRef, profileUpdates);
+};
+
+/**
+ * Deletes a user's own account and Firestore profile document via Cloud Function.
+ * 
+ * @returns {Promise<object>}
+ */
+export const deleteSelfAccount = async () => {
+  const deleteFn = httpsCallable(functions, "selfDeleteAccount");
+  const res = await deleteFn();
   return res.data;
 };
 
