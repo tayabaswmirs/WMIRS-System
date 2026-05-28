@@ -54,6 +54,13 @@ export const adminDeleteUser = onCall(
       throw new HttpsError("failed-precondition", "Administrators cannot delete their own account.");
     }
 
+    // 4.5. Fellow Admin Safeguard
+    const targetDoc = await db.collection("users").doc(uid).get();
+    if (targetDoc.exists && targetDoc.data()?.role === "admin") {
+      logger.warn(`Admin ${callerUid} attempted to delete admin ${uid}. Blocked.`);
+      throw new HttpsError("failed-precondition", "Administrators cannot delete other administrators.");
+    }
+
     try {
       // 5. Delete from Firebase Authentication
       await auth.deleteUser(uid);
