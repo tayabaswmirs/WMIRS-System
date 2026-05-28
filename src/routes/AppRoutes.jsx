@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
 import AdminDashboard from "../pages/AdminDashboard";
+import UserManagement from "../pages/UserManagement";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { useAuth } from "../hooks/useAuth";
 
@@ -44,6 +45,15 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["admin"]}>
             <AdminDashboard />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/admin/users" 
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <UserManagement />
           </ProtectedRoute>
         } 
       />
