@@ -6,7 +6,7 @@ import { updateUserProfile, deleteSelfAccount } from "../firebase/services/userS
 import { updateUserAuthProfile, loginWithEmail } from "../firebase/services/authService";
 
 export default function Profile() {
-  const { currentUser, profileData } = useAuth();
+  const { currentUser, profileData, logout } = useAuth();
   const navigate = useNavigate();
 
   // Local form states (initialized directly from authenticated context)
@@ -135,6 +135,14 @@ export default function Profile() {
         setReauthModalOpen(false);
         setIsDeleting(true);
         await deleteSelfAccount();
+        
+        // Explicitly clear local auth session to trigger state cleanup and instant unmounting
+        try {
+          await logout();
+        } catch (e) {
+          console.error("Sign out error after self-deletion:", e);
+        }
+
         // Redirect to login after successful deletion
         navigate("/login");
       }
