@@ -39,47 +39,58 @@ export default function UserEditModal({ isOpen, user, onClose, onSave, isSaving 
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,30,43,0.6)] backdrop-blur-[2px] transition-opacity duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,30,43,0.65)] backdrop-blur-[3px] transition-opacity duration-200"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
+      onKeyDown={(e) => { if (e.key === "Escape" && !isSaving) onClose(); }}
     >
-      <div className="w-full max-w-md mx-4 bg-[var(--c-canvas)] rounded-[var(--r-lg)] p-8 shadow-[var(--shadow-4)] border border-[var(--c-hairline)] relative transition-all transform scale-100">
+      <div className="um-edit-panel">
         
         {/* Close Button */}
         <button
           onClick={onClose}
           disabled={isSaving}
-          className="absolute top-4 right-4 text-[var(--c-stone)] hover:text-[var(--c-ink)] transition-colors p-1"
+          className="absolute top-4 right-4 text-[var(--c-stone)] hover:text-[var(--c-ink)] transition-colors p-1 flex items-center justify-center"
           aria-label="Close dialog"
           type="button"
         >
-          <span className="material-symbols-outlined">close</span>
+          <span className="material-symbols-outlined text-[20px]">close</span>
         </button>
 
-        {/* Modal Header */}
-        <h2 id="modal-title" className="text-xl font-semibold text-[var(--c-ink)] mb-1 flex items-center gap-2">
-          <span className="material-symbols-outlined text-[var(--c-green-dark)]">manage_accounts</span>
+        {/* Circular Centered Header Badge */}
+        <div className="um-edit-icon-wrap" aria-hidden="true">
+          <span className="material-symbols-outlined text-[var(--c-green-dark)] text-[28px]">
+            manage_accounts
+          </span>
+        </div>
+
+        {/* Modal Header Title */}
+        <h2 id="modal-title" className="um-edit-title">
           Edit User Credentials
         </h2>
-        <p className="text-xs text-[var(--c-steel)] mb-6">
+
+        {/* Description */}
+        <p className="um-edit-desc">
           Updating credentials will modify the authentication login values and active profiles.
         </p>
 
-        {/* Error Alert Box */}
-        {error && (
-          <div className="mb-4 p-3 bg-[var(--c-warn-bg)] border border-amber-200 text-[var(--c-warn-text)] rounded-[var(--r-sm)] text-xs font-medium flex items-start gap-2">
-            <span className="material-symbols-outlined text-sm leading-none shrink-0">warning</span>
-            <span>{error}</span>
-          </div>
-        )}
-
         {/* Edit Form */}
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="um-edit-form">
           
+          {/* Error Alert Box */}
+          {error && (
+            <div className="um-form-error" role="alert">
+              <span className="material-symbols-outlined text-sm leading-none shrink-0" aria-hidden="true">
+                warning
+              </span>
+              <span>{error}</span>
+            </div>
+          )}
+
           {/* Full Name input */}
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="user-name" className="text-xs font-bold uppercase tracking-wider text-[var(--c-steel)]">
+          <div className="um-form-group">
+            <label htmlFor="user-name" className="um-form-label">
               Full Name
             </label>
             <input
@@ -89,14 +100,14 @@ export default function UserEditModal({ isOpen, user, onClose, onSave, isSaving 
               onChange={(e) => setName(e.target.value)}
               disabled={isSaving}
               required
-              className="w-full bg-[var(--c-canvas)] text-[var(--c-ink)] border border-[var(--c-hairline-strong)] rounded-[var(--r-md)] px-4 py-2.5 h-[44px] text-sm focus:border-2 focus:border-[var(--c-green-dark)] focus:outline-none transition-all placeholder-[var(--c-muted)]"
+              className="um-form-input"
               placeholder="e.g. Juan dela Cruz"
             />
           </div>
 
           {/* Email Address input */}
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="user-email" className="text-xs font-bold uppercase tracking-wider text-[var(--c-steel)]">
+          <div className="um-form-group">
+            <label htmlFor="user-email" className="um-form-label">
               Email Address
             </label>
             <input
@@ -106,14 +117,14 @@ export default function UserEditModal({ isOpen, user, onClose, onSave, isSaving 
               onChange={(e) => setEmail(e.target.value)}
               disabled={isSaving}
               required
-              className="w-full bg-[var(--c-canvas)] text-[var(--c-ink)] border border-[var(--c-hairline-strong)] rounded-[var(--r-md)] px-4 py-2.5 h-[44px] text-sm focus:border-2 focus:border-[var(--c-green-dark)] focus:outline-none transition-all placeholder-[var(--c-muted)]"
+              className="um-form-input"
               placeholder="e.g. juan@email.com"
             />
           </div>
 
           {/* New Password input */}
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="user-pass" className="text-xs font-bold uppercase tracking-wider text-[var(--c-steel)]">
+          <div className="um-form-group">
+            <label htmlFor="user-pass" className="um-form-label">
               New Password <span className="text-[10px] font-normal text-[var(--c-stone)] font-sans lowercase">(leave blank to keep unchanged)</span>
             </label>
             <input
@@ -122,17 +133,17 @@ export default function UserEditModal({ isOpen, user, onClose, onSave, isSaving 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={isSaving}
-              className="w-full bg-[var(--c-canvas)] text-[var(--c-ink)] border border-[var(--c-hairline-strong)] rounded-[var(--r-md)] px-4 py-2.5 h-[44px] text-sm focus:border-2 focus:border-[var(--c-green-dark)] focus:outline-none transition-all placeholder-[var(--c-muted)]"
+              className="um-form-input"
               placeholder="•••••••• (6+ characters)"
             />
           </div>
 
-          {/* Actions button strip */}
-          <div className="flex items-center justify-end gap-3 mt-6">
+          {/* Actions button strip - Centered like ConfirmModal */}
+          <div className="um-confirm-actions">
             <button
               onClick={onClose}
               disabled={isSaving}
-              className="px-5 py-2.5 text-xs font-bold rounded-full border border-[var(--c-hairline-strong)] text-[var(--c-slate)] hover:bg-[var(--c-surface-soft)] transition-all select-none disabled:opacity-50"
+              className="um-btn-secondary"
               type="button"
             >
               Cancel
@@ -140,16 +151,16 @@ export default function UserEditModal({ isOpen, user, onClose, onSave, isSaving 
             <button
               type="submit"
               disabled={isSaving}
-              className="px-5 py-2.5 text-xs font-bold rounded-full bg-[var(--c-primary)] text-[var(--c-on-primary)] hover:bg-[var(--c-primary-deep)] active:bg-[var(--c-primary-pressed)] transition-all flex items-center gap-1.5 select-none disabled:opacity-50"
+              className="um-btn-confirm um-btn-confirm--primary"
             >
               {isSaving ? (
                 <>
-                  <span className="animate-spin h-3.5 w-3.5 border-2 border-[var(--c-on-primary)] border-t-transparent rounded-full" />
+                  <span className="um-spinner" aria-hidden="true" />
                   Saving...
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined text-[14px]">save</span>
+                  <span className="material-symbols-outlined text-[14px]" aria-hidden="true">save</span>
                   Save Changes
                 </>
               )}
@@ -161,4 +172,3 @@ export default function UserEditModal({ isOpen, user, onClose, onSave, isSaving 
     </div>
   );
 }
-

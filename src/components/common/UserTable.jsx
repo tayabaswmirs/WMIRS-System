@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 /** Number of rows to show per page. */
 const PAGE_SIZE = 5;
@@ -236,12 +236,13 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
  * Stateless regarding data — all actions are lifted to UserManagement.
  */
 export default function UserTable({ users, currentAdminUid, onEdit, onToggleRole, onDelete }) {
+  const [prevUsers, setPrevUsers] = useState(users);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Reset to page 1 whenever the users list changes (e.g. search filter applied)
-  useEffect(() => {
+  if (users !== prevUsers) {
+    setPrevUsers(users);
     setCurrentPage(1);
-  }, [users]);
+  }
 
   if (users.length === 0) return <EmptyState />;
 
