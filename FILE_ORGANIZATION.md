@@ -118,3 +118,33 @@ To keep file references predictable for Agentic AI workflows, the system enforce
     Keep paths structured. Ensure clean relative path resolution (e.g., `../../components/common/Button`) or configure path aliases if supported.
 3.  **Strict Props Validation:**
     Reusable components under `src/components/common/` should define clear arguments to enable predictable integration.
+
+---
+
+## 5. Firebase Cloud Functions Directory Layout
+
+To avoid monolithic codebases inside the backend layer, the `functions/` directory must be structured modularly. **Do not write all your endpoint logic in a single `index.js` file.**
+
+### Directory Map
+```text
+functions/
+├── src/                    # Cloud Functions implementation source code
+│   ├── config/             # Backend configs and database configurations (e.g., firebaseAdmin.js)
+│   ├── triggers/           # Event and HTTP triggers grouped by concern
+│   │   ├── auth/           # Firebase Auth triggers (e.g., onCreateUser.js)
+│   │   ├── db/             # Firestore / Database triggers (e.g., onReportWrite.js)
+│   │   └── https/          # HTTP endpoints/webhooks (e.g., testSecureEndpoint.js)
+│   ├── services/           # Reusable business logic services (e.g., mailerService.js, billingService.js)
+│   └── utils/              # Side-effect-free utility helper functions
+├── index.js                # Central gateway registry (only imports and exports triggers)
+├── package.json            # Node 22 ESM package settings
+└── .gitignore              # Ignored local runtime files
+```
+
+### Boundary & Organization Rules:
+*   **Central Gateway Registry (`index.js`)**: Keep this file completely flat. It must act strictly as an export registry and contain NO inline business logic or trigger definitions.
+    *   *Bad:* Defining `exports.helloWorld = onRequest(...)` directly in `index.js`.
+    *   *Good:* `export { helloWorld } from './src/triggers/https/helloWorld.js';`
+*   **Domain Isolation**: Subdivide handlers in `src/triggers/` based on their trigger medium (`auth/`, `db/`, `https/`) and name files after their exact function signature.
+*   **Dependency Isolation**: The `functions/` codebase is treated as a separate application workspace. Do not reference frontend React code or import directories outside of `functions/` to prevent deployment bundle bloating.
+

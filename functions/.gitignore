@@ -1,0 +1,13 @@
+# Local Node dependencies
+node_modules/
+
+# Firebase debug logs
+firebase-debug.log*
+firestore-debug.log*
+pubsub-debug.log*
+ui-debug.log*
+
+# System and editor files
+.DS_Store
+.npm
+thumbs.db

@@ -33,3 +33,9 @@
 ## 6. Dependency & Supply Chain Security
 *   **6.1. Verified Libraries Only:** If you need to introduce a new third-party library, you must only suggest libraries that are actively maintained and widely adopted.
 *   **6.2. Justification Required:** Before writing code that requires a new `npm` package, you must explain why the package is necessary and confirm it does not introduce known security vulnerabilities.
+
+## 7. Firebase Cloud Functions Security Boundary
+*   **7.1. Mandatory Input Validation:** Assume all incoming payloads are malicious. Every HTTP/HTTPS entry point function MUST validate incoming data against a strict schema (such as a **Zod** schema) before triggering database transactions or internal business services.
+*   **7.2. Cloud Secret Manager Integration:** Never store plain API keys, encryption tokens, or third-party database passwords in your function files or local code repositories. All keys must be declared dynamically as secrets using GCP/Firebase Secret Manager and injected at runtime.
+*   **7.3. Client-Side Error Masking:** Never return raw Node runtime stack traces, detailed Firestore client queries, or database error objects in HTTP responses. Wrap function logic in try-catch structures, log descriptive diagnostics in Google Cloud Logger, and return simplified, standardized JSON error messages to the client.
+*   **7.4. CORS and regionalization control:** HTTPS functions should explicitly define safe CORS properties and restrict deployment regions (e.g. `asia-southeast1`) to enforce geographic compliance.
