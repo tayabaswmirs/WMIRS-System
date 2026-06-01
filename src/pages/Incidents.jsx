@@ -31,9 +31,10 @@ function Incidents() {
 
   /* Derived stats */
   const stats = useMemo(() => ({
-    total:    incidents.length,
-    pending:  incidents.filter((r) => r.status === "Submitted" || r.status === "Under Review").length,
-    resolved: incidents.filter((r) => r.status === "Resolved").length,
+    submitted:   incidents.filter((r) => r.status === "Submitted").length,
+    underReview: incidents.filter((r) => r.status === "Under Review").length,
+    resolved:    incidents.filter((r) => r.status === "Resolved").length,
+    dismissed:   incidents.filter((r) => r.status === "Dismissed").length,
   }), [incidents]);
 
   /* Filtered + searched slice of the incident list */
@@ -98,9 +99,10 @@ function Incidents() {
             </p>
           </div>
           <div className="inc-hero__stats">
-            <StatPill icon="inventory_2" label="Total Filed" count={stats.total} color="var(--brand-green)" />
-            <StatPill icon="pending_actions" label="Pending" count={stats.pending} color="#f5a524" />
+            <StatPill icon="upload_file" label="Submitted" count={stats.submitted} color="#f5a524" />
+            <StatPill icon="manage_search" label="Under Review" count={stats.underReview} color="#0080ff" />
             <StatPill icon="task_alt" label="Resolved" count={stats.resolved} color="#00ed64" />
+            <StatPill icon="block" label="Dismissed" count={stats.dismissed} color="var(--c-warn-text)" />
           </div>
         </div>
 
