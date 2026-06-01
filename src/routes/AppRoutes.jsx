@@ -2,8 +2,10 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
 import AdminDashboard from "../pages/AdminDashboard";
+import AdminIncidents from "../pages/AdminIncidents";
 import UserManagement from "../pages/UserManagement";
 import Profile from "../pages/Profile";
+import Incidents from "../pages/Incidents";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { useAuth } from "../hooks/useAuth";
 
@@ -42,6 +44,15 @@ export default function AppRoutes() {
       />
 
       <Route 
+        path="/incidents" 
+        element={
+          <ProtectedRoute allowedRoles={["user"]}>
+            <Incidents />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
         path="/admin/dashboard" 
         element={
           <ProtectedRoute allowedRoles={["admin"]}>
@@ -55,6 +66,15 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["admin"]}>
             <UserManagement />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/admin/incidents" 
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminIncidents />
           </ProtectedRoute>
         } 
       />

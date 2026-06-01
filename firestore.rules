@@ -35,5 +35,25 @@ service cloud.firestore {
       // Deleting profiles is restricted solely to administrators
       allow delete: if isAdmin();
     }
+
+    // Rules for the incidents collection
+    match /incidents/{incidentId} {
+      // Authenticated users can create reports if they list themselves as the reporter
+      allow create: if isAuthenticated() && 
+                    request.resource.data.reporter.uid == request.auth.uid;
+                    
+      // Users can read only their own reports; admins can read all reports
+      allow read: if isAuthenticated() && 
+                  (resource.data.reporter.uid == request.auth.uid || isAdmin());
+
+      // Only admins may update a report, and only the status audit fields
+      allow update: if isAdmin() &&
+                    request.resource.data.diff(resource.data).affectedKeys()
+                      .hasOnly(['status', 'updatedAt', 'updatedBy']);
+
+      // Deleting incident reports is strictly prohibited to preserve audit integrity
+      allow delete: if false;
+    }
   }
 }
+

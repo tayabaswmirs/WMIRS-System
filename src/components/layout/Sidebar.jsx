@@ -5,9 +5,11 @@ import "../../styles/dashboard.css";
 
 // Nav items configuration — role-gated items are flagged with adminOnly
 const NAV_ITEMS = [
-  { id: "nav-dashboard",  icon: "dashboard",       label: "Dashboard",      path: "/dashboard",    adminPath: "/admin/dashboard" },
-  { id: "nav-users",      icon: "group",           label: "User Management", path: "/admin/users",  adminOnly: true },
-  { id: "nav-profile",    icon: "manage_accounts", label: "Profile Settings", path: "/profile" },
+  { id: "nav-dashboard",        icon: "dashboard",              label: "Dashboard",           path: "/dashboard", adminPath: "/admin/dashboard" },
+  { id: "nav-incidents",        icon: "warning",                label: "Incident Reports",    path: "/incidents", userOnly: true },
+  { id: "nav-admin-incidents",  icon: "content_paste_search",   label: "Incident Management", path: "/admin/incidents", adminOnly: true },
+  { id: "nav-users",            icon: "group",                  label: "User Management",     path: "/admin/users",  adminOnly: true },
+  { id: "nav-profile",          icon: "manage_accounts",        label: "Profile Settings",    path: "/profile" },
 ];
 
 /**
@@ -65,7 +67,11 @@ function Sidebar({ isOpen, onClose }) {
       <div className="sidebar-nav" role="list">
         <span className="sidebar-nav__section-label">Navigation</span>
 
-        {NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin).map((item) => (
+        {NAV_ITEMS.filter((item) => {
+          if (isAdmin && item.userOnly) return false;
+          if (!isAdmin && item.adminOnly) return false;
+          return true;
+        }).map((item) => (
           <button
             key={item.id}
             id={item.id}
