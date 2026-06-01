@@ -46,10 +46,10 @@ service cloud.firestore {
       allow read: if isAuthenticated() && 
                   (resource.data.reporter.uid == request.auth.uid || isAdmin());
 
-      // Only admins may update a report, and only the status audit fields
+      // Only admins may update a report, and only the status/audit fields, plus evidence array for cleanup
       allow update: if isAdmin() &&
                     request.resource.data.diff(resource.data).affectedKeys()
-                      .hasOnly(['status', 'updatedAt', 'updatedBy']);
+                      .hasOnly(['status', 'updatedAt', 'updatedBy', 'evidence']);
 
       // Deleting incident reports is strictly prohibited to preserve audit integrity
       allow delete: if false;

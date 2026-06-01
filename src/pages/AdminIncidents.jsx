@@ -4,6 +4,7 @@ import { subscribeToAllIncidents, updateIncidentStatus } from "../firebase/servi
 import DashboardLayout from "../components/layout/DashboardLayout";
 import AdminIncidentTable from "../components/common/AdminIncidentTable";
 import IncidentDetailsModal from "../components/common/IncidentDetailsModal";
+import ConfirmationModal from "../components/common/ConfirmationModal";
 import "../styles/dashboard.css";
 
 // Filter tab options displayed above the table
@@ -16,6 +17,7 @@ function AdminIncidents() {
   const [selectedIncident, setSelectedIncident] = useState(null);
   const [activeFilter, setActiveFilter]         = useState("All");
   const [searchQuery, setSearchQuery]           = useState("");
+  const [confirmDialog, setConfirmDialog]       = useState(null);
 
   /* Real-time subscription to ALL incidents in the system */
   useEffect(() => {
@@ -46,12 +48,36 @@ function AdminIncidents() {
     );
   }, [incidents, activeFilter, searchQuery]);
 
-  const handleStatusChange = async (incidentId, newStatus) => {
-    await updateIncidentStatus(incidentId, newStatus, currentUser.uid);
-    // If the drawer is open for this incident, reflect the new status locally
-    if (selectedIncident?.id === incidentId) {
-      setSelectedIncident((prev) => ({ ...prev, status: newStatus }));
+  const handleStatusChangeRequest = (incidentId, newStatus) => {
+    return new Promise((resolve, reject) => {
+      setConfirmDialog({ incidentId, newStatus, resolve, reject });
+    });
+  };
+
+  const isLocking = confirmDialog?.newStatus === "Resolved" || confirmDialog?.newStatus === "Dismissed";
+
+  const executeStatusChange = async () => {
+    if (!confirmDialog) return;
+    const { incidentId, newStatus, resolve } = confirmDialog;
+    try {
+      await updateIncidentStatus(incidentId, newStatus, currentUser.uid);
+      if (selectedIncident?.id === incidentId) {
+        setSelectedIncident((prev) => ({ ...prev, status: newStatus }));
+      }
+      resolve(true); // Return success to caller
+    } catch (err) {
+      console.error(err);
+      if (confirmDialog.reject) confirmDialog.reject(err);
+    } finally {
+      setConfirmDialog(null);
     }
+  };
+
+  const cancelStatusChange = () => {
+    if (confirmDialog?.resolve) {
+      confirmDialog.resolve(false); // Return false instead of rejecting to avoid messy unhandled promise rejections
+    }
+    setConfirmDialog(null);
   };
 
   return (
@@ -112,7 +138,7 @@ function AdminIncidents() {
           {/* Table */}
           <AdminIncidentTable
             incidents={filteredIncidents}
-            onStatusChange={handleStatusChange}
+            onStatusChange={handleStatusChangeRequest}
             onViewDetails={setSelectedIncident}
           />
         </div>
@@ -122,7 +148,22 @@ function AdminIncidents() {
           incident={selectedIncident}
           onClose={() => setSelectedIncident(null)}
           isAdmin
-          onStatusChange={handleStatusChange}
+          onStatusChange={handleStatusChangeRequest}
+        />
+
+        {/* Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={!!confirmDialog}
+          title={isLocking ? "Lock Incident Status?" : "Confirm Status Change"}
+          message={
+            isLocking 
+              ? `Are you sure you want to change the status of this incident report to "${confirmDialog?.newStatus}"? This action is irreversible and the report will be locked.`
+              : `Are you sure you want to change the status of this incident report to "${confirmDialog?.newStatus}"?`
+          }
+          onConfirm={executeStatusChange}
+          onCancel={cancelStatusChange}
+          confirmText={isLocking ? "Confirm & Lock" : "Confirm"}
+          isDestructive={isLocking}
         />
       </div>
     </DashboardLayout>

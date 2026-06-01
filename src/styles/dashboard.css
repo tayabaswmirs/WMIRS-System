@@ -3647,3 +3647,90 @@ button:disabled,
 .inc-drawer__admin-feedback--success { color: var(--c-green-dark); }
 .inc-drawer__admin-feedback--error   { color: var(--c-warn-text); }
 
+/* ── Confirmation Modal ──────────────────────────────────────── */
+.confirm-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 400px;
+  padding: var(--sp-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-lg);
+  background-color: var(--c-surface-main, #ffffff);
+  border-radius: var(--r-lg, 16px);
+  border: 1px solid var(--c-hairline-strong, #e8ecee);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.confirm-modal__header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  color: var(--brand-green-dark, #00b34d);
+}
+
+.confirm-modal__icon {
+  font-size: 24px;
+}
+
+.confirm-modal__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--c-text-primary);
+}
+
+.confirm-modal__message {
+  margin: 0;
+  font-size: 14px;
+  color: var(--c-text-secondary);
+  line-height: 1.5;
+}
+
+.confirm-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-md);
+  margin-top: var(--sp-sm);
+}
+
+.confirm-modal__btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  height: 38px;
+}
+
+.confirm-modal__btn--danger {
+  background-color: var(--c-warn-surface, #ffeae5);
+  color: var(--c-warn-text, #c41e00);
+  border-color: transparent;
+}
+
+.confirm-modal__btn--danger:hover {
+  background-color: #ffd8cf;
+}
+
+.confirm-modal__btn--danger:focus {
+  box-shadow: 0 0 0 2px var(--c-canvas), 0 0 0 4px var(--c-warn-text);
+}
+
+.inc-drawer__admin-locked-banner {
+  display: flex;
+  gap: var(--sp-sm);
+  padding: var(--sp-md);
+  background-color: var(--c-surface-feature);
+  border-left: 3px solid var(--c-steel);
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  color: var(--c-text-secondary);
+  line-height: 1.5;
+}
+
+.inc-drawer__admin-locked-banner .material-symbols-outlined {
+  color: var(--c-steel);
+  font-size: 18px;
+  flex-shrink: 0;
+}

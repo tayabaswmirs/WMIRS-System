@@ -84,8 +84,10 @@ function AdminIncidentTable({ incidents, onStatusChange, onViewDetails }) {
                   <select
                     value={inc.status}
                     onChange={(e) => onStatusChange(inc.id, e.target.value)}
+                    disabled={inc.status === "Resolved" || inc.status === "Dismissed"}
                     className={`admin-status-select admin-status-select--${getStatusClass(inc.status)}`}
                     aria-label={`Change status for ${inc.incidentType}`}
+                    title={inc.status === "Resolved" || inc.status === "Dismissed" ? "Status is locked" : "Change status"}
                   >
                     {ADMIN_STATUSES.map((s) => (
                       <option key={s} value={s}>{s}</option>

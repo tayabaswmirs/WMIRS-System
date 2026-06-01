@@ -7,12 +7,14 @@ import {
   orderBy, 
   onSnapshot, 
   serverTimestamp, 
-  updateDoc 
+  updateDoc,
+  getDoc
 } from "firebase/firestore";
 import { 
   ref, 
   uploadBytesResumable, 
-  getDownloadURL 
+  getDownloadURL,
+  deleteObject
 } from "firebase/storage";
 import { db, storage } from "../firebase";
 
@@ -179,9 +181,37 @@ export const subscribeToAllIncidents = (callback) => {
  */
 export const updateIncidentStatus = async (incidentId, status, adminUid) => {
   const docRef = doc(db, "incidents", incidentId);
-  return updateDoc(docRef, {
+  const updatePayload = {
     status,
     updatedAt: serverTimestamp(),
     updatedBy: adminUid
-  });
+  };
+
+  // If dismissing the report, delete all associated evidence from Storage to save space
+  if (status === "Dismissed") {
+    try {
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const evidence = docSnap.data().evidence || [];
+        // Delete each file from Firebase Storage
+        const deletePromises = evidence.map((file) => {
+          if (file.url) {
+            const fileRef = ref(storage, file.url);
+            return deleteObject(fileRef).catch((e) => {
+              console.warn(`Failed to delete storage file ${file.url}:`, e);
+            });
+          }
+          return Promise.resolve();
+        });
+        
+        await Promise.all(deletePromises);
+        // Clear the evidence array in Firestore so we don't have broken links
+        updatePayload.evidence = [];
+      }
+    } catch (err) {
+      console.error("Error cleaning up evidence for dismissed report:", err);
+    }
+  }
+
+  return updateDoc(docRef, updatePayload);
 };

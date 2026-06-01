@@ -52,13 +52,21 @@ function DrawerContent({ incident, onClose, isAdmin, onStatusChange }) {
   const [saving, setSaving]             = useState(false);
   const [saveFeedback, setSaveFeedback] = useState({ type: "", message: "" });
 
+  const isLocked = incident.status === "Resolved" || incident.status === "Dismissed";
+
   const handleStatusSave = async () => {
     if (draftStatus === incident.status) return;
     setSaving(true);
     setSaveFeedback({ type: "", message: "" });
     try {
-      await onStatusChange(incident.id, draftStatus);
-      setSaveFeedback({ type: "success", message: "Status updated successfully." });
+      const confirmed = await onStatusChange(incident.id, draftStatus);
+      if (confirmed) {
+        setSaveFeedback({ type: "success", message: "Status updated successfully." });
+      } else {
+        // User cancelled the modal, do nothing
+        setSaveFeedback({ type: "", message: "" });
+        // Optionally revert draftStatus back to the real status if you want
+      }
     } catch {
       setSaveFeedback({ type: "error", message: "Failed to update status. Please try again." });
     } finally {
@@ -171,41 +179,53 @@ function DrawerContent({ incident, onClose, isAdmin, onStatusChange }) {
         {isAdmin && (
           <div className="inc-drawer__admin-panel">
             <span className="inc-drawer__section-label">
-              <span className="material-symbols-outlined inc-drawer__section-label-icon">admin_panel_settings</span>
-              Admin: Update Status
+              <span className="material-symbols-outlined inc-drawer__section-label-icon">
+                {isLocked ? "lock" : "admin_panel_settings"}
+              </span>
+              Admin: {isLocked ? "Status Locked" : "Update Status"}
             </span>
-            <div className="inc-drawer__admin-controls">
-              <select
-                value={draftStatus}
-                onChange={(e) => {
-                  setDraftStatus(e.target.value);
-                  setSaveFeedback({ type: "", message: "" });
-                }}
-                className={`admin-status-select admin-status-select--${getStatusClass(draftStatus)}`}
-                aria-label="Select new incident status"
-                disabled={saving}
-              >
-                {ADMIN_STATUSES.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-              <button
-                type="button"
-                onClick={handleStatusSave}
-                disabled={saving || draftStatus === incident.status}
-                className="button-primary inc-drawer__admin-save-btn"
-                id="inc-drawer-admin-save-btn"
-              >
-                <span className="material-symbols-outlined" aria-hidden="true">
-                  {saving ? "hourglass_top" : "check_circle"}
-                </span>
-                {saving ? "Saving…" : "Update Status"}
-              </button>
-            </div>
-            {saveFeedback.message && (
-              <p className={`inc-drawer__admin-feedback inc-drawer__admin-feedback--${saveFeedback.type}`}>
-                {saveFeedback.message}
-              </p>
+            
+            {isLocked ? (
+              <div className="inc-drawer__admin-locked-banner">
+                <span className="material-symbols-outlined" aria-hidden="true">info</span>
+                <p style={{ margin: 0 }}>This report has been marked as <strong>{incident.status}</strong>. Its status is now locked and cannot be modified.</p>
+              </div>
+            ) : (
+              <>
+                <div className="inc-drawer__admin-controls">
+                  <select
+                    value={draftStatus}
+                    onChange={(e) => {
+                      setDraftStatus(e.target.value);
+                      setSaveFeedback({ type: "", message: "" });
+                    }}
+                    className={`admin-status-select admin-status-select--${getStatusClass(draftStatus)}`}
+                    aria-label="Select new incident status"
+                    disabled={saving}
+                  >
+                    {ADMIN_STATUSES.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={handleStatusSave}
+                    disabled={saving || draftStatus === incident.status}
+                    className="button-primary inc-drawer__admin-save-btn"
+                    id="inc-drawer-admin-save-btn"
+                  >
+                    <span className="material-symbols-outlined" aria-hidden="true">
+                      {saving ? "hourglass_top" : "check_circle"}
+                    </span>
+                    {saving ? "Saving…" : "Update Status"}
+                  </button>
+                </div>
+                {saveFeedback.message && (
+                  <p className={`inc-drawer__admin-feedback inc-drawer__admin-feedback--${saveFeedback.type}`}>
+                    {saveFeedback.message}
+                  </p>
+                )}
+              </>
             )}
           </div>
         )}
