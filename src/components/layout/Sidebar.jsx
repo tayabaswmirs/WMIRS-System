@@ -42,7 +42,15 @@ function Sidebar({ isOpen, onClose }) {
   // Determine the currently active nav item by pathname
   const isActive = (item) => {
     const targetPath = (item.adminPath && isAdmin) ? item.adminPath : item.path;
-    return location.pathname === targetPath || location.pathname.startsWith(targetPath + "/");
+    
+    if (location.pathname === targetPath) return true;
+    
+    // Prevent "/monitoring" from staying active when we are inside "/monitoring/history"
+    if (targetPath === "/monitoring" && location.pathname.startsWith("/monitoring/history")) {
+      return false;
+    }
+
+    return location.pathname.startsWith(targetPath + "/");
   };
 
   return (

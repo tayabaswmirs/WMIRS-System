@@ -261,7 +261,7 @@ function LogSpecificDetails({ log }) {
       return (
         <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "8px" }}>
           <DetailRow label="Observation Date & Time" value={log.dateTime} />
-          <DetailRow label="Transect Line / Station ID" value={log.stationId} />
+          <DetailRow label="Location" value={log.stationId} />
           <DetailRow label="Avian Species" value={log.avianSpecies} />
           <DetailRow label="Count / Sighted" value={log.count} />
           <DetailRow label="Observed Activities" value={log.activities?.join(", ") || "None"} />

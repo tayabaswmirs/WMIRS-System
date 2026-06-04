@@ -38,8 +38,8 @@ function AvianTrackingForm({ formData, onChange, setFormData }) {
       {/* Transect Line / Station ID */}
       <div className="inc-form__group">
         <label className="inc-form__label" htmlFor="mon-station">
-          <span className="material-symbols-outlined inc-form__label-icon">route</span>
-          Transect Line / Station ID <span className="inc-form__required">*</span>
+          <span className="material-symbols-outlined inc-form__label-icon">location_on</span>
+          Location <span className="inc-form__required">*</span>
         </label>
         <input
           id="mon-station"
