@@ -10,9 +10,9 @@ const NAV_ITEMS = [
   { id: "nav-monitoring",       icon: "monitoring",             label: "Submit Monitoring",   path: "/monitoring", userOnly: true },
   { id: "nav-inc-history",      icon: "history",                label: "Incident History",    path: "/incidents/history", userOnly: true },
   { id: "nav-mon-history",      icon: "history_edu",            label: "Monitoring History",  path: "/monitoring/history", userOnly: true },
-  { id: "nav-admin-incidents",  icon: "content_paste_search",   label: "Incident Management", path: "/admin/incidents", adminOnly: true },
-  { id: "nav-admin-mon",        icon: "fact_check",             label: "Monitoring Audit",    path: "/admin/monitoring", adminOnly: true },
-  { id: "nav-users",            icon: "group",                  label: "User Management",     path: "/admin/users",  adminOnly: true },
+  { id: "nav-admin-incidents",  icon: "content_paste_search",   label: "Incidents", path: "/admin/incidents", adminOnly: true },
+  { id: "nav-admin-mon",        icon: "fact_check",             label: "Monitoring",    path: "/admin/monitoring", adminOnly: true },
+  { id: "nav-users",            icon: "group",                  label: "Users",     path: "/admin/users",  adminOnly: true },
 ];
 
 /**

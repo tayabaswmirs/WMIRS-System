@@ -1,10 +1,6 @@
-import { useAuth } from "../hooks/useAuth";
 import DashboardLayout from "../components/layout/DashboardLayout";
 
 function AdminDashboard() {
-  const { currentUser, profileData } = useAuth();
-  const displayName = currentUser?.displayName || profileData?.name || "Administrator";
-
   return (
     <DashboardLayout>
       <div className="dashboard-placeholder">
@@ -13,7 +9,7 @@ function AdminDashboard() {
         <div className="dashboard-placeholder__header">
           <span className="dashboard-placeholder__eyebrow">Administration</span>
           <h1 className="dashboard-placeholder__title">
-            Admin Portal — {displayName}
+            Admin Portal
           </h1>
         </div>
 
