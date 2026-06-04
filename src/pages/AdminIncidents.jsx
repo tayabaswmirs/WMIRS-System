@@ -81,7 +81,7 @@ function AdminIncidents() {
   };
 
   return (
-    <DashboardLayout pageTitle="Incident Management">
+    <DashboardLayout>
       <div className="incidents-page">
 
         {/* ── Hero Header Band ─────────────────────────────────────────── */}

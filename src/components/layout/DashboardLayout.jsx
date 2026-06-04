@@ -1,19 +1,7 @@
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import Sidebar from "./Sidebar";
 import "../../styles/dashboard.css";
-
-// Map pathnames to human-readable page titles for the topbar breadcrumb
-const PAGE_TITLES = {
-  "/dashboard":       "Dashboard",
-  "/admin/dashboard": "Admin Dashboard",
-  "/monitoring":      "Monitoring",
-  "/incidents":       "Incident Reports",
-  "/reports":         "Reports & Analytics",
-  "/admin/users":     "User Management",
-  "/settings":        "Settings",
-};
 
 /**
  * DashboardLayout — shared shell for all authenticated dashboard pages.
@@ -23,16 +11,24 @@ const PAGE_TITLES = {
  *   children        {ReactNode} — the page content to render in the content area
  *   pageTitle       {string}    — optional override for the topbar page title
  */
-function DashboardLayout({ children, pageTitle }) {
+function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const location  = useLocation();
-  const { userRole } = useAuth();
+  const { currentUser, profileData, logout } = useAuth();
 
-  const isAdmin         = userRole === "admin";
-  const resolvedTitle   = pageTitle || PAGE_TITLES[location.pathname] || "WMIRS";
+  const displayName = currentUser?.displayName || profileData?.name || "User";
+  // Generate initials for the avatar placeholder
+  const initials    = displayName.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
 
   const handleSidebarClose = () => setSidebarOpen(false);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (err) {
+      console.error("Topbar logout error:", err);
+    }
+  };
 
   return (
     <div className="dashboard-shell">
@@ -64,24 +60,30 @@ function DashboardLayout({ children, pageTitle }) {
               <span className="material-symbols-outlined" aria-hidden="true">menu</span>
             </button>
 
-            <div>
-              <div className="topbar__page-title">{resolvedTitle}</div>
-              <div className="topbar__breadcrumb">
-                <span>WMIRS</span>
-                <span className="topbar__breadcrumb-sep">›</span>
-                <span>{resolvedTitle}</span>
-              </div>
-            </div>
+
           </div>
 
           <div className="topbar__right">
-            {/* Role pill badge */}
-            <div
-              className={`topbar__role-badge${isAdmin ? " topbar__role-badge--admin" : " topbar__role-badge--user"}`}
-            >
-              <div className="topbar__role-badge__dot" aria-hidden="true" />
-              {isAdmin ? "Administrator" : "ENRO Staff"}
+            {/* User Profile Info */}
+            <div className="topbar-user-profile">
+              <div className="topbar-user-avatar" aria-hidden="true">
+                {initials}
+              </div>
+              <span className="topbar-user-name" title={displayName}>
+                {displayName}
+              </span>
             </div>
+
+            {/* Sign Out Button */}
+            <button
+              id="topbar-logout-btn"
+              className="topbar-logout-btn"
+              onClick={handleLogout}
+              type="button"
+            >
+              <span className="material-symbols-outlined" aria-hidden="true">logout</span>
+              <span>Sign Out</span>
+            </button>
           </div>
         </header>
 

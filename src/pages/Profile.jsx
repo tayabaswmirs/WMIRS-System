@@ -165,7 +165,7 @@ export default function Profile() {
   };
 
   return (
-    <DashboardLayout pageTitle="Profile Settings">
+    <DashboardLayout>
       <div className="um-page">
         {/* Page Header */}
         <div className="um-page-header">

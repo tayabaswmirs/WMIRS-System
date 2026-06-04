@@ -6,7 +6,7 @@ function AdminDashboard() {
   const displayName = currentUser?.displayName || profileData?.name || "Administrator";
 
   return (
-    <DashboardLayout pageTitle="Admin Dashboard">
+    <DashboardLayout>
       <div className="dashboard-placeholder">
 
         {/* Page Header */}

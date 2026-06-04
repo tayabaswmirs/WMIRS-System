@@ -309,35 +309,78 @@
   gap: var(--sp-md);
 }
 
-/* Role badge in topbar */
-.topbar__role-badge {
-  display: inline-flex;
+/* User Profile in Topbar */
+.topbar-user-profile {
+  display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
+  gap: var(--sp-xs);
+  padding: 4px var(--sp-md) 4px 4px;
+  background: var(--c-surface-feature);
+  border: 1px solid rgba(0, 104, 74, 0.15);
   border-radius: var(--r-full);
+  box-shadow: var(--shadow-1);
+  transition: all var(--transition);
+}
+
+.topbar-user-profile:hover {
+  border-color: var(--c-green-mid);
+  background: rgba(0, 237, 100, 0.12);
+  box-shadow: rgba(0, 104, 74, 0.08) 0px 2px 8px 0px;
+}
+
+.topbar-user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--c-teal-deep);
+  border: 2px solid var(--c-green-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--c-green);
+  flex-shrink: 0;
+}
+
+.topbar-user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-green-dark);
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar-logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-xs);
+  height: 32px;
+  padding: 0 var(--sp-md);
+  border-radius: var(--r-full);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  background: rgba(220, 38, 38, 0.08);
+  color: #dc2626;
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.3px;
+  box-shadow: var(--shadow-1);
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: var(--font-display);
 }
 
-.topbar__role-badge--admin {
-  background: rgba(0, 237, 100, 0.12);
-  color: var(--c-green-dark);
-  border: 1px solid rgba(0, 237, 100, 0.3);
+.topbar-logout-btn:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+  box-shadow: rgba(220, 38, 38, 0.2) 0px 4px 12px 0px;
 }
 
-.topbar__role-badge--user {
-  background: var(--c-surface);
-  color: var(--c-steel);
-  border: 1px solid var(--c-hairline);
-}
-
-.topbar__role-badge__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
+.topbar-logout-btn .material-symbols-outlined {
+  font-size: 16px;
 }
 
 /* Mobile hamburger button (hidden on desktop) */
@@ -3734,3 +3777,343 @@ button:disabled,
   font-size: 18px;
   flex-shrink: 0;
 }
+
+/* ── Ecological Monitoring System Styles ── */
+.mon-card--active {
+  border-color: var(--c-primary) !important;
+  background: var(--c-surface-feature) !important;
+  box-shadow: rgba(0, 237, 100, 0.08) 0px 4px 16px 0px !important;
+  transform: translateY(-2px);
+}
+
+/* Custom Switch Toggle */
+.mon-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.mon-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.mon-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--c-hairline-strong);
+  transition: .2s;
+  border: 1px solid var(--c-hairline);
+}
+
+.mon-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: .2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.mon-switch input:checked + .mon-slider {
+  background-color: var(--c-primary);
+  border-color: var(--c-primary-deep);
+}
+
+.mon-switch input:checked + .mon-slider:before {
+  transform: translateX(22px);
+}
+
+.mon-slider.mon-round {
+  border-radius: var(--r-full);
+}
+
+.mon-slider.mon-round:before {
+  border-radius: 50%;
+}
+
+/* ── Monitoring Submission Wizard ── */
+
+/* Step-in entrance animation */
+@keyframes mon-step-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Outer page wrapper */
+.mon-wizard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xxl);
+}
+
+/* Each step content block gets a fresh entrance animation */
+.mon-step {
+  animation: mon-step-in 220ms ease both;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xl);
+}
+
+/* ── Step Grid (category and subcategory cards) ── */
+.mon-step-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-md);
+}
+
+/* Subcategory grid uses 2 columns */
+.mon-step-grid--two {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* Base card button — matches card-base from MongoDB spec */
+.mon-step-card {
+  background: var(--c-canvas);
+  border: 1px solid var(--c-hairline);
+  border-radius: var(--r-lg);
+  padding: var(--sp-xxl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition), background var(--transition);
+  font-family: var(--font-display);
+  position: relative;
+  overflow: hidden;
+  min-height: 160px;
+}
+
+.mon-step-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-lg);
+  background: transparent;
+  transition: background var(--transition);
+  pointer-events: none;
+}
+
+.mon-step-card:hover {
+  border-color: var(--c-hairline-strong);
+  box-shadow: var(--shadow-2);
+  transform: translateY(-3px);
+}
+
+.mon-step-card:hover::after {
+  background: rgba(0, 237, 100, 0.015);
+}
+
+/* Selected / active state */
+.mon-step-card--active {
+  border-color: var(--c-primary) !important;
+  background: var(--c-surface-feature) !important;
+  box-shadow: rgba(0, 237, 100, 0.12) 0px 4px 20px 0px !important;
+  transform: translateY(-3px);
+}
+
+/* Card icon — flat, no circular container, matches reference photo */
+.mon-step-card__icon-wrap {
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  color: var(--c-steel);
+  margin-bottom: var(--sp-xs);
+  transition: color var(--transition);
+}
+
+.mon-step-card__icon-wrap .material-symbols-outlined {
+  font-size: 40px;
+  font-variation-settings: "opsz" 40, "wght" 200, "FILL" 0, "GRAD" 0;
+}
+
+/* Selected card icon becomes green */
+.mon-step-card--active .mon-step-card__icon-wrap {
+  background: transparent;
+  border: none;
+  color: var(--c-green-dark);
+}
+
+/* Card title */
+.mon-step-card__title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--c-ink);
+  margin: 0;
+  line-height: 1.25;
+  letter-spacing: -0.2px;
+}
+
+/* Card description */
+.mon-step-card__desc {
+  font-size: 14px;
+  color: var(--c-steel);
+  margin: 0;
+  line-height: 1.55;
+  max-width: 280px;
+}
+
+/* ── Step Label (e.g. "Step 1 of 3 — Choose a Category") ── */
+.mon-step-label {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  margin-bottom: var(--sp-xs);
+}
+
+.mon-step-label__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--c-teal-deep);
+  color: var(--c-green);
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.mon-step-label__text {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--c-steel);
+}
+
+/* ── Breadcrumb Trail ── */
+.mon-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  padding: var(--sp-md) var(--sp-xl);
+  background: var(--c-surface-soft);
+  border: 1px solid var(--c-hairline);
+  border-radius: var(--r-lg);
+}
+
+.mon-breadcrumb__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid var(--c-hairline);
+  border-radius: var(--r-full);
+  padding: 4px 12px 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-slate);
+  cursor: pointer;
+  font-family: var(--font-display);
+  transition: border-color var(--transition), background var(--transition), color var(--transition);
+  flex-shrink: 0;
+}
+
+.mon-breadcrumb__back:hover {
+  border-color: var(--c-hairline-strong);
+  background: var(--c-canvas);
+  color: var(--c-ink);
+}
+
+.mon-breadcrumb__back .material-symbols-outlined {
+  font-size: 15px;
+}
+
+.mon-breadcrumb__sep {
+  color: var(--c-muted);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.mon-breadcrumb__sep .material-symbols-outlined {
+  font-size: 16px;
+}
+
+/* Breadcrumb chip — shows the selected step value */
+.mon-breadcrumb__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--c-surface-feature);
+  border: 1px solid rgba(0, 104, 74, 0.20);
+  border-radius: var(--r-full);
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-green-dark);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.mon-breadcrumb__chip .material-symbols-outlined {
+  font-size: 15px;
+  color: var(--c-green-mid);
+}
+
+/* Muted chip for the non-terminal crumb */
+.mon-breadcrumb__chip--muted {
+  background: var(--c-surface);
+  border-color: var(--c-hairline);
+  color: var(--c-slate);
+}
+
+.mon-breadcrumb__chip--muted .material-symbols-outlined {
+  color: var(--c-stone);
+}
+
+/* Spacer to push chips left */
+.mon-breadcrumb__spacer {
+  flex: 1;
+}
+
+/* ── Responsive adjustments ── */
+@media (max-width: 1023px) {
+  .mon-step-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .mon-step-grid,
+  .mon-step-grid--two {
+    grid-template-columns: 1fr;
+  }
+
+  .mon-breadcrumb {
+    flex-wrap: wrap;
+    gap: var(--sp-xs);
+  }
+
+  .mon-step-card {
+    min-height: auto;
+  }
+}
+
+

@@ -168,7 +168,7 @@ export default function UserManagement() {
 
   // ─────────────────────────────────────────────────────────────
   return (
-    <DashboardLayout pageTitle="User Management">
+    <DashboardLayout>
       <div className="um-page">
 
         {/* ── Plain white page header ─────────────────────────── */}
