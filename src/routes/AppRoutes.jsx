@@ -6,6 +6,10 @@ import AdminIncidents from "../pages/AdminIncidents";
 import UserManagement from "../pages/UserManagement";
 import Profile from "../pages/Profile";
 import Incidents from "../pages/Incidents";
+import IncidentHistory from "../pages/IncidentHistory";
+import Monitoring from "../pages/Monitoring";
+import MonitoringHistory from "../pages/MonitoringHistory";
+import AdminMonitoring from "../pages/AdminMonitoring";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { useAuth } from "../hooks/useAuth";
 
@@ -53,6 +57,15 @@ export default function AppRoutes() {
       />
 
       <Route 
+        path="/incidents/history" 
+        element={
+          <ProtectedRoute allowedRoles={["user"]}>
+            <IncidentHistory />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
         path="/admin/dashboard" 
         element={
           <ProtectedRoute allowedRoles={["admin"]}>
@@ -84,6 +97,33 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["user", "admin"]}>
             <Profile />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/monitoring" 
+        element={
+          <ProtectedRoute allowedRoles={["user"]}>
+            <Monitoring />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/monitoring/history" 
+        element={
+          <ProtectedRoute allowedRoles={["user"]}>
+            <MonitoringHistory />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/admin/monitoring" 
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminMonitoring />
           </ProtectedRoute>
         } 
       />

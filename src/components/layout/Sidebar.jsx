@@ -6,10 +6,13 @@ import "../../styles/dashboard.css";
 // Nav items configuration — role-gated items are flagged with adminOnly
 const NAV_ITEMS = [
   { id: "nav-dashboard",        icon: "dashboard",              label: "Dashboard",           path: "/dashboard", adminPath: "/admin/dashboard" },
-  { id: "nav-incidents",        icon: "warning",                label: "Incident Reports",    path: "/incidents", userOnly: true },
-  { id: "nav-admin-incidents",  icon: "content_paste_search",   label: "Incident Management", path: "/admin/incidents", adminOnly: true },
-  { id: "nav-users",            icon: "group",                  label: "User Management",     path: "/admin/users",  adminOnly: true },
-  { id: "nav-profile",          icon: "manage_accounts",        label: "Profile Settings",    path: "/profile" },
+  { id: "nav-incidents",        icon: "warning",                label: "Submit Incident",     path: "/incidents", userOnly: true },
+  { id: "nav-monitoring",       icon: "monitoring",             label: "Submit Monitoring",   path: "/monitoring", userOnly: true },
+  { id: "nav-inc-history",      icon: "history",                label: "Incident History",    path: "/incidents/history", userOnly: true },
+  { id: "nav-mon-history",      icon: "history_edu",            label: "Monitoring History",  path: "/monitoring/history", userOnly: true },
+  { id: "nav-admin-incidents",  icon: "content_paste_search",   label: "Incidents", path: "/admin/incidents", adminOnly: true },
+  { id: "nav-admin-mon",        icon: "fact_check",             label: "Monitoring",    path: "/admin/monitoring", adminOnly: true },
+  { id: "nav-users",            icon: "group",                  label: "Users",     path: "/admin/users",  adminOnly: true },
 ];
 
 /**
@@ -21,20 +24,9 @@ const NAV_ITEMS = [
 function Sidebar({ isOpen, onClose }) {
   const navigate   = useNavigate();
   const location   = useLocation();
-  const { currentUser, userRole, profileData, logout } = useAuth();
+  const { userRole } = useAuth();
 
-  const isAdmin       = userRole === "admin";
-  const displayName   = currentUser?.displayName || profileData?.name || "User";
-  // Generate initials for the avatar placeholder
-  const initials      = displayName.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (err) {
-      console.error("Sidebar logout error:", err);
-    }
-  };
+  const isAdmin = userRole === "admin";
 
   const handleNavClick = (item) => {
     // Admins visiting the "Dashboard" nav item land on /admin/dashboard
@@ -47,7 +39,18 @@ function Sidebar({ isOpen, onClose }) {
   // Determine the currently active nav item by pathname
   const isActive = (item) => {
     const targetPath = (item.adminPath && isAdmin) ? item.adminPath : item.path;
-    return location.pathname === targetPath || location.pathname.startsWith(targetPath + "/");
+    
+    if (location.pathname === targetPath) return true;
+    
+    // Prevent root paths from staying active when we are inside their history sub-paths
+    if (targetPath === "/monitoring" && location.pathname.startsWith("/monitoring/history")) {
+      return false;
+    }
+    if (targetPath === "/incidents" && location.pathname.startsWith("/incidents/history")) {
+      return false;
+    }
+
+    return location.pathname.startsWith(targetPath + "/");
   };
 
   return (
@@ -89,31 +92,6 @@ function Sidebar({ isOpen, onClose }) {
             )}
           </button>
         ))}
-      </div>
-
-      {/* User card + logout */}
-      <div className="sidebar-footer">
-        <div className="sidebar-user-card">
-          <div className="sidebar-user-card__avatar" aria-hidden="true">
-            {initials}
-          </div>
-          <div className="sidebar-user-card__info">
-            <div className="sidebar-user-card__name" title={displayName}>
-              {displayName}
-            </div>
-            <div className="sidebar-user-card__role">{userRole || "staff"}</div>
-          </div>
-        </div>
-
-        <button
-          id="sidebar-logout-btn"
-          className="sidebar-logout-btn"
-          onClick={handleLogout}
-          type="button"
-        >
-          <span className="material-symbols-outlined" aria-hidden="true">logout</span>
-          Sign Out
-        </button>
       </div>
     </nav>
   );

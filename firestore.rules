@@ -54,6 +54,25 @@ service cloud.firestore {
       // Deleting incident reports is strictly prohibited to preserve audit integrity
       allow delete: if false;
     }
+
+    // Rules for the monitoring collection
+    match /monitoring/{monitoringId} {
+      // Authenticated users can create logs if they list themselves as the reporter
+      allow create: if isAuthenticated() && 
+                    request.resource.data.reporter.uid == request.auth.uid;
+                    
+      // Users can read only their own monitoring logs; admins can read all logs
+      allow read: if isAuthenticated() && 
+                  (resource.data.reporter.uid == request.auth.uid || isAdmin());
+
+      // Only admins may update a monitoring log, and only the status/audit fields
+      allow update: if isAdmin() &&
+                    request.resource.data.diff(resource.data).affectedKeys()
+                      .hasOnly(['status', 'adminRemarks', 'updatedAt', 'updatedBy', 'evidence']);
+
+      // Deleting monitoring logs is prohibited
+      allow delete: if false;
+    }
   }
 }
 
