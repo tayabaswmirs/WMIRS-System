@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import Sidebar from "./Sidebar";
 import "../../styles/dashboard.css";
@@ -13,6 +14,7 @@ import "../../styles/dashboard.css";
  */
 function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
 
   const { currentUser, profileData, logout } = useAuth();
 
@@ -65,14 +67,27 @@ function DashboardLayout({ children }) {
 
           <div className="topbar__right">
             {/* User Profile Info */}
-            <div className="topbar-user-profile">
+            <button
+              className="topbar-user-profile"
+              onClick={() => navigate("/profile")}
+              title="Go to Profile Settings"
+              type="button"
+              style={{
+                background: "none",
+                border: "none",
+                padding: "0",
+                cursor: "pointer",
+                textAlign: "left",
+                fontFamily: "inherit"
+              }}
+            >
               <div className="topbar-user-avatar" aria-hidden="true">
                 {initials}
               </div>
-              <span className="topbar-user-name" title={displayName}>
+              <span className="topbar-user-name">
                 {displayName}
               </span>
-            </div>
+            </button>
 
             {/* Sign Out Button */}
             <button

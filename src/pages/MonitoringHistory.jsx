@@ -25,6 +25,13 @@ function MonitoringHistory() {
     return unsubscribe;
   }, [currentUser?.uid]);
 
+  const stats = useMemo(() => ({
+    submitted:   logs.filter((r) => r.status === "Submitted").length,
+    underReview: logs.filter((r) => r.status === "Under Review").length,
+    approved:    logs.filter((r) => r.status === "Approved").length,
+    rejected:    logs.filter((r) => r.status === "Rejected/Flagged").length,
+  }), [logs]);
+
   const filteredLogs = useMemo(() => {
     const byStatus = activeFilter === "All" 
       ? logs 
@@ -53,6 +60,12 @@ function MonitoringHistory() {
             <p className="inc-hero__subtitle">
               Review and inspect your submitted ecological and compliance logs.
             </p>
+          </div>
+          <div className="inc-hero__stats">
+            <StatPill icon="upload_file" label="Submitted" count={stats.submitted} color="#f5a524" />
+            <StatPill icon="manage_search" label="Under Review" count={stats.underReview} color="#0080ff" />
+            <StatPill icon="task_alt" label="Approved" count={stats.approved} color="#00ed64" />
+            <StatPill icon="block" label="Rejected" count={stats.rejected} color="var(--c-warn-text)" />
           </div>
         </div>
 
@@ -108,6 +121,21 @@ function MonitoringHistory() {
         />
       </div>
     </DashboardLayout>
+  );
+}
+
+/* ─── Stat Pill ──────────────────────────────────────────────────────────── */
+function StatPill({ icon, label, count, color }) {
+  return (
+    <div className="inc-stat-pill">
+      <span className="material-symbols-outlined inc-stat-pill__icon" style={{ color }} aria-hidden="true">
+        {icon}
+      </span>
+      <div className="inc-stat-pill__body">
+        <span className="inc-stat-pill__count" style={{ color }}>{count}</span>
+        <span className="inc-stat-pill__label">{label}</span>
+      </div>
+    </div>
   );
 }
 

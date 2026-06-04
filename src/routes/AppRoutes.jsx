@@ -6,6 +6,7 @@ import AdminIncidents from "../pages/AdminIncidents";
 import UserManagement from "../pages/UserManagement";
 import Profile from "../pages/Profile";
 import Incidents from "../pages/Incidents";
+import IncidentHistory from "../pages/IncidentHistory";
 import Monitoring from "../pages/Monitoring";
 import MonitoringHistory from "../pages/MonitoringHistory";
 import AdminMonitoring from "../pages/AdminMonitoring";
@@ -51,6 +52,15 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["user"]}>
             <Incidents />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/incidents/history" 
+        element={
+          <ProtectedRoute allowedRoles={["user"]}>
+            <IncidentHistory />
           </ProtectedRoute>
         } 
       />

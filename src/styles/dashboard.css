@@ -3845,16 +3845,7 @@ button:disabled,
 /* ── Monitoring Submission Wizard ── */
 
 /* Step-in entrance animation */
-@keyframes mon-step-in {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/* (Removed mon-step-in animation) */
 
 /* Outer page wrapper */
 .mon-wizard {
@@ -3865,7 +3856,6 @@ button:disabled,
 
 /* Each step content block gets a fresh entrance animation */
 .mon-step {
-  animation: mon-step-in 220ms ease both;
   display: flex;
   flex-direction: column;
   gap: var(--sp-xl);
