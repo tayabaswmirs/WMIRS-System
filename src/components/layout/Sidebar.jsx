@@ -87,9 +87,6 @@ function Sidebar({ isOpen, onClose }) {
               <span className="material-symbols-outlined">{item.icon}</span>
             </span>
             <span className="sidebar-nav__label">{item.label}</span>
-            {item.adminOnly && (
-              <span className="sidebar-nav__admin-badge">Admin</span>
-            )}
           </button>
         ))}
       </div>

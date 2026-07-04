@@ -328,6 +328,43 @@
   box-shadow: rgba(0, 104, 74, 0.08) 0px 2px 8px 0px;
 }
 
+.topbar-user-profile-static {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  padding: 4px var(--sp-md) 4px 4px;
+  background: var(--c-surface-feature);
+  border: 1px solid rgba(0, 104, 74, 0.15);
+  border-radius: var(--r-full);
+  box-shadow: var(--shadow-1);
+}
+
+.topbar-settings-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 104, 74, 0.15);
+  background: var(--c-surface-feature);
+  color: var(--c-green-dark);
+  cursor: pointer;
+  transition: all var(--transition);
+  box-shadow: var(--shadow-1);
+}
+
+.topbar-settings-btn:hover {
+  border-color: var(--c-green-mid);
+  background: rgba(0, 237, 100, 0.12);
+  color: var(--c-green-mid);
+  box-shadow: rgba(0, 104, 74, 0.08) 0px 2px 8px 0px;
+}
+
+.topbar-settings-btn .material-symbols-outlined {
+  font-size: 18px;
+}
+
 .topbar-user-avatar {
   width: 28px;
   height: 28px;
@@ -351,6 +388,20 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.topbar-user-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.topbar-user-role {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--c-green-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .topbar-logout-btn {

@@ -16,7 +16,7 @@ function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
-  const { currentUser, profileData, logout } = useAuth();
+  const { currentUser, profileData, userRole, logout } = useAuth();
 
   const displayName = currentUser?.displayName || profileData?.name || "User";
   // Generate initials for the avatar placeholder
@@ -66,27 +66,30 @@ function DashboardLayout({ children }) {
           </div>
 
           <div className="topbar__right">
-            {/* User Profile Info */}
-            <button
-              className="topbar-user-profile"
-              onClick={() => navigate("/profile")}
-              title="Go to Profile Settings"
-              type="button"
-              style={{
-                background: "none",
-                border: "none",
-                padding: "0",
-                cursor: "pointer",
-                textAlign: "left",
-                fontFamily: "inherit"
-              }}
-            >
+            {/* User Profile Info (Unpressable) */}
+            <div className="topbar-user-profile-static">
               <div className="topbar-user-avatar" aria-hidden="true">
                 {initials}
               </div>
-              <span className="topbar-user-name">
-                {displayName}
-              </span>
+              <div className="topbar-user-meta">
+                <span className="topbar-user-name">
+                  {displayName}
+                </span>
+                <span className="topbar-user-role">
+                  {userRole === "admin" ? "Administrator" : "ENRO Staff"}
+                </span>
+              </div>
+            </div>
+
+            {/* User Settings button */}
+            <button
+              id="topbar-settings-btn"
+              className="topbar-settings-btn"
+              onClick={() => navigate("/profile")}
+              title="Go to Profile Settings"
+              type="button"
+            >
+              <span className="material-symbols-outlined" aria-hidden="true">settings</span>
             </button>
 
             {/* Sign Out Button */}
