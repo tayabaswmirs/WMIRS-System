@@ -8,7 +8,9 @@ import {
   onSnapshot, 
   serverTimestamp, 
   updateDoc,
-  getDoc
+  getDoc,
+  runTransaction,
+  deleteDoc
 } from "firebase/firestore";
 import { 
   ref, 
@@ -144,6 +146,42 @@ export const subscribeToReporterIncidents = (uid, callback) => {
 };
 
 /**
+ * Subscribes to incident reports filtered by a specific category (for Staff workspace).
+ * 
+ * @param {string} category - The staff member's assigned scope
+ * @param {function} callback - Callback received on updates
+ * @returns {import("firebase/firestore").Unsubscribe}
+ */
+export const subscribeToCategoryIncidents = (category, callback) => {
+  const q = query(
+    collection(db, "incidents"),
+    where("category", "==", category)
+  );
+
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const reports = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      }));
+      
+      // Sort client-side by createdAt descending
+      reports.sort((a, b) => {
+        const timeA = a.createdAt?.seconds || 0;
+        const timeB = b.createdAt?.seconds || 0;
+        return timeB - timeA;
+      });
+
+      callback(reports);
+    },
+    (error) => {
+      console.error("Error subscribing to category incidents:", error);
+    }
+  );
+};
+
+/**
  * Subscribes to all real-time incident reports in the system (for Admin use).
  * 
  * @param {function} callback - Callback received on updates
@@ -215,3 +253,112 @@ export const updateIncidentStatus = async (incidentId, status, adminUid) => {
 
   return updateDoc(docRef, updatePayload);
 };
+
+/**
+ * Atomically updates the status of a reported incident.
+ * Prevents race conditions where two staff members review the same report simultaneously.
+ *
+ * @param {string} incidentId - Unique Firestore document ID
+ * @param {string} status     - New status value ('Resolved' | 'Dismissed')
+ * @param {string} reviewerUid - UID of the staff performing the review
+ * @param {string} remarks    - Optional reviewer remarks
+ * @returns {Promise<void>}
+ */
+export const reviewIncidentAtomic = async (incidentId, status, reviewerUid, remarks) => {
+  const docRef = doc(db, "incidents", incidentId);
+
+  await runTransaction(db, async (transaction) => {
+    const docSnap = await transaction.get(docRef);
+    if (!docSnap.exists()) {
+      throw new Error("Incident document does not exist.");
+    }
+
+    const data = docSnap.data();
+    // If the status is already resolved or dismissed, throw concurrency error
+    if (data.status === "Resolved" || data.status === "Dismissed") {
+      throw new Error("REPORT_ALREADY_REVIEWED");
+    }
+
+    const updatePayload = {
+      status,
+      updatedAt: serverTimestamp(),
+      updatedBy: reviewerUid,
+      reviewerRemarks: remarks || ""
+    };
+
+    transaction.update(docRef, updatePayload);
+  });
+
+  // Cleanup storage if dismissed
+  if (status === "Dismissed") {
+    try {
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const evidence = docSnap.data().evidence || [];
+        const deletePromises = evidence.map((file) => {
+          if (file.url) {
+            const fileRef = ref(storage, file.url);
+            return deleteObject(fileRef).catch((e) => {
+              console.warn(`Failed to delete storage file ${file.url}:`, e);
+            });
+          }
+          return Promise.resolve();
+        });
+        
+        await Promise.all(deletePromises);
+        // Clear the evidence array after deletion
+        await updateDoc(docRef, { evidence: [] });
+      }
+    } catch (err) {
+      console.error("Error cleaning up evidence for dismissed report:", err);
+    }
+  }
+};
+
+/**
+ * Admin override for incident status. 
+ * Allows admins to forcefully change status and leave an audit trail.
+ */
+export const adminOverrideIncident = async (incidentId, status, adminUid, reason) => {
+  const docRef = doc(db, "incidents", incidentId);
+  const updatePayload = {
+    status,
+    updatedAt: serverTimestamp(),
+    adminOverride: {
+      adminUid,
+      reason,
+      timestamp: serverTimestamp()
+    }
+  };
+  return updateDoc(docRef, updatePayload);
+};
+
+/**
+ * Permanently deletes an incident report and its associated evidence from Storage.
+ */
+export const deleteIncidentReport = async (incidentId) => {
+  const docRef = doc(db, "incidents", incidentId);
+  
+  try {
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const evidence = docSnap.data().evidence || [];
+      const deletePromises = evidence.map((file) => {
+        if (file.url) {
+          const fileRef = ref(storage, file.url);
+          return deleteObject(fileRef).catch((e) => {
+            console.warn(`Failed to delete storage file ${file.url}:`, e);
+          });
+        }
+        return Promise.resolve();
+      });
+      
+      await Promise.all(deletePromises);
+    }
+  } catch (err) {
+    console.error("Error cleaning up evidence for deleted report:", err);
+  }
+  
+  return deleteDoc(docRef);
+};
+

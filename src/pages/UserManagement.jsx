@@ -3,6 +3,7 @@ import { useAuth } from "../hooks/useAuth";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import UserTable from "../components/common/UserTable";
 import UserEditModal from "../components/common/UserEditModal";
+import RoleEditModal from "../components/common/RoleEditModal";
 import ConfirmModal from "../components/common/ConfirmModal";
 import {
   getAllUsers,
@@ -12,15 +13,6 @@ import {
 } from "../firebase/services/userService";
 
 // ─── Confirmation dialog presets ──────────────────────────────────────────────
-
-const buildRoleConfirm = (user) => ({
-  variant:      "warning",
-  title:        user.role === "admin" ? "Revoke Admin Privileges" : "Grant Admin Privileges",
-  message:      user.role === "admin"
-    ? `This will demote ${user.name || "this user"} from Administrator to ENRO Staff. They will immediately lose access to admin-only sections.`
-    : `This will promote ${user.name || "this user"} to Administrator. They will gain full access to all admin controls.`,
-  confirmLabel: user.role === "admin" ? "Demote User" : "Promote User",
-});
 
 const buildDeleteConfirm = (user) => ({
   variant:      "danger",
@@ -44,6 +36,11 @@ export default function UserManagement() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedUser,  setSelectedUser]  = useState(null);
   const [isSaving,      setIsSaving]      = useState(false);
+
+  // Role edit modal state
+  const [roleModalOpen, setRoleModalOpen] = useState(false);
+  const [selectedRoleUser, setSelectedRoleUser] = useState(null);
+  const [isRoleSaving, setIsRoleSaving] = useState(false);
 
   // Confirm modal — single shared dialog driven by a config object
   const [confirmConfig,  setConfirmConfig]  = useState(null);
@@ -102,22 +99,33 @@ export default function UserManagement() {
     }
   };
 
-  // ── Role toggle — opens confirm dialog ────────────────────────
+  // ── Role toggle — opens role modal ────────────────────────────
   const handleToggleRole = (user) => {
     setErrorMsg("");
     setSuccessMsg("");
     if (user.role === "admin") {
-      setErrorMsg("Administrators cannot demote other administrators.");
+      setErrorMsg("Administrators cannot modify other administrators.");
       return;
     }
-    setConfirmConfig(buildRoleConfirm(user));
-    setPendingAction(() => async () => {
-      const newRole = user.role === "admin" ? "user" : "admin";
-      await setUserRoleAdmin(user.uid, newRole);
-      const verb = user.role === "admin" ? "demoted" : "promoted";
-      setSuccessMsg(`Successfully ${verb} ${user.name || "user"}.`);
+    setSelectedRoleUser(user);
+    setRoleModalOpen(true);
+  };
+
+  const handleSaveRole = async (updates) => {
+    try {
+      setIsRoleSaving(true);
+      setErrorMsg("");
+      setSuccessMsg("");
+      await setUserRoleAdmin(selectedRoleUser.uid, updates.role, updates.staffScope);
+      setSuccessMsg(`Role updated to ${updates.role} for ${selectedRoleUser.name || "user"}.`);
+      setRoleModalOpen(false);
       await fetchUsers();
-    });
+    } catch (err) {
+      console.error("Save role error:", err);
+      setErrorMsg("Failed to update user role. Please try again.");
+    } finally {
+      setIsRoleSaving(false);
+    }
   };
 
   // ── Delete — opens confirm dialog ─────────────────────────────
@@ -235,6 +243,16 @@ export default function UserManagement() {
           onClose={() => setEditModalOpen(false)}
           onSave={handleSaveUser}
           isSaving={isSaving}
+        />
+
+        {/* ── Edit Role Modal ─────────────────────────────────── */}
+        <RoleEditModal
+          key={`role-${selectedRoleUser?.uid || "none"}`}
+          isOpen={roleModalOpen}
+          user={selectedRoleUser}
+          onClose={() => setRoleModalOpen(false)}
+          onSave={handleSaveRole}
+          isSaving={isRoleSaving}
         />
 
         {/* ── Destructive Action Confirmation Modal ───────────── */}

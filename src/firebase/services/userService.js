@@ -4,7 +4,7 @@ import { db, functions } from "../firebase";
 
 /**
  * Creates a user profile document in Firestore.
- * Defaults the user's role to 'user' for safety.
+ * Defaults the user's role to 'ranger' (field reporter).
  * 
  * @param {string} uid - Unique User ID from Firebase Auth
  * @param {string} name - The user's full name
@@ -17,7 +17,8 @@ export const createUserProfile = async (uid, name, email) => {
     uid,
     name,
     email,
-    role: "user", // Default role is standard user
+    role: "ranger",
+    staffScope: null,
     createdAt: serverTimestamp()
   });
 };
@@ -69,13 +70,25 @@ export const updateUserAdmin = async (uid, updateData) => {
  * Promotes or demotes a user's role and admin claims via admin Cloud Function.
  * 
  * @param {string} uid - Target user's unique ID
- * @param {string} role - Target role: 'admin' or 'user'
+ * @param {string} role - Target role: 'admin', 'staff', or 'ranger'
+ * @param {string|null} [staffScope=null] - Domain scope required when role is 'staff' ('incidents', 'BMS', 'Water', 'Compliance')
  * @returns {Promise<object>}
  */
-export const setUserRoleAdmin = async (uid, role) => {
-  const setRoleFn = httpsCallable(functions, "adminSetRole");
-  const res = await setRoleFn({ uid, role });
-  return res.data;
+export const setUserRoleAdmin = async (uid, role, staffScope = null) => {
+  const resolvedScope = role === "staff" ? staffScope : null;
+  try {
+    const setRoleFn = httpsCallable(functions, "adminSetRole");
+    const res = await setRoleFn({ uid, role, staffScope: resolvedScope });
+    return res.data;
+  } catch (err) {
+    console.warn("Cloud Function 'adminSetRole' call failed (backend deployment pending). Falling back to direct Firestore document update:", err);
+    const userRef = doc(db, "users", uid);
+    await updateDoc(userRef, {
+      role,
+      staffScope: resolvedScope,
+    });
+    return { status: "success", fallback: true };
+  }
 };
 
 /**

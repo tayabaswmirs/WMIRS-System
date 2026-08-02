@@ -67,8 +67,12 @@ function DrawerContent({ incident, onClose, isAdmin, onStatusChange }) {
         setSaveFeedback({ type: "", message: "" });
         // Optionally revert draftStatus back to the real status if you want
       }
-    } catch {
-      setSaveFeedback({ type: "error", message: "Failed to update status. Please try again." });
+    } catch (error) {
+      if (error.message === "REPORT_ALREADY_REVIEWED") {
+        setSaveFeedback({ type: "error", message: "Report already updated by another reviewer." });
+      } else {
+        setSaveFeedback({ type: "error", message: "Failed to update status. Please try again." });
+      }
     } finally {
       setSaving(false);
     }

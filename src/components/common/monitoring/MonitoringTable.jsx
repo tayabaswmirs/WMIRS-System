@@ -72,15 +72,14 @@ function MonitoringTable({ logs, isAdmin, onStatusChange, onViewDetails }) {
                 {/* Status Dropdown (Admin) or Status Badge (User) */}
                 <td className="inc-table__td">
                   {isAdmin ? (
-                    <select
-                      value={log.status}
-                      onChange={(e) => onStatusChange(log.id, e.target.value)}
-                      disabled={log.status === "Approved" || log.status === "Rejected/Flagged"}
-                      className={`admin-status-select admin-status-select--${getStatusClass(log.status)}`}
-                      aria-label={`Change status for log ${log.id}`}
-                      title={log.status === "Approved" || log.status === "Rejected/Flagged" ? "Status is locked" : "Change status"}
-                      style={{ minWidth: "130px" }}
-                    >
+                      <select
+                        value={log.status}
+                        onChange={(e) => onStatusChange(log.id, e.target.value)}
+                        className={`admin-status-select admin-status-select--${getStatusClass(log.status)}`}
+                        aria-label={`Change status for log ${log.id}`}
+                        title="Override status"
+                        style={{ minWidth: "130px" }}
+                      >
                       {statuses.map((s) => (
                         <option key={s} value={s}>{s}</option>
                       ))}
@@ -93,7 +92,7 @@ function MonitoringTable({ logs, isAdmin, onStatusChange, onViewDetails }) {
                 </td>
 
                 {/* View Details Button */}
-                <td className="inc-table__td inc-table__td--action">
+                <td className="inc-table__td inc-table__td--action" style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                   <button
                     type="button"
                     onClick={() => onViewDetails(log)}
@@ -103,6 +102,17 @@ function MonitoringTable({ logs, isAdmin, onStatusChange, onViewDetails }) {
                   >
                     <span className="material-symbols-outlined">visibility</span>
                   </button>
+                  {isAdmin && log.onDelete && (
+                    <button
+                      type="button"
+                      onClick={() => log.onDelete(log)}
+                      className="inc-table__view-btn text-red-500 hover:bg-red-500/10"
+                      aria-label={`Delete ${log.id}`}
+                      title="Permanently Delete"
+                    >
+                      <span className="material-symbols-outlined text-red-500">delete</span>
+                    </button>
+                  )}
                 </td>
               </tr>
             );

@@ -55,7 +55,11 @@ function DrawerContent({ log, onClose, isAdmin, onStatusChange }) {
       setSaveFeedback({ type: "success", message: "Verification status saved." });
     } catch (err) {
       console.error(err);
-      setSaveFeedback({ type: "error", message: "Failed to update status." });
+      if (err.message === "REPORT_ALREADY_REVIEWED") {
+        setSaveFeedback({ type: "error", message: "Report already updated by another reviewer." });
+      } else {
+        setSaveFeedback({ type: "error", message: "Failed to update status." });
+      }
     } finally {
       setSaving(false);
     }

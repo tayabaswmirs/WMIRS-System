@@ -100,10 +100,20 @@ function UserRow({ user, currentAdminUid, onEdit, onToggleRole, onDelete, isEven
             <span className="um-role-badge__dot" aria-hidden="true" />
             Administrator
           </span>
+        ) : user.role === "staff" ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "4px", alignItems: "flex-start" }}>
+            <span className="um-role-badge um-role-badge--staff">
+              <span className="um-role-badge__dot" aria-hidden="true" />
+              ENRO Staff
+            </span>
+            <span style={{ fontSize: "11px", color: "var(--c-stone)" }}>
+              {user.staffScope || "No Scope"}
+            </span>
+          </div>
         ) : (
-          <span className="um-role-badge um-role-badge--staff">
-            <span className="um-role-badge__dot" aria-hidden="true" />
-            ENRO Staff
+          <span className="um-role-badge" style={{ backgroundColor: "rgba(0, 237, 100, 0.1)", color: "var(--c-green-dark)" }}>
+            <span className="um-role-badge__dot" style={{ backgroundColor: "var(--c-green-dark)" }} aria-hidden="true" />
+            Forest Ranger
           </span>
         )}
       </td>
@@ -134,8 +144,6 @@ function UserRow({ user, currentAdminUid, onEdit, onToggleRole, onDelete, isEven
             className={`um-action-btn ${
               cannotModifyRole
                 ? "um-action-btn--disabled"
-                : isAdmin
-                ? "um-action-btn--demote"
                 : "um-action-btn--promote"
             }`}
             onClick={() => onToggleRole(user)}
@@ -144,16 +152,16 @@ function UserRow({ user, currentAdminUid, onEdit, onToggleRole, onDelete, isEven
               isSelf
                 ? "Self-role changes are blocked"
                 : isAdmin
-                ? "Administrators cannot demote other administrators"
-                : "Grant admin privileges"
+                ? "Administrators cannot edit other administrators"
+                : "Edit user role"
             }
             aria-disabled={cannotModifyRole}
           >
             <span className="material-symbols-outlined um-action-btn__icon" aria-hidden="true">
-              {isAdmin ? "shield_person" : "verified_user"}
+              shield_person
             </span>
             <span className="um-action-btn__label">
-              {isAdmin ? "Demote" : "Promote"}
+              Role
             </span>
           </button>
 

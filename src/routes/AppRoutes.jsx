@@ -10,6 +10,7 @@ import IncidentHistory from "../pages/IncidentHistory";
 import Monitoring from "../pages/Monitoring";
 import MonitoringHistory from "../pages/MonitoringHistory";
 import AdminMonitoring from "../pages/AdminMonitoring";
+import StaffDashboard from "../pages/Staff/StaffDashboard";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { useAuth } from "../hooks/useAuth";
 
@@ -24,9 +25,9 @@ function HomeRedirect() {
   }
   
   if (currentUser) {
-    return userRole === "admin" 
-      ? <Navigate to="/admin/dashboard" replace /> 
-      : <Navigate to="/dashboard" replace />;
+    if (userRole === "admin") return <Navigate to="/admin/dashboard" replace />;
+    if (userRole === "staff") return <Navigate to="/staff/dashboard" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <Navigate to="/login" replace />;
@@ -38,10 +39,11 @@ export default function AppRoutes() {
       <Route path="/" element={<HomeRedirect />} />
       <Route path="/login" element={<Login />} />
       
+      {/* ── Forest Ranger Routes ──────────────────────────────── */}
       <Route 
         path="/dashboard" 
         element={
-          <ProtectedRoute allowedRoles={["user", "admin"]}>
+          <ProtectedRoute allowedRoles={["ranger"]}>
             <Dashboard />
           </ProtectedRoute>
         } 
@@ -50,7 +52,7 @@ export default function AppRoutes() {
       <Route 
         path="/incidents" 
         element={
-          <ProtectedRoute allowedRoles={["user"]}>
+          <ProtectedRoute allowedRoles={["ranger"]}>
             <Incidents />
           </ProtectedRoute>
         } 
@@ -59,12 +61,41 @@ export default function AppRoutes() {
       <Route 
         path="/incidents/history" 
         element={
-          <ProtectedRoute allowedRoles={["user"]}>
+          <ProtectedRoute allowedRoles={["ranger"]}>
             <IncidentHistory />
           </ProtectedRoute>
         } 
       />
 
+      <Route 
+        path="/monitoring" 
+        element={
+          <ProtectedRoute allowedRoles={["ranger"]}>
+            <Monitoring />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/monitoring/history" 
+        element={
+          <ProtectedRoute allowedRoles={["ranger"]}>
+            <MonitoringHistory />
+          </ProtectedRoute>
+        } 
+      />
+
+      {/* ── Staff Routes (Phase 4) ────────────── */}
+      <Route 
+        path="/staff/dashboard" 
+        element={
+          <ProtectedRoute allowedRoles={["staff"]}>
+            <StaffDashboard />
+          </ProtectedRoute>
+        } 
+      />
+
+      {/* ── Admin Routes ──────────────────────────────────────── */}
       <Route 
         path="/admin/dashboard" 
         element={
@@ -93,37 +124,20 @@ export default function AppRoutes() {
       />
 
       <Route 
-        path="/profile" 
-        element={
-          <ProtectedRoute allowedRoles={["user", "admin"]}>
-            <Profile />
-          </ProtectedRoute>
-        } 
-      />
-
-      <Route 
-        path="/monitoring" 
-        element={
-          <ProtectedRoute allowedRoles={["user"]}>
-            <Monitoring />
-          </ProtectedRoute>
-        } 
-      />
-
-      <Route 
-        path="/monitoring/history" 
-        element={
-          <ProtectedRoute allowedRoles={["user"]}>
-            <MonitoringHistory />
-          </ProtectedRoute>
-        } 
-      />
-
-      <Route 
         path="/admin/monitoring" 
         element={
           <ProtectedRoute allowedRoles={["admin"]}>
             <AdminMonitoring />
+          </ProtectedRoute>
+        } 
+      />
+
+      {/* ── Shared Routes ─────────────────────────────────────── */}
+      <Route 
+        path="/profile" 
+        element={
+          <ProtectedRoute allowedRoles={["ranger", "staff", "admin"]}>
+            <Profile />
           </ProtectedRoute>
         } 
       />
@@ -133,4 +147,5 @@ export default function AppRoutes() {
     </Routes>
   );
 }
+
 

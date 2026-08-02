@@ -3,16 +3,19 @@ import { useAuth } from "../../hooks/useAuth";
 import wmirsLogo from "../../assets/wmirs-logo.png";
 import "../../styles/dashboard.css";
 
-// Nav items configuration — role-gated items are flagged with adminOnly
+// Nav items configuration
 const NAV_ITEMS = [
-  { id: "nav-dashboard",        icon: "dashboard",              label: "Dashboard",           path: "/dashboard", adminPath: "/admin/dashboard" },
-  { id: "nav-incidents",        icon: "warning",                label: "Submit Incident",     path: "/incidents", userOnly: true },
-  { id: "nav-monitoring",       icon: "monitoring",             label: "Submit Monitoring",   path: "/monitoring", userOnly: true },
-  { id: "nav-inc-history",      icon: "history",                label: "Incident History",    path: "/incidents/history", userOnly: true },
-  { id: "nav-mon-history",      icon: "history_edu",            label: "Monitoring History",  path: "/monitoring/history", userOnly: true },
-  { id: "nav-admin-incidents",  icon: "content_paste_search",   label: "Incidents", path: "/admin/incidents", adminOnly: true },
-  { id: "nav-admin-mon",        icon: "fact_check",             label: "Monitoring",    path: "/admin/monitoring", adminOnly: true },
-  { id: "nav-users",            icon: "group",                  label: "Users",     path: "/admin/users",  adminOnly: true },
+  // Dashboard handles where it points based on role
+  { id: "nav-dashboard",        icon: "dashboard",              label: "Dashboard",           path: "/dashboard", adminPath: "/admin/dashboard", staffPath: "/staff/dashboard", roles: ["admin", "staff", "ranger"] },
+  // Ranger links
+  { id: "nav-incidents",        icon: "warning",                label: "Submit Incident",     path: "/incidents", roles: ["ranger"] },
+  { id: "nav-monitoring",       icon: "monitoring",             label: "Submit Monitoring",   path: "/monitoring", roles: ["ranger"] },
+  { id: "nav-inc-history",      icon: "history",                label: "Incident History",    path: "/incidents/history", roles: ["ranger"] },
+  { id: "nav-mon-history",      icon: "history_edu",            label: "Monitoring History",  path: "/monitoring/history", roles: ["ranger"] },
+  // Admin links
+  { id: "nav-admin-incidents",  icon: "content_paste_search",   label: "Incidents", path: "/admin/incidents", roles: ["admin"] },
+  { id: "nav-admin-mon",        icon: "fact_check",             label: "Monitoring",    path: "/admin/monitoring", roles: ["admin"] },
+  { id: "nav-users",            icon: "group",                  label: "Users",     path: "/admin/users",  roles: ["admin"] },
 ];
 
 /**
@@ -26,19 +29,19 @@ function Sidebar({ isOpen, onClose }) {
   const location   = useLocation();
   const { userRole } = useAuth();
 
-  const isAdmin = userRole === "admin";
-
   const handleNavClick = (item) => {
-    // Admins visiting the "Dashboard" nav item land on /admin/dashboard
-    const targetPath = (item.adminPath && isAdmin) ? item.adminPath : item.path;
+    let targetPath = item.path;
+    if (userRole === "admin" && item.adminPath) targetPath = item.adminPath;
+    if (userRole === "staff" && item.staffPath) targetPath = item.staffPath;
     navigate(targetPath);
     // Close the mobile drawer after navigation
     if (onClose) onClose();
   };
 
-  // Determine the currently active nav item by pathname
   const isActive = (item) => {
-    const targetPath = (item.adminPath && isAdmin) ? item.adminPath : item.path;
+    let targetPath = item.path;
+    if (userRole === "admin" && item.adminPath) targetPath = item.adminPath;
+    if (userRole === "staff" && item.staffPath) targetPath = item.staffPath;
     
     if (location.pathname === targetPath) return true;
     
@@ -71,9 +74,7 @@ function Sidebar({ isOpen, onClose }) {
         <span className="sidebar-nav__section-label">Navigation</span>
 
         {NAV_ITEMS.filter((item) => {
-          if (isAdmin && item.userOnly) return false;
-          if (!isAdmin && item.adminOnly) return false;
-          return true;
+          return item.roles.includes(userRole || "ranger");
         }).map((item) => (
           <button
             key={item.id}

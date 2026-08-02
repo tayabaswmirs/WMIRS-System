@@ -10,35 +10,65 @@ import { getUserProfile } from "../firebase/services/userService";
 
 export const AuthContext = createContext();
 
+/**
+ * Normalizes legacy "user" role strings to the new "ranger" role.
+ * Ensures backward compatibility with existing Firestore user documents.
+ *
+ * @param {string|null} role - Raw role from Firestore profile
+ * @returns {string} Normalized role: "ranger", "staff", or "admin"
+ */
+const normalizeRole = (role) => {
+  if (role === "user" || !role) return "ranger";
+  return role;
+};
+
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [userRole, setUserRole] = useState(null);
+  const [staffScope, setStaffScope] = useState(null);
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = subscribeToAuthChanges(async (user) => {
-      setLoading(true); // Keep loading true while fetching firestore profile
+      setLoading(true);
       if (user) {
         setCurrentUser(user);
         try {
           const profile = await getUserProfile(user.uid);
           if (profile) {
-            setUserRole(profile.role || "user");
+            // Force refresh the token if custom claims are stale (e.g. role changed by admin)
+            try {
+              const tokenResult = await user.getIdTokenResult();
+              const currentRole = tokenResult.claims.role || "ranger";
+              const currentScope = tokenResult.claims.scope || null;
+              
+              if (currentRole !== profile.role || currentScope !== (profile.staffScope || null)) {
+                await user.getIdToken(true); // Force refresh token
+              }
+            } catch (tokenErr) {
+              console.warn("Failed to check or refresh token claims:", tokenErr);
+            }
+
+            setUserRole(normalizeRole(profile.role));
+            setStaffScope(profile.staffScope || null);
             setProfileData(profile);
           } else {
             // Profile document might not exist yet during initial sign-up transaction
-            setUserRole("user");
+            setUserRole("ranger");
+            setStaffScope(null);
             setProfileData(null);
           }
         } catch (err) {
           console.error("Error loading user profile:", err);
-          setUserRole("user");
+          setUserRole("ranger");
+          setStaffScope(null);
           setProfileData(null);
         }
       } else {
         setCurrentUser(null);
         setUserRole(null);
+        setStaffScope(null);
         setProfileData(null);
       }
       setLoading(false);
@@ -62,6 +92,7 @@ export function AuthProvider({ children }) {
   const value = {
     currentUser,
     userRole,
+    staffScope,
     profileData,
     loading,
     login,

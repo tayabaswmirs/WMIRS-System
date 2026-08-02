@@ -3,14 +3,28 @@ import * as logger from "firebase-functions/logger";
 import { z } from "zod";
 import { auth, db } from "../../config/firebaseAdmin.js";
 
+/** Valid domain scopes that can be assigned to staff members */
+const VALID_STAFF_SCOPES = ["incidents", "BMS", "Water", "Compliance"];
+
 const inputSchema = z.object({
   uid: z.string(),
-  role: z.enum(["admin", "user"]),
-});
+  role: z.enum(["admin", "staff", "ranger"]),
+  staffScope: z.enum(VALID_STAFF_SCOPES).nullable().optional(),
+}).refine(
+  (data) => {
+    // staffScope is required when role is "staff"
+    if (data.role === "staff") {
+      return VALID_STAFF_SCOPES.includes(data.staffScope);
+    }
+    return true;
+  },
+  { message: "staffScope is required when role is 'staff'.", path: ["staffScope"] }
+);
 
 /**
  * Administrative user role / custom claims toggler.
- * Updates target user's custom claim { admin: true/false } and Firestore role.
+ * Supports 3-tier roles: admin, staff (with domain scope), ranger.
+ * Updates target user's custom claims and Firestore role + staffScope.
  */
 export const adminSetRole = onCall(
   {
@@ -46,7 +60,7 @@ export const adminSetRole = onCall(
       );
     }
 
-    const { uid, role } = parsed.data;
+    const { uid, role, staffScope } = parsed.data;
 
     // 4. Accidental Self-Downgrade Safeguard
     if (callerUid === uid) {
@@ -64,12 +78,21 @@ export const adminSetRole = onCall(
     try {
       // 5. Update Firebase Authentication Custom Claims
       const isNewAdmin = role === "admin";
-      await auth.setCustomUserClaims(uid, { admin: isNewAdmin });
-      logger.info(`Admin ${callerUid} set custom claims { admin: ${isNewAdmin} } for UID: ${uid}`);
+      const resolvedScope = role === "staff" ? staffScope : null;
 
-      // 6. Update Firestore Role
-      await db.collection("users").doc(uid).update({ role });
-      logger.info(`Admin ${callerUid} set Firestore role to '${role}' for UID: ${uid}`);
+      await auth.setCustomUserClaims(uid, {
+        admin: isNewAdmin,
+        role,
+        scope: resolvedScope,
+      });
+      logger.info(`Admin ${callerUid} set custom claims { admin: ${isNewAdmin}, role: ${role}, scope: ${resolvedScope} } for UID: ${uid}`);
+
+      // 6. Update Firestore Role and Staff Scope
+      await db.collection("users").doc(uid).update({
+        role,
+        staffScope: resolvedScope,
+      });
+      logger.info(`Admin ${callerUid} set Firestore role to '${role}' (scope: ${resolvedScope}) for UID: ${uid}`);
 
       return { status: "success", message: `User role successfully changed to ${role}.` };
     } catch (error) {
@@ -78,3 +101,4 @@ export const adminSetRole = onCall(
     }
   }
 );
+

@@ -76,7 +76,7 @@ function DashboardLayout({ children }) {
                   {displayName}
                 </span>
                 <span className="topbar-user-role">
-                  {userRole === "admin" ? "Administrator" : "ENRO Staff"}
+                  {userRole === "admin" ? "Administrator" : userRole === "staff" ? "ENRO Staff" : "Forest Ranger"}
                 </span>
               </div>
             </div>

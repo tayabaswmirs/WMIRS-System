@@ -42,14 +42,14 @@ service cloud.firestore {
       allow create: if isAuthenticated() && 
                     request.resource.data.reporter.uid == request.auth.uid;
                     
-      // Users can read only their own reports; admins can read all reports
+      // Users can read only their own reports; admins can read all reports; staff with scope 'incidents' can read all reports
       allow read: if isAuthenticated() && 
-                  (resource.data.reporter.uid == request.auth.uid || isAdmin());
+                  (resource.data.reporter.uid == request.auth.uid || isAdmin() || (request.auth.token.role == 'staff' && request.auth.token.scope == 'incidents'));
 
-      // Only admins may update a report, and only the status/audit fields, plus evidence array for cleanup
-      allow update: if isAdmin() &&
+      // Only admins and authorized staff may update a report, and only specific status/audit fields
+      allow update: if (isAdmin() || (request.auth.token.role == 'staff' && request.auth.token.scope == 'incidents')) &&
                     request.resource.data.diff(resource.data).affectedKeys()
-                      .hasOnly(['status', 'updatedAt', 'updatedBy', 'evidence']);
+                      .hasOnly(['status', 'updatedAt', 'updatedBy', 'evidence', 'reviewerRemarks', 'adminRemarks']);
 
       // Deleting incident reports is strictly prohibited to preserve audit integrity
       allow delete: if false;
@@ -61,14 +61,14 @@ service cloud.firestore {
       allow create: if isAuthenticated() && 
                     request.resource.data.reporter.uid == request.auth.uid;
                     
-      // Users can read only their own monitoring logs; admins can read all logs
+      // Users can read only their own monitoring logs; admins can read all logs; authorized staff can read their specific category logs
       allow read: if isAuthenticated() && 
-                  (resource.data.reporter.uid == request.auth.uid || isAdmin());
+                  (resource.data.reporter.uid == request.auth.uid || isAdmin() || (request.auth.token.role == 'staff' && request.auth.token.scope == resource.data.category));
 
-      // Only admins may update a monitoring log, and only the status/audit fields
-      allow update: if isAdmin() &&
+      // Only admins and authorized staff may update a monitoring log, and only specific status/audit fields
+      allow update: if (isAdmin() || (request.auth.token.role == 'staff' && request.auth.token.scope == resource.data.category)) &&
                     request.resource.data.diff(resource.data).affectedKeys()
-                      .hasOnly(['status', 'adminRemarks', 'updatedAt', 'updatedBy', 'evidence']);
+                      .hasOnly(['status', 'adminRemarks', 'reviewerRemarks', 'updatedAt', 'updatedBy', 'evidence']);
 
       // Deleting monitoring logs is prohibited
       allow delete: if false;

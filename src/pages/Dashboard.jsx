@@ -55,18 +55,29 @@ function Dashboard() {
         <div className="dashboard-grid">
           {/* CTA Reporting Card */}
           <div className="card-feature-dark dashboard-cta-card">
-            <h2 className="dashboard-cta-card__title">Incident Reporting</h2>
+            <h2 className="dashboard-cta-card__title">Field Operations</h2>
             <p className="dashboard-cta-card__desc">
-              Help protect Tayabas' ecosystem. Submit comprehensive logs of logging, waste dumping, wildlife tracking, and environmental permit violations.
+              Help protect Tayabas' ecosystem. Submit comprehensive incident reports or log scheduled ecological monitoring data.
             </p>
-            <button
-              onClick={() => navigate("/incidents")}
-              className="button-primary"
-              id="dashboard-report-cta-btn"
-              type="button"
-            >
-              Report New Incident
-            </button>
+            <div style={{ display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }}>
+              <button
+                onClick={() => navigate("/incidents")}
+                className="button-primary"
+                id="dashboard-report-cta-btn"
+                type="button"
+              >
+                Report New Incident
+              </button>
+              <button
+                onClick={() => navigate("/monitoring")}
+                className="button-primary"
+                id="dashboard-monitoring-cta-btn"
+                type="button"
+                style={{ backgroundColor: "var(--c-teal-dark, #001e2b)", border: "1px solid rgba(255,255,255,0.2)" }}
+              >
+                Log Ecological Monitoring
+              </button>
+            </div>
           </div>
 
           {/* Stats Column */}
@@ -134,13 +145,22 @@ function Dashboard() {
                   </div>
                 </div>
               ))}
-              <button
-                onClick={() => navigate("/incidents")}
-                className="button-ghost recent-reports-panel__view-all"
-                type="button"
-              >
-                View Report History & Evidence →
-              </button>
+              <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end", flexWrap: "wrap" }}>
+                <button
+                  onClick={() => navigate("/incidents/history")}
+                  className="button-ghost recent-reports-panel__view-all"
+                  type="button"
+                >
+                  View Incident History →
+                </button>
+                <button
+                  onClick={() => navigate("/monitoring/history")}
+                  className="button-ghost recent-reports-panel__view-all"
+                  type="button"
+                >
+                  View Monitoring History →
+                </button>
+              </div>
             </div>
           )}
         </div>

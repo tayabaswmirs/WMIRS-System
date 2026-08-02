@@ -7,12 +7,16 @@ import {
   orderBy, 
   onSnapshot, 
   serverTimestamp, 
-  updateDoc
+  updateDoc,
+  runTransaction,
+  deleteDoc,
+  getDoc
 } from "firebase/firestore";
 import { 
   ref, 
   uploadBytesResumable, 
-  getDownloadURL
+  getDownloadURL,
+  deleteObject
 } from "firebase/storage";
 import { db, storage } from "../firebase";
 
@@ -123,6 +127,38 @@ export const subscribeToReporterMonitoring = (uid, callback) => {
 };
 
 /**
+ * Subscribes to monitoring logs filtered by a specific category (for Staff workspace).
+ */
+export const subscribeToCategoryMonitoring = (category, callback) => {
+  const q = query(
+    collection(db, "monitoring"),
+    where("category", "==", category)
+  );
+
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const logs = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      }));
+      
+      // Sort client-side by createdAt descending
+      logs.sort((a, b) => {
+        const timeA = a.createdAt?.seconds || 0;
+        const timeB = b.createdAt?.seconds || 0;
+        return timeB - timeA;
+      });
+
+      callback(logs);
+    },
+    (error) => {
+      console.error("Error subscribing to category monitoring:", error);
+    }
+  );
+};
+
+/**
  * Subscribes to all real-time monitoring logs in the system (for Admin review).
  */
 export const subscribeToAllMonitoring = (callback) => {
@@ -159,4 +195,79 @@ export const updateMonitoringStatus = async (logId, status, adminUid, adminRemar
   };
 
   return updateDoc(docRef, updatePayload);
+};
+
+/**
+ * Atomically updates the status of a monitoring log.
+ * Prevents race conditions where two staff members review the same log simultaneously.
+ */
+export const reviewMonitoringAtomic = async (logId, status, reviewerUid, remarks) => {
+  const docRef = doc(db, "monitoring", logId);
+
+  await runTransaction(db, async (transaction) => {
+    const docSnap = await transaction.get(docRef);
+    if (!docSnap.exists()) {
+      throw new Error("Monitoring document does not exist.");
+    }
+
+    const data = docSnap.data();
+    if (data.status === "Resolved" || data.status === "Dismissed") {
+      throw new Error("REPORT_ALREADY_REVIEWED");
+    }
+
+    const updatePayload = {
+      status,
+      updatedAt: serverTimestamp(),
+      updatedBy: reviewerUid,
+      reviewerRemarks: remarks || ""
+    };
+
+    transaction.update(docRef, updatePayload);
+  });
+};
+
+/**
+ * Admin override for monitoring status.
+ */
+export const adminOverrideMonitoring = async (logId, status, adminUid, reason) => {
+  const docRef = doc(db, "monitoring", logId);
+  const updatePayload = {
+    status,
+    updatedAt: serverTimestamp(),
+    adminOverride: {
+      adminUid,
+      reason,
+      timestamp: serverTimestamp()
+    }
+  };
+  return updateDoc(docRef, updatePayload);
+};
+
+/**
+ * Permanently deletes a monitoring log and its associated evidence from Storage.
+ */
+export const deleteMonitoringLog = async (logId) => {
+  const docRef = doc(db, "monitoring", logId);
+  
+  try {
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const evidence = docSnap.data().evidence || [];
+      const deletePromises = evidence.map((file) => {
+        if (file.url) {
+          const fileRef = ref(storage, file.url);
+          return deleteObject(fileRef).catch((e) => {
+            console.warn(`Failed to delete storage file ${file.url}:`, e);
+          });
+        }
+        return Promise.resolve();
+      });
+      
+      await Promise.all(deletePromises);
+    }
+  } catch (err) {
+    console.error("Error cleaning up evidence for deleted log:", err);
+  }
+  
+  return deleteDoc(docRef);
 };

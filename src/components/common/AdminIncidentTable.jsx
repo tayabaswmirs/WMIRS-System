@@ -84,10 +84,9 @@ function AdminIncidentTable({ incidents, onStatusChange, onViewDetails }) {
                   <select
                     value={inc.status}
                     onChange={(e) => onStatusChange(inc.id, e.target.value)}
-                    disabled={inc.status === "Resolved" || inc.status === "Dismissed"}
                     className={`admin-status-select admin-status-select--${getStatusClass(inc.status)}`}
                     aria-label={`Change status for ${inc.incidentType}`}
-                    title={inc.status === "Resolved" || inc.status === "Dismissed" ? "Status is locked" : "Change status"}
+                    title={"Override status"}
                   >
                     {ADMIN_STATUSES.map((s) => (
                       <option key={s} value={s}>{s}</option>
@@ -96,7 +95,7 @@ function AdminIncidentTable({ incidents, onStatusChange, onViewDetails }) {
                 </td>
 
                 {/* Icon-only view button */}
-                <td className="inc-table__td inc-table__td--action">
+                <td className="inc-table__td inc-table__td--action" style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                   <button
                     type="button"
                     onClick={() => onViewDetails(inc)}
@@ -106,6 +105,17 @@ function AdminIncidentTable({ incidents, onStatusChange, onViewDetails }) {
                   >
                     <span className="material-symbols-outlined">visibility</span>
                   </button>
+                  {inc.onDelete && (
+                    <button
+                      type="button"
+                      onClick={() => inc.onDelete(inc)}
+                      className="inc-table__view-btn text-red-500 hover:bg-red-500/10"
+                      aria-label={`Delete ${inc.incidentType}`}
+                      title="Permanently Delete"
+                    >
+                      <span className="material-symbols-outlined text-red-500">delete</span>
+                    </button>
+                  )}
                 </td>
               </tr>
             );
