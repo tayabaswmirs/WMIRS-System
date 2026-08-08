@@ -34,7 +34,8 @@ const MONTH_LABELS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct
 const TOOLTIP_STYLE = {
   backgroundColor: "#001e2b",
   border: "1px solid #1c2d38",
-  borderRadius: "8px",
+  borderRadius: "var(--card-radius, 12px)",
+  boxShadow: "var(--card-shadow, rgba(0, 30, 43, 0.08) 0px 4px 12px 0px)",
   fontSize: "12px",
   color: "#ffffff"
 };
@@ -103,15 +104,7 @@ function KpiCard({ variant, icon, value, label, sub }) {
   );
 }
 
-/* ── Section Label ────────────────────────────────────────── */
-function SectionLabel({ icon, text }) {
-  return (
-    <div className="dash-section-label">
-      <span className="material-symbols-outlined dash-section-label__icon" aria-hidden="true">{icon}</span>
-      <span className="dash-section-label__text">{text}</span>
-    </div>
-  );
-}
+
 
 /* ═══════════════════════════════════════════════════════════════
    Main Admin Dashboard Component
@@ -344,8 +337,7 @@ function AdminDashboard() {
           />
         </div>
 
-        {/* ══ TIER 2: Threat Matrix & Monthly Velocity ════════════ */}
-        <SectionLabel icon="analytics" text="Incident Analysis & Field Velocity" />
+
 
         <div className="dash-chart-grid dash-chart-grid--two">
           {/* Chart 1: Category × Severity Heat Matrix */}
@@ -444,8 +436,7 @@ function AdminDashboard() {
           </ChartCard>
         </div>
 
-        {/* ══ TIER 3: Environmental Deep Dives ════════════════════ */}
-        <SectionLabel icon="eco" text="Environmental Intelligence" />
+
 
         <div className="dash-chart-grid dash-chart-grid--three">
           {/* Chart 3: Biodiversity & Fauna Census */}

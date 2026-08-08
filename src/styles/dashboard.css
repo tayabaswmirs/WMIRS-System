@@ -259,7 +259,14 @@
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
-  background-color: var(--c-surface);
+  background-color: #eaf3ed;
+  background-image: 
+    linear-gradient(180deg, rgb(0, 72, 94) 0%, rgba(215, 255, 209, 0.705)),
+    url('../assets/lush-forest-bg.png');
+  background-size: cover, cover, cover;
+  background-position: center top, center, center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 /* ── Topbar ─────────────────────────────────────────────────── */
@@ -268,8 +275,10 @@
   top: 0;
   z-index: 50;
   height: 64px;
-  background: var(--c-canvas);
-  border-bottom: 1px solid var(--c-hairline);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(225, 229, 232, 0.6);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -520,8 +529,8 @@
 }
 
 @keyframes card-shimmer {
-  0%, 100% { box-shadow: var(--shadow-1); }
-  50%       { box-shadow: var(--shadow-2); }
+  0%, 100% { box-shadow: var(--card-shadow); }
+  50%       { box-shadow: var(--card-shadow-hover); }
 }
 
 .dashboard-placeholder__card-icon {
@@ -1695,13 +1704,13 @@ button:disabled,
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  color: var(--c-steel);
+  color: var(--c-green-dark);
   letter-spacing: 1px;
 }
 
 .dashboard-view__title {
   font-size: 28px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--c-ink);
 }
 
@@ -1719,7 +1728,10 @@ button:disabled,
 }
 
 .dashboard-cta-card {
-  background: var(--c-teal-deep) !important;
+  background: rgba(0, 30, 43, 0.82) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 237, 100, 0.3) !important;
   color: var(--c-on-dark) !important;
   display: flex;
   flex-direction: column;
@@ -1728,7 +1740,13 @@ button:disabled,
   gap: var(--sp-md);
   padding: var(--sp-xxl) !important;
   border-radius: var(--r-lg);
-  box-shadow: var(--shadow-2);
+  box-shadow: var(--shadow-3);
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+
+.dashboard-cta-card:hover {
+  box-shadow: var(--shadow-4);
+  transform: translateY(-2px);
 }
 
 .dashboard-cta-card__title {
@@ -1758,7 +1776,17 @@ button:disabled,
   gap: var(--sp-md);
   padding: var(--sp-md) var(--sp-xl) !important;
   border-radius: var(--r-lg);
-  background: var(--c-canvas) !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.7) !important;
+  box-shadow: var(--card-shadow);
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+
+.stat-card:hover {
+  box-shadow: var(--card-shadow-hover);
+  transform: translateY(-2px);
 }
 
 .stat-card__icon {
@@ -3935,6 +3963,7 @@ button:disabled,
   gap: var(--sp-md);
   text-align: left;
   cursor: pointer;
+  box-shadow: var(--card-shadow);
   transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition), background var(--transition);
   font-family: var(--font-display);
   position: relative;
@@ -4180,12 +4209,13 @@ button:disabled,
   gap: var(--sp-md);
   position: relative;
   overflow: hidden;
+  box-shadow: var(--card-shadow);
   transition: box-shadow var(--transition), transform var(--transition);
   font-family: var(--font-display);
 }
 
 .dash-kpi-card:hover {
-  box-shadow: var(--shadow-2);
+  box-shadow: var(--card-shadow-hover);
   transform: translateY(-2px);
 }
 
@@ -4261,7 +4291,7 @@ button:disabled,
 .dash-chart-grid {
   display: grid;
   gap: var(--sp-lg);
-  margin-top: var(--sp-lg);
+  margin-top: 4px;
 }
 
 .dash-chart-grid--two {
@@ -4278,13 +4308,15 @@ button:disabled,
   border-radius: var(--r-lg);
   padding: var(--sp-xl);
   font-family: var(--font-display);
-  transition: box-shadow var(--transition);
+  box-shadow: var(--card-shadow);
+  transition: box-shadow var(--transition), transform var(--transition);
   display: flex;
   flex-direction: column;
 }
 
 .dash-chart-card:hover {
-  box-shadow: var(--shadow-2);
+  box-shadow: var(--card-shadow-hover);
+  transform: translateY(-2px);
 }
 
 .dash-chart-card__header {
@@ -4314,7 +4346,7 @@ button:disabled,
 
 .dash-chart-card__body {
   flex: 1;
-  min-height: 280px;
+  min-height: 240px;
 }
 
 /* ── Gauge Ring (Resolution Velocity) ──────────────────────── */
@@ -4409,23 +4441,23 @@ button:disabled,
 .dash-section-label {
   display: flex;
   align-items: center;
-  gap: var(--sp-sm);
-  margin-top: var(--sp-xxl);
-  margin-bottom: var(--sp-xs);
-  padding-bottom: var(--sp-xs);
+  gap: var(--sp-xs);
+  margin-top: var(--sp-md);
+  margin-bottom: 2px;
+  padding-bottom: 0;
 }
 
 .dash-section-label__icon {
   font-size: 18px;
-  color: var(--c-green);
+  color: var(--c-teal-deep);
 }
 
 .dash-section-label__text {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 1.2px;
-  color: var(--c-stone);
+  color: var(--c-teal-deep);
 }
 
 /* ── Empty State ───────────────────────────────────────────── */

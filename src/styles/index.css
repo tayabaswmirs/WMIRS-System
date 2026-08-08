@@ -73,7 +73,7 @@
   /* Surface */
   --c-canvas:           #ffffff;
   --c-canvas-dark:      #001e2b;
-  --c-surface:          #f9fbfa;
+  --c-surface:          #f5f5f5;
   --c-surface-soft:     #f4f7f6;
   --c-surface-feature:  #e3fcef;
   --c-hairline:         #e1e5e8;
@@ -115,10 +115,25 @@
   --r-full: 9999px;
 
   /* Elevation */
-  --shadow-1: rgba(0, 30, 43, 0.04) 0px 1px 2px 0px;
-  --shadow-2: rgba(0, 30, 43, 0.08) 0px 4px 12px 0px;
-  --shadow-3: rgba(0, 30, 43, 0.12) 0px 12px 24px -4px;
-  --shadow-4: rgba(0, 30, 43, 0.16) 0px 16px 48px -8px;
+  --shadow-1: 0px 4px 16px 0px rgba(0, 21, 48, 0.685), 0px 1px 4px 0px rgba(0, 30, 43, 0.08);
+  --shadow-2: 0px 8px 24px 0px rgba(14, 87, 87, 0.685), 0px 2px 8px 0px rgba(0, 30, 43, 0.10);
+  --shadow-3: 0px 12px 32px -4px rgba(0, 30, 43, 0.30), 0px 4px 12px 0px rgba(0, 30, 43, 0.12);
+  --shadow-4: 0px 16px 48px -8px rgba(0, 30, 43, 0.40), 0px 6px 16px 0px rgba(0, 30, 43, 0.15);
+
+  /* Unified System Card Control Tokens (Single Source of Truth) */
+  --card-radius:       var(--r-lg);            /* Standard 12px system card radius */
+  --card-shadow:       var(--shadow-1);         /* Standard resting drop shadow */
+  --card-shadow-hover: var(--shadow-2);         /* Standard hover drop shadow */
+  --card-bg:           var(--c-canvas);         /* Standard card canvas background */
+  --card-border:       1px solid var(--c-hairline); /* Standard card border */
+
+  /* Vibrant Multicolor Green & Blue Light Gradient Background */
+  --bg-dashboard-gradient: 
+    radial-gradient(at 0% 0%, rgba(0, 46, 10, 0.28) 0px, transparent 75%),
+    radial-gradient(at 100% 10%, rgba(61, 142, 255, 0.28) 0px, transparent 75%),
+    radial-gradient(at 15% 90%, rgba(0, 200, 120, 0.22) 0px, transparent 75%),
+    radial-gradient(at 85% 90%, rgba(59, 130, 246, 0.24) 0px, transparent 75%),
+    linear-gradient(135deg, #e4f9ee 0%, #eaf4ff 50%, #dcede0 100%);
 
   /* Transition */
   --transition: 150ms ease;
@@ -267,4 +282,71 @@ code {
   font-size: 20px;
   line-height: 1;
 }
+
+/* ── MongoDB Card Component Utilities ──────────────────────── */
+.card-base {
+  background-color: var(--card-bg);
+  border-radius: var(--card-radius);
+  padding: var(--sp-xl);
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+
+.card-base:hover {
+  box-shadow: var(--card-shadow-hover);
+}
+
+.card-feature {
+  background-color: var(--card-bg);
+  border-radius: var(--card-radius);
+  padding: var(--sp-xxl);
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+
+.card-feature:hover {
+  box-shadow: var(--card-shadow-hover);
+}
+
+.card-feature-dark {
+  background-color: var(--c-teal-deep);
+  color: var(--c-on-dark);
+  border-radius: var(--card-radius);
+  padding: var(--sp-xxl);
+  box-shadow: var(--card-shadow-hover);
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+
+.card-feature-dark:hover {
+  box-shadow: var(--shadow-3);
+}
+
+.pricing-card {
+  background-color: var(--card-bg);
+  border-radius: var(--card-radius);
+  padding: var(--sp-xxl);
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
+  transition: box-shadow var(--transition);
+}
+
+.pricing-card:hover {
+  box-shadow: var(--card-shadow-hover);
+}
+
+.pricing-card-featured {
+  background-color: var(--c-surface-feature);
+  border-radius: var(--card-radius);
+  padding: var(--sp-xxl);
+  border: 2px solid var(--c-green);
+  box-shadow: var(--card-shadow-hover);
+  transition: box-shadow var(--transition);
+}
+
+.pricing-card-featured:hover {
+  box-shadow: var(--shadow-3);
+}
+
 
