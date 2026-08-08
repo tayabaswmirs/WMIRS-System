@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import useLoadingLock from "../../hooks/useLoadingLock";
+import PasswordInput from "./PasswordInput";
 
 export default function UserEditModal({ isOpen, user, onClose, onSave, isSaving }) {
   const modalRef = useRef(null);
@@ -131,9 +132,8 @@ export default function UserEditModal({ isOpen, user, onClose, onSave, isSaving 
             <label htmlFor="user-pass" className="um-form-label">
               New Password <span className="text-[10px] font-normal text-[var(--c-stone)] font-sans lowercase">(leave blank to keep unchanged)</span>
             </label>
-            <input
+            <PasswordInput
               id="user-pass"
-              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={isSaving}

@@ -50,11 +50,14 @@ function Incidents() {
     <DashboardLayout>
       <div className="incidents-page">
 
-        {/* ── Page Header ─────────────────────────────────────────── */}
-        <div className="um-page-header">
-          <div className="um-page-header__text">
-            <span className="um-page-header__eyebrow">Ecological Protection</span>
-            <h1 className="um-page-header__title">Submit Incident Report</h1>
+        {/* ── Hero Header Band ─────────────────────────────────────────── */}
+        <div className="inc-hero">
+          <div className="inc-hero__left">
+            <span className="inc-hero__eyebrow">ENRO Staff Portal</span>
+            <h1 className="inc-hero__title">Submit Incident Report</h1>
+            <p className="inc-hero__subtitle">
+              Report environmental incidents, illegal forest activities, and ecological violations.
+            </p>
           </div>
         </div>
 

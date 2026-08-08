@@ -179,14 +179,17 @@ export default function UserManagement() {
     <DashboardLayout>
       <div className="um-page">
 
-        {/* ── Plain white page header ─────────────────────────── */}
-        <div className="um-page-header">
-          <div className="um-page-header__text">
-            <span className="um-page-header__eyebrow">Administration Portal</span>
-            <h1 className="um-page-header__title">Staff &amp; Auth Management</h1>
+        {/* ── Hero Header Band ─────────────────────────────────────────── */}
+        <div className="inc-hero">
+          <div className="inc-hero__left">
+            <span className="inc-hero__eyebrow">Administration Portal</span>
+            <h1 className="inc-hero__title">Staff &amp; Auth Management</h1>
+            <p className="inc-hero__subtitle">
+              Manage user accounts, system roles, and authentication access across the organization.
+            </p>
           </div>
 
-          <div className="um-search-wrap">
+          <div className="um-search-wrap" style={{ zIndex: 1 }}>
             <span
               className="material-symbols-outlined um-search-wrap__icon"
               aria-hidden="true"

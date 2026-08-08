@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import useLoadingLock from "../hooks/useLoadingLock";
+import PasswordInput from "../components/common/PasswordInput";
 import wmirsLogo from "../assets/wmirs-logo.png";
 import "../styles/login.css";
 
@@ -256,13 +257,12 @@ function Login() {
 
             <div className="login-field">
               <label htmlFor="auth-password" className="login-label">Password</label>
-              <input
+              <PasswordInput
                 id="auth-password"
                 className="login-input"
                 placeholder="Minimum 8 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                type="password"
                 autoComplete={isRegistering ? "new-password" : "current-password"}
                 required
               />
@@ -276,13 +276,12 @@ function Login() {
             {isRegistering && (
               <div className="login-field">
                 <label htmlFor="auth-confirm-password" className="login-label">Confirm Password</label>
-                <input
+                <PasswordInput
                   id="auth-confirm-password"
                   className="login-input"
                   placeholder="Re-enter your password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  type="password"
                   autoComplete="new-password"
                   required
                 />

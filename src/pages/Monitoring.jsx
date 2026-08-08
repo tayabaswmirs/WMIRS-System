@@ -182,11 +182,14 @@ function Monitoring() {
   return (
     <DashboardLayout>
       <div className="um-page">
-        {/* Page header */}
-        <div className="um-page-header">
-          <div className="um-page-header__text">
-            <span className="um-page-header__eyebrow">Ecological Surveying</span>
-            <h1 className="um-page-header__title">Submit Monitoring Log</h1>
+        {/* ── Hero Header Band ─────────────────────────────────────────── */}
+        <div className="inc-hero">
+          <div className="inc-hero__left">
+            <span className="inc-hero__eyebrow">ENRO Staff Portal</span>
+            <h1 className="inc-hero__title">Submit Monitoring Log</h1>
+            <p className="inc-hero__subtitle">
+              Log routine ecological surveying, wildlife observations, water resource checks, and compliance audits.
+            </p>
           </div>
         </div>
 

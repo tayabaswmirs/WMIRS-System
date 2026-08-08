@@ -221,3 +221,50 @@ code {
   /* Optical size 24, weight 300, no fill, no grade */
   font-variation-settings: "opsz" 24, "wght" 300, "FILL" 0, "GRAD" 0;
 }
+
+/* ── Password Input & Toggle Button ────────────────────────── */
+.password-input-wrap {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-field {
+  padding-right: 44px !important;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--r-full);
+  color: var(--c-steel);
+  cursor: pointer;
+  transition: color var(--transition), background-color var(--transition);
+  z-index: 2;
+}
+
+.password-toggle-btn:hover:not(:disabled) {
+  color: var(--c-ink);
+  background-color: var(--c-surface-soft);
+}
+
+.password-toggle-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.password-toggle-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import DashboardLayout from "../components/layout/DashboardLayout";
+import PasswordInput from "../components/common/PasswordInput";
 import { updateUserProfile, deleteSelfAccount } from "../firebase/services/userService";
 import { updateUserAuthProfile, loginWithEmail } from "../firebase/services/authService";
 
@@ -167,11 +168,14 @@ export default function Profile() {
   return (
     <DashboardLayout>
       <div className="um-page">
-        {/* Page Header */}
-        <div className="um-page-header">
-          <div className="um-page-header__text">
-            <span className="um-page-header__eyebrow">Personal settings</span>
-            <h1 className="um-page-header__title">Profile Customization</h1>
+        {/* ── Hero Header Band ─────────────────────────────────────────── */}
+        <div className="inc-hero">
+          <div className="inc-hero__left">
+            <span className="inc-hero__eyebrow">Personal Settings</span>
+            <h1 className="inc-hero__title">Profile Customization</h1>
+            <p className="inc-hero__subtitle">
+              Manage your personal account details, update credentials, and security preferences.
+            </p>
           </div>
         </div>
 
@@ -238,9 +242,8 @@ export default function Profile() {
                 {/* New Password */}
                 <div className="um-form-group">
                   <label htmlFor="prof-pass" className="um-form-label">New Password</label>
-                  <input
+                  <PasswordInput
                     id="prof-pass"
-                    type="password"
                     disabled={isSaving || isDeleting}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
@@ -252,9 +255,8 @@ export default function Profile() {
                 {/* Confirm New Password */}
                 <div className="um-form-group">
                   <label htmlFor="prof-confirm" className="um-form-label">Confirm New Password</label>
-                  <input
+                  <PasswordInput
                     id="prof-confirm"
-                    type="password"
                     disabled={isSaving || isDeleting}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -369,9 +371,8 @@ export default function Profile() {
 
                 <div className="um-form-group">
                   <label htmlFor="reauth-pass" className="um-form-label">Current Password</label>
-                  <input
+                  <PasswordInput
                     id="reauth-pass"
-                    type="password"
                     required
                     disabled={isSaving}
                     value={reauthPassword}
