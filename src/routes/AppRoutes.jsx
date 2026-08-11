@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "../pages/Login";
+import Landing from "../pages/Landing";
 import Dashboard from "../pages/Dashboard";
 import AdminDashboard from "../pages/AdminDashboard";
 import AdminIncidents from "../pages/AdminIncidents";
@@ -12,31 +13,12 @@ import MonitoringHistory from "../pages/MonitoringHistory";
 import AdminMonitoring from "../pages/AdminMonitoring";
 import StaffDashboard from "../pages/Staff/StaffDashboard";
 import { ProtectedRoute } from "./ProtectedRoute";
-import { useAuth } from "../hooks/useAuth";
-
-function HomeRedirect() {
-  const { currentUser, userRole, loading } = useAuth();
-  if (loading) {
-    return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-        <p>Loading session status...</p>
-      </div>
-    );
-  }
-  
-  if (currentUser) {
-    if (userRole === "admin") return <Navigate to="/admin/dashboard" replace />;
-    if (userRole === "staff") return <Navigate to="/staff/dashboard" replace />;
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  return <Navigate to="/login" replace />;
-}
 
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<HomeRedirect />} />
+      <Route path="/" element={<Landing />} />
+      <Route path="/landing" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       
       {/* ── Forest Ranger Routes ──────────────────────────────── */}
