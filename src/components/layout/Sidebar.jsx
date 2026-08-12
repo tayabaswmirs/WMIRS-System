@@ -9,11 +9,11 @@ const NAV_ITEMS = [
   { id: "nav-dashboard",        icon: "dashboard",              label: "Dashboard",           path: "/dashboard", adminPath: "/admin/dashboard", staffPath: "/staff/dashboard", roles: ["admin", "staff", "ranger"] },
   // Open Assignments for all
   { id: "nav-assignments",      icon: "assignment",             label: "Open Assignments",    path: "/assignments", roles: ["admin", "staff", "ranger"] },
-  // Operational Submission & History Links
-  { id: "nav-incidents",        icon: "warning",                label: "Submit Incident",     path: "/incidents", roles: ["admin", "staff", "ranger"] },
-  { id: "nav-monitoring",       icon: "monitoring",             label: "Submit Monitoring",   path: "/monitoring", roles: ["admin", "staff", "ranger"] },
-  { id: "nav-inc-history",      icon: "history",                label: "Incident History",    path: "/incidents/history", roles: ["admin", "staff", "ranger"] },
-  { id: "nav-mon-history",      icon: "history_edu",            label: "Monitoring History",  path: "/monitoring/history", roles: ["admin", "staff", "ranger"] },
+  // Forest Ranger Submission & History Links (Rangers Only)
+  { id: "nav-incidents",        icon: "warning",                label: "Submit Incident",     path: "/incidents", roles: ["ranger"] },
+  { id: "nav-monitoring",       icon: "monitoring",             label: "Submit Monitoring",   path: "/monitoring", roles: ["ranger"] },
+  { id: "nav-inc-history",      icon: "history",                label: "Incident History",    path: "/incidents/history", roles: ["ranger"] },
+  { id: "nav-mon-history",      icon: "history_edu",            label: "Monitoring History",  path: "/monitoring/history", roles: ["ranger"] },
   // Admin links
   { id: "nav-admin-incidents",  icon: "content_paste_search",   label: "Incidents Management", path: "/admin/incidents", roles: ["admin"] },
   { id: "nav-admin-mon",        icon: "fact_check",             label: "Monitoring Management", path: "/admin/monitoring", roles: ["admin"] },

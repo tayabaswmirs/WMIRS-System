@@ -32,7 +32,7 @@ export default function AppRoutes() {
         } 
       />
       
-      {/* ── Operational Submission & History Routes ────────────── */}
+      {/* ── Forest Ranger Routes ──────────────────────────────── */}
       <Route 
         path="/dashboard" 
         element={
@@ -45,7 +45,7 @@ export default function AppRoutes() {
       <Route 
         path="/incidents" 
         element={
-          <ProtectedRoute allowedRoles={["ranger", "staff", "admin"]}>
+          <ProtectedRoute allowedRoles={["ranger"]}>
             <Incidents />
           </ProtectedRoute>
         } 
@@ -54,7 +54,7 @@ export default function AppRoutes() {
       <Route 
         path="/incidents/history" 
         element={
-          <ProtectedRoute allowedRoles={["ranger", "staff", "admin"]}>
+          <ProtectedRoute allowedRoles={["ranger"]}>
             <IncidentHistory />
           </ProtectedRoute>
         } 
@@ -63,7 +63,7 @@ export default function AppRoutes() {
       <Route 
         path="/monitoring" 
         element={
-          <ProtectedRoute allowedRoles={["ranger", "staff", "admin"]}>
+          <ProtectedRoute allowedRoles={["ranger"]}>
             <Monitoring />
           </ProtectedRoute>
         } 
@@ -72,7 +72,7 @@ export default function AppRoutes() {
       <Route 
         path="/monitoring/history" 
         element={
-          <ProtectedRoute allowedRoles={["ranger", "staff", "admin"]}>
+          <ProtectedRoute allowedRoles={["ranger"]}>
             <MonitoringHistory />
           </ProtectedRoute>
         } 

@@ -54,9 +54,9 @@ function AdminIncidents() {
     );
   }, [incidents, activeFilter, searchQuery]);
 
-  const handleStatusChangeRequest = (incidentId, newStatus) => {
+  const handleStatusChangeRequest = (incidentId, newStatus, remarks) => {
     return new Promise((resolve, reject) => {
-      setConfirmDialog({ incidentId, newStatus, resolve, reject });
+      setConfirmDialog({ incidentId, newStatus, remarks, resolve, reject });
     });
   };
 
@@ -64,9 +64,9 @@ function AdminIncidents() {
 
   const executeStatusChange = async () => {
     if (!confirmDialog) return;
-    const { incidentId, newStatus, resolve } = confirmDialog;
+    const { incidentId, newStatus, remarks, resolve } = confirmDialog;
     try {
-      await adminOverrideIncident(incidentId, newStatus, currentUser.uid, currentUser.displayName, "Admin override via dashboard");
+      await adminOverrideIncident(incidentId, newStatus, currentUser.uid, currentUser.displayName, remarks || "Admin override via dashboard");
       if (selectedIncident?.id === incidentId) {
         setSelectedIncident((prev) => ({ ...prev, status: newStatus }));
       }

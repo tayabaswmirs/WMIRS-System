@@ -321,18 +321,10 @@ export const reviewIncidentAtomic = async (incidentId, status, reviewerUid, rema
  * Admin override for incident status. 
  * Allows admins to forcefully change status and leave an audit trail.
  */
-export const adminOverrideIncident = async (incidentId, status, adminUid, reason) => {
-  const docRef = doc(db, "incidents", incidentId);
-  const updatePayload = {
-    status,
-    updatedAt: serverTimestamp(),
-    adminOverride: {
-      adminUid,
-      reason,
-      timestamp: serverTimestamp()
-    }
-  };
-  return updateDoc(docRef, updatePayload);
+export const adminOverrideIncident = async (incidentId, status, adminUid, adminName, reason = "") => {
+  const resolvedName = typeof adminName === "string" ? adminName : "Admin";
+  const resolvedReason = typeof reason === "string" && reason ? reason : "Admin override via dashboard";
+  return updateLogWorkflowStatus(incidentId, "Incident", status, adminUid, resolvedName, `ADMIN OVERRIDE: ${resolvedReason}`);
 };
 
 /**
