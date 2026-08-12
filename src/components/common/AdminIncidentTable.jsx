@@ -1,4 +1,4 @@
-import { CATEGORY_META, ADMIN_STATUSES, getSeverityClass, getStatusClass, formatIncidentDate } from "../../utils/incidentConstants";
+import { CATEGORY_META, LOG_STATUS, getSeverityClass, getStatusClass, formatIncidentDate } from "../../utils/incidentConstants";
 
 /**
  * AdminIncidentTable — renders the full incident list for admin review.
@@ -88,7 +88,7 @@ function AdminIncidentTable({ incidents, onStatusChange, onViewDetails }) {
                     aria-label={`Change status for ${inc.incidentType}`}
                     title={"Override status"}
                   >
-                    {ADMIN_STATUSES.map((s) => (
+                    {Object.values(LOG_STATUS).map((s) => (
                       <option key={s} value={s}>{s}</option>
                     ))}
                   </select>

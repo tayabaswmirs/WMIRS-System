@@ -12,6 +12,7 @@ import Monitoring from "../pages/Monitoring";
 import MonitoringHistory from "../pages/MonitoringHistory";
 import AdminMonitoring from "../pages/AdminMonitoring";
 import StaffDashboard from "../pages/Staff/StaffDashboard";
+import OpenAssignments from "../pages/OpenAssignments";
 import { ProtectedRoute } from "./ProtectedRoute";
 
 export default function AppRoutes() {
@@ -21,7 +22,17 @@ export default function AppRoutes() {
       <Route path="/landing" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       
-      {/* ── Forest Ranger Routes ──────────────────────────────── */}
+      {/* ── Shared Routes ──────────────────────────────── */}
+      <Route 
+        path="/assignments" 
+        element={
+          <ProtectedRoute allowedRoles={["ranger", "staff", "admin"]}>
+            <OpenAssignments />
+          </ProtectedRoute>
+        } 
+      />
+      
+      {/* ── Operational Submission & History Routes ────────────── */}
       <Route 
         path="/dashboard" 
         element={
@@ -34,7 +45,7 @@ export default function AppRoutes() {
       <Route 
         path="/incidents" 
         element={
-          <ProtectedRoute allowedRoles={["ranger"]}>
+          <ProtectedRoute allowedRoles={["ranger", "staff", "admin"]}>
             <Incidents />
           </ProtectedRoute>
         } 
@@ -43,7 +54,7 @@ export default function AppRoutes() {
       <Route 
         path="/incidents/history" 
         element={
-          <ProtectedRoute allowedRoles={["ranger"]}>
+          <ProtectedRoute allowedRoles={["ranger", "staff", "admin"]}>
             <IncidentHistory />
           </ProtectedRoute>
         } 
@@ -52,7 +63,7 @@ export default function AppRoutes() {
       <Route 
         path="/monitoring" 
         element={
-          <ProtectedRoute allowedRoles={["ranger"]}>
+          <ProtectedRoute allowedRoles={["ranger", "staff", "admin"]}>
             <Monitoring />
           </ProtectedRoute>
         } 
@@ -61,7 +72,7 @@ export default function AppRoutes() {
       <Route 
         path="/monitoring/history" 
         element={
-          <ProtectedRoute allowedRoles={["ranger"]}>
+          <ProtectedRoute allowedRoles={["ranger", "staff", "admin"]}>
             <MonitoringHistory />
           </ProtectedRoute>
         } 

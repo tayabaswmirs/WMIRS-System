@@ -6,7 +6,7 @@ import {
   logoutUser, 
   subscribeToAuthChanges 
 } from "../firebase/services/authService";
-import { getUserProfile } from "../firebase/services/userService";
+import { getUserProfile, createUserProfile } from "../firebase/services/userService";
 
 export const AuthContext = createContext();
 
@@ -35,7 +35,18 @@ export function AuthProvider({ children }) {
       if (user) {
         setCurrentUser(user);
         try {
-          const profile = await getUserProfile(user.uid);
+          let profile = await getUserProfile(user.uid);
+          if (!profile) {
+            // Self-healing: profile document missing from Firestore (e.g. prior failed registration)
+            try {
+              const fallbackName = user.displayName || user.email?.split("@")[0] || "Ranger";
+              await createUserProfile(user.uid, fallbackName, user.email || "");
+              profile = await getUserProfile(user.uid);
+            } catch (createErr) {
+              console.error("Failed to auto-create missing user profile:", createErr);
+            }
+          }
+
           if (profile) {
             // Force refresh the token if custom claims are stale (e.g. role changed by admin)
             try {
@@ -54,7 +65,7 @@ export function AuthProvider({ children }) {
             setStaffScope(profile.staffScope || null);
             setProfileData(profile);
           } else {
-            // Profile document might not exist yet during initial sign-up transaction
+            // Fallback default state if self-healing could not persist profile
             setUserRole("ranger");
             setStaffScope(null);
             setProfileData(null);

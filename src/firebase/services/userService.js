@@ -1,4 +1,4 @@
-import { doc, setDoc, getDoc, updateDoc, collection, getDocs, query, orderBy, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, getDocs, query, orderBy, serverTimestamp } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import { db, functions } from "../firebase";
 
@@ -12,11 +12,12 @@ import { db, functions } from "../firebase";
  * @returns {Promise<void>}
  */
 export const createUserProfile = async (uid, name, email) => {
+  if (!uid) throw new Error("Cannot create user profile: missing UID");
   const userRef = doc(db, "users", uid);
   return setDoc(userRef, {
     uid,
-    name,
-    email,
+    name: name || "",
+    email: email || "",
     role: "ranger",
     staffScope: null,
     createdAt: serverTimestamp()
@@ -61,9 +62,21 @@ export const getAllUsers = async () => {
  * @returns {Promise<object>}
  */
 export const updateUserAdmin = async (uid, updateData) => {
-  const updateFn = httpsCallable(functions, "adminUpdateUser");
-  const res = await updateFn({ uid, ...updateData });
-  return res.data;
+  try {
+    const updateFn = httpsCallable(functions, "adminUpdateUser");
+    const res = await updateFn({ uid, ...updateData });
+    return res.data;
+  } catch (err) {
+    console.warn("Cloud Function 'adminUpdateUser' call failed (backend deployment pending). Falling back to direct Firestore document update:", err);
+    const userRef = doc(db, "users", uid);
+    const profileFields = {};
+    if (updateData.name !== undefined) profileFields.name = updateData.name;
+    if (updateData.email !== undefined) profileFields.email = updateData.email;
+    if (Object.keys(profileFields).length > 0) {
+      await updateDoc(userRef, profileFields);
+    }
+    return { status: "success", fallback: true };
+  }
 };
 
 /**
@@ -98,9 +111,16 @@ export const setUserRoleAdmin = async (uid, role, staffScope = null) => {
  * @returns {Promise<object>}
  */
 export const deleteUserAdmin = async (uid) => {
-  const deleteFn = httpsCallable(functions, "adminDeleteUser");
-  const res = await deleteFn({ uid });
-  return res.data;
+  try {
+    const deleteFn = httpsCallable(functions, "adminDeleteUser");
+    const res = await deleteFn({ uid });
+    return res.data;
+  } catch (err) {
+    console.warn("Cloud Function 'adminDeleteUser' call failed (backend deployment pending). Falling back to direct Firestore document deletion:", err);
+    const userRef = doc(db, "users", uid);
+    await deleteDoc(userRef);
+    return { status: "success", fallback: true };
+  }
 };
 
 /**

@@ -39,9 +39,13 @@ function AdminMonitoring() {
 
   const handleStatusChange = async (logId, newStatus, remarks) => {
     if (!currentUser?.uid) return;
-    await adminOverrideMonitoring(logId, newStatus, currentUser.uid, remarks || "Admin override via dashboard");
-    if (selectedLog?.id === logId) {
-      setSelectedLog((prev) => ({ ...prev, status: newStatus, adminRemarks: remarks }));
+    try {
+      await adminOverrideMonitoring(logId, newStatus, currentUser.uid, currentUser.displayName, remarks || "Admin override via dashboard");
+      if (selectedLog?.id === logId) {
+        setSelectedLog((prev) => ({ ...prev, status: newStatus, adminRemarks: remarks }));
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 

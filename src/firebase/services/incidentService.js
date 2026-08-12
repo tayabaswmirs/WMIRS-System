@@ -10,7 +10,8 @@ import {
   updateDoc,
   getDoc,
   runTransaction,
-  deleteDoc
+  deleteDoc,
+  arrayUnion
 } from "firebase/firestore";
 import { 
   ref, 
@@ -19,6 +20,7 @@ import {
   deleteObject
 } from "firebase/storage";
 import { db, storage } from "../firebase";
+import { LOG_STATUS } from "../../utils/incidentConstants";
 
 /**
  * Uploads a single file to Firebase Storage under user's folder.
@@ -360,5 +362,111 @@ export const deleteIncidentReport = async (incidentId) => {
   }
   
   return deleteDoc(docRef);
+};
+
+/**
+ * Atomic helper to update workflow status for ANY log (Incident or Monitoring).
+ * Logs the action into the 'history' array.
+ */
+export const updateLogWorkflowStatus = async (id, logType, newStatus, uid, name, actionNotes = "", evidenceFile = null) => {
+  const collectionName = logType === "Incident" ? "incidents" : "monitoring";
+  const docRef = doc(db, collectionName, id);
+  
+  const historyEntry = {
+    action: newStatus,
+    by: name,
+    uid: uid,
+    timestamp: new Date().toISOString(),
+    notes: actionNotes,
+  };
+  
+  if (evidenceFile) {
+    historyEntry.evidenceFile = evidenceFile;
+  }
+  
+  const updatePayload = {
+    status: newStatus,
+    updatedAt: serverTimestamp(),
+    updatedBy: { uid, name },
+    history: arrayUnion(historyEntry)
+  };
+  
+  if (newStatus === LOG_STATUS.RESOLVED) {
+    updatePayload.resolutionNotes = actionNotes;
+    if (evidenceFile) {
+      updatePayload.resolutionEvidence = evidenceFile;
+    }
+  }
+
+  return updateDoc(docRef, updatePayload);
+};
+
+/**
+ * Subscribes to open assignments (status === 'assigned' or 'unresolved').
+ * Automatically restricts Monitoring logs to the staff's category if staffScope is provided.
+ */
+export const subscribeToOpenAssignments = (callback, staffScope = null) => {
+  const incidentsRef = collection(db, "incidents");
+  const monitoringRef = collection(db, "monitoring");
+  
+  let qInc = null;
+  let qMon = null;
+  
+  if (staffScope) {
+    if (staffScope === "incidents") {
+      qInc = query(incidentsRef, where("status", "in", [LOG_STATUS.ASSIGNED, LOG_STATUS.UNRESOLVED]));
+    } else {
+      qMon = query(
+        monitoringRef, 
+        where("category", "==", staffScope), 
+        where("status", "in", [LOG_STATUS.ASSIGNED, LOG_STATUS.UNRESOLVED])
+      );
+    }
+  } else {
+    // For Admins/Rangers who have global access
+    qInc = query(incidentsRef, where("status", "in", [LOG_STATUS.ASSIGNED, LOG_STATUS.UNRESOLVED]));
+    qMon = query(monitoringRef, where("status", "in", [LOG_STATUS.ASSIGNED, LOG_STATUS.UNRESOLVED]));
+  }
+  
+  let incidentsList = [];
+  let monitoringList = [];
+  
+  const updateCombined = () => {
+    const combined = [...incidentsList, ...monitoringList];
+    combined.sort((a, b) => {
+      const timeA = a.createdAt?.seconds || 0;
+      const timeB = b.createdAt?.seconds || 0;
+      return timeB - timeA;
+    });
+    callback(combined);
+  };
+
+  let unsubInc;
+  if (qInc) {
+    unsubInc = onSnapshot(qInc, (snapshot) => {
+      incidentsList = snapshot.docs.map((d) => ({ id: d.id, logType: "Incident", ...d.data() }));
+      updateCombined();
+    });
+  }
+
+  let unsubMon;
+  if (qMon) {
+    unsubMon = onSnapshot(qMon, (snapshot) => {
+      monitoringList = snapshot.docs.map((d) => ({ id: d.id, logType: "Monitoring", ...d.data() }));
+      updateCombined();
+    });
+  }
+
+  return () => {
+    if (unsubInc) unsubInc();
+    if (unsubMon) unsubMon();
+  };
+};
+
+/**
+ * Resolves an assignment by a ranger.
+ */
+export const resolveAssignmentByRanger = async (id, logType, uid, name, resolutionNotes, evidenceFile) => {
+  return updateLogWorkflowStatus(id, logType, LOG_STATUS.RESOLVED, uid, name, resolutionNotes, evidenceFile);
 };
 

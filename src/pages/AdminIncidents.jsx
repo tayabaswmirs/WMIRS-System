@@ -66,7 +66,7 @@ function AdminIncidents() {
     if (!confirmDialog) return;
     const { incidentId, newStatus, resolve } = confirmDialog;
     try {
-      await adminOverrideIncident(incidentId, newStatus, currentUser.uid, "Admin override via dashboard");
+      await adminOverrideIncident(incidentId, newStatus, currentUser.uid, currentUser.displayName, "Admin override via dashboard");
       if (selectedIncident?.id === incidentId) {
         setSelectedIncident((prev) => ({ ...prev, status: newStatus }));
       }

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import DashboardLayout from "../../components/layout/DashboardLayout";
-import { subscribeToAllIncidents, reviewIncidentAtomic } from "../../firebase/services/incidentService";
+import { subscribeToAllIncidents, updateLogWorkflowStatus } from "../../firebase/services/incidentService";
 import { subscribeToCategoryMonitoring, reviewMonitoringAtomic } from "../../firebase/services/monitoringService";
 import IncidentDetailsModal from "../../components/common/IncidentDetailsModal";
 import MonitoringDetailsModal from "../../components/common/monitoring/MonitoringDetailsModal";
@@ -110,9 +110,9 @@ function StaffDashboard() {
     const { itemId, newStatus, remarks, resolve } = confirmDialog;
     try {
       if (isIncidents) {
-        await reviewIncidentAtomic(itemId, newStatus, currentUser.uid, remarks);
+        await updateLogWorkflowStatus(itemId, "Incident", newStatus, currentUser.uid, currentUser.displayName, remarks);
       } else {
-        await reviewMonitoringAtomic(itemId, newStatus, currentUser.uid, remarks);
+        await reviewMonitoringAtomic(itemId, newStatus, currentUser.uid, currentUser.displayName, remarks);
       }
       if (selectedItem?.id === itemId) {
         setSelectedItem((prev) => ({ ...prev, status: newStatus }));

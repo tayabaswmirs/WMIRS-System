@@ -1,5 +1,8 @@
-import { useState } from "react";
-import { CATEGORY_META, ADMIN_STATUSES, getSeverityClass, getStatusClass, formatIncidentDate } from "../../utils/incidentConstants";
+import { useState, useMemo } from "react";
+import { useAuth } from "../../hooks/useAuth";
+import { CATEGORY_META, LOG_STATUS, getSeverityClass, getStatusClass, formatIncidentDate } from "../../utils/incidentConstants";
+import WorkflowStepper from "./WorkflowStepper";
+import WorkflowActionModal from "./WorkflowActionModal";
 
 /**
  * IncidentDetailsModal — right-side sliding drawer showing full incident metadata,
@@ -11,7 +14,7 @@ import { CATEGORY_META, ADMIN_STATUSES, getSeverityClass, getStatusClass, format
  *   isAdmin        {boolean}     — when true, renders the admin status-update panel
  *   onStatusChange {function}    — (incidentId, newStatus) called when admin updates status
  */
-function IncidentDetailsModal({ incident, onClose, isAdmin = false, onStatusChange }) {
+function IncidentDetailsModal({ incident, onClose, onStatusChange }) {
   const isOpen = Boolean(incident);
 
   return (
@@ -35,7 +38,6 @@ function IncidentDetailsModal({ incident, onClose, isAdmin = false, onStatusChan
           <DrawerContent
             incident={incident}
             onClose={onClose}
-            isAdmin={isAdmin}
             onStatusChange={onStatusChange}
           />
         )}
@@ -46,37 +48,34 @@ function IncidentDetailsModal({ incident, onClose, isAdmin = false, onStatusChan
 
 /* ─── Internal drawer content ───────────────────────────────────────────── */
 
-function DrawerContent({ incident, onClose, isAdmin, onStatusChange }) {
+function DrawerContent({ incident, onClose, onStatusChange }) {
+  const { userRole } = useAuth();
   const catMeta = CATEGORY_META[incident.category] ?? { icon: "report", color: "#00ed64" };
-  const [draftStatus, setDraftStatus]   = useState(incident.status);
-  const [saving, setSaving]             = useState(false);
-  const [saveFeedback, setSaveFeedback] = useState({ type: "", message: "" });
+  const [actionType, setActionType] = useState(null); // e.g. { type: 'approve', nextStatus: 'assigned', title: '...', confirmLabel: '...' }
+  const [actionModalOpen, setActionModalOpen] = useState(false);
 
-  const isLocked = incident.status === "Resolved" || incident.status === "Dismissed";
+  const handleActionClick = (type, nextStatus, title, confirmLabel, variant = 'primary') => {
+    setActionType({ type, nextStatus, title, confirmLabel, variant });
+    setActionModalOpen(true);
+  };
 
-  const handleStatusSave = async () => {
-    if (draftStatus === incident.status) return;
-    setSaving(true);
-    setSaveFeedback({ type: "", message: "" });
+  const handleActionSubmit = async (remarks) => {
     try {
-      const confirmed = await onStatusChange(incident.id, draftStatus);
-      if (confirmed) {
-        setSaveFeedback({ type: "success", message: "Status updated successfully." });
-      } else {
-        // User cancelled the modal, do nothing
-        setSaveFeedback({ type: "", message: "" });
-        // Optionally revert draftStatus back to the real status if you want
+      if (onStatusChange) {
+        await onStatusChange(incident.id, actionType.nextStatus, remarks);
       }
     } catch (error) {
-      if (error.message === "REPORT_ALREADY_REVIEWED") {
-        setSaveFeedback({ type: "error", message: "Report already updated by another reviewer." });
-      } else {
-        setSaveFeedback({ type: "error", message: "Failed to update status. Please try again." });
-      }
+      console.error(error);
     } finally {
-      setSaving(false);
+      setActionModalOpen(false);
+      setActionType(null);
     }
   };
+
+  const latestRemark = useMemo(() => {
+    if (!incident.workflowHistory || !incident.workflowHistory.length) return null;
+    return incident.workflowHistory[incident.workflowHistory.length - 1];
+  }, [incident.workflowHistory]);
 
   return (
     <>
@@ -119,6 +118,20 @@ function DrawerContent({ incident, onClose, isAdmin, onStatusChange }) {
 
       {/* Scrollable Body */}
       <div className="inc-drawer__body">
+        <WorkflowStepper currentStatus={incident.status} />
+
+        {latestRemark && (
+          <div className={`remarks-callout ${['denied', 'unresolved'].includes(incident.status) ? 'warning' : ''}`}>
+            <div className="remarks-callout-header">
+              <span className="remarks-author">
+                {latestRemark.actorName} 
+                <span className="remarks-role-badge">{latestRemark.actorRole}</span>
+              </span>
+              <span className="remarks-time">{formatIncidentDate(latestRemark.timestamp)}</span>
+            </div>
+            <p className="remarks-text">{latestRemark.remarks}</p>
+          </div>
+        )}
 
         {/* 2-column metadata grid */}
         <div className="inc-drawer__meta-grid">
@@ -179,61 +192,158 @@ function DrawerContent({ incident, onClose, isAdmin, onStatusChange }) {
           )}
         </div>
 
-        {/* ── Admin-only status update panel ─────────────────────────── */}
-        {isAdmin && (
-          <div className="inc-drawer__admin-panel">
-            <span className="inc-drawer__section-label">
-              <span className="material-symbols-outlined inc-drawer__section-label-icon">
-                {isLocked ? "lock" : "admin_panel_settings"}
-              </span>
-              Admin: {isLocked ? "Status Locked" : "Update Status"}
+        {/* Field Resolution Findings Callout (for Staff & Admin Verification) */}
+        {(incident.resolutionNotes || incident.resolutionEvidence) && (
+          <div className="inc-drawer__desc-section" style={{ backgroundColor: 'rgba(0, 237, 100, 0.06)', border: '1px solid rgba(0, 237, 100, 0.25)', borderRadius: '12px', padding: '16px', marginTop: '16px' }}>
+            <span className="inc-drawer__section-label" style={{ color: 'var(--brand-green-dark, #008f3d)', fontWeight: 700 }}>
+              <span className="material-symbols-outlined inc-drawer__section-label-icon" style={{ color: 'var(--brand-green-dark, #008f3d)' }}>task_alt</span>
+              Ranger Resolution Findings & Evidence
             </span>
-            
-            {isLocked ? (
-              <div className="inc-drawer__admin-locked-banner">
-                <span className="material-symbols-outlined" aria-hidden="true">info</span>
-                <p style={{ margin: 0 }}>This report has been marked as <strong>{incident.status}</strong>. Its status is now locked and cannot be modified.</p>
+            {incident.resolutionNotes && (
+              <p className="inc-drawer__desc-text" style={{ marginTop: '8px', color: '#001e2b', fontWeight: 500 }}>
+                {incident.resolutionNotes}
+              </p>
+            )}
+            {incident.resolutionEvidence && (
+              <div style={{ marginTop: '12px' }}>
+                <span className="inc-drawer__section-label" style={{ fontSize: '12px', marginBottom: '6px' }}>
+                  Resolution File Attachment:
+                </span>
+                <a
+                  href={typeof incident.resolutionEvidence === 'string' ? incident.resolutionEvidence : incident.resolutionEvidence.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inc-drawer__evidence-tile"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 12px', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid var(--c-hairline-strong)', textDecoration: 'none' }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--brand-green-dark, #008f3d)' }}>attachment</span>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--c-text-primary)' }}>
+                    {typeof incident.resolutionEvidence === 'object' ? incident.resolutionEvidence.name : 'View Resolution Document / Photo'}
+                  </span>
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px', color: 'var(--c-text-muted)' }}>open_in_new</span>
+                </a>
               </div>
-            ) : (
-              <>
-                <div className="inc-drawer__admin-controls">
-                  <select
-                    value={draftStatus}
-                    onChange={(e) => {
-                      setDraftStatus(e.target.value);
-                      setSaveFeedback({ type: "", message: "" });
-                    }}
-                    className={`admin-status-select admin-status-select--${getStatusClass(draftStatus)}`}
-                    aria-label="Select new incident status"
-                    disabled={saving}
-                  >
-                    {ADMIN_STATUSES.map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={handleStatusSave}
-                    disabled={saving || draftStatus === incident.status}
-                    className="button-primary inc-drawer__admin-save-btn"
-                    id="inc-drawer-admin-save-btn"
-                  >
-                    <span className="material-symbols-outlined" aria-hidden="true">
-                      {saving ? "hourglass_top" : "check_circle"}
+            )}
+          </div>
+        )}
+
+        {/* Audit Timeline */}
+        {((incident.history && incident.history.length > 0) || (incident.workflowHistory && incident.workflowHistory.length > 0)) && (
+          <div className="audit-timeline">
+            <span className="inc-drawer__section-label">
+              <span className="material-symbols-outlined inc-drawer__section-label-icon">history</span>
+              Audit Timeline
+            </span>
+            {(incident.history || incident.workflowHistory).slice().reverse().map((hist, idx) => {
+              const statusName = hist.toStatus || hist.action || "Updated";
+              const authorName = hist.actorName || hist.by || "User";
+              const authorRole = hist.actorRole || "User";
+              const notesText  = hist.remarks || hist.notes;
+              const isError = ['denied', 'unresolved'].includes(statusName?.toLowerCase());
+
+              return (
+                <div key={idx} className="timeline-item">
+                  <div className={`timeline-dot ${isError ? 'error' : ''}`}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>
+                      {isError ? 'error' : 'done'}
                     </span>
-                    {saving ? "Saving…" : "Update Status"}
-                  </button>
+                  </div>
+                  <div className="timeline-content">
+                    <div className="timeline-header">
+                      <span className="timeline-status" style={{ textTransform: 'capitalize' }}>
+                        {statusName}
+                      </span>
+                      <span className="remarks-time">{formatIncidentDate(hist.timestamp)}</span>
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#5c6c7a', marginBottom: '0.25rem' }}>
+                      By: {authorName} {authorRole !== 'User' ? `(${authorRole})` : ''}
+                    </div>
+                    {notesText && <div className="timeline-body">{notesText}</div>}
+                    {hist.evidenceFile && (
+                      <div style={{ marginTop: '6px' }}>
+                        <a
+                          href={typeof hist.evidenceFile === 'string' ? hist.evidenceFile : hist.evidenceFile.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ fontSize: '12px', color: 'var(--brand-green-dark, #008f3d)', textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>attach_file</span>
+                          View Attachment
+                        </a>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                {saveFeedback.message && (
-                  <p className={`inc-drawer__admin-feedback inc-drawer__admin-feedback--${saveFeedback.type}`}>
-                    {saveFeedback.message}
-                  </p>
-                )}
-              </>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ── Context-Sensitive Action Buttons ─────────────────────────── */}
+        {((userRole === "staff" && ["submitted", "under review"].includes(incident.status?.toLowerCase())) ||
+          (userRole === "staff" && incident.status?.toLowerCase() === "resolved") ||
+          (userRole === "admin" && ["verified", "pending completion"].includes(incident.status?.toLowerCase()))) && (
+          <div className="inc-drawer__admin-panel">
+            {userRole === "staff" && ["submitted", "under review"].includes(incident.status?.toLowerCase()) && (
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button 
+                  className="btn-primary" style={{ flex: 1 }}
+                  onClick={() => handleActionClick('approve', LOG_STATUS.ASSIGNED, 'Open Assignment', 'Approve & Assign')}
+                >
+                  Open Assignment
+                </button>
+                <button 
+                  className="btn-danger" style={{ flex: 1 }}
+                  onClick={() => handleActionClick('deny', LOG_STATUS.DENIED, 'Deny Log', 'Deny', 'danger')}
+                >
+                  Deny Log
+                </button>
+              </div>
+            )}
+            {userRole === "staff" && incident.status?.toLowerCase() === "resolved" && (
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button 
+                  className="btn-primary" style={{ flex: 1 }}
+                  onClick={() => handleActionClick('verify', LOG_STATUS.VERIFIED, 'Verify Resolution', 'Verify')}
+                >
+                  Verify Resolution
+                </button>
+                <button 
+                  className="btn-danger" style={{ flex: 1 }}
+                  onClick={() => handleActionClick('unresolve', LOG_STATUS.UNRESOLVED, 'Mark Unresolved', 'Mark Unresolved', 'danger')}
+                >
+                  Mark Unresolved
+                </button>
+              </div>
+            )}
+            {userRole === "admin" && ["verified", "pending completion"].includes(incident.status?.toLowerCase()) && (
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button 
+                  className="btn-primary" style={{ flex: 1 }}
+                  onClick={() => handleActionClick('complete', LOG_STATUS.COMPLETED, 'Mark Complete', 'Complete')}
+                >
+                  Mark Complete
+                </button>
+                <button 
+                  className="btn-danger" style={{ flex: 1 }}
+                  onClick={() => handleActionClick('dispute', LOG_STATUS.UNRESOLVED, 'Dispute Log', 'Dispute', 'danger')}
+                >
+                  Dispute Log
+                </button>
+              </div>
             )}
           </div>
         )}
       </div>
+
+      <WorkflowActionModal 
+        isOpen={actionModalOpen}
+        onClose={() => setActionModalOpen(false)}
+        title={actionType?.title || ''}
+        confirmLabel={actionType?.confirmLabel || ''}
+        variant={actionType?.variant || 'primary'}
+        onSubmit={handleActionSubmit}
+      />
     </>
   );
 }

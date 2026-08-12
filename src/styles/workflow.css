@@ -1,0 +1,206 @@
+/* src/styles/workflow.css */
+
+.workflow-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background-color: #f9fbfa;
+  border-radius: 8px;
+  border: 1px solid #e1e5e8;
+  overflow-x: auto;
+}
+
+.stepper-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+}
+
+.stepper-stage:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background-color: #e1e5e8;
+  z-index: 1;
+}
+
+.stepper-stage.completed:not(:last-child)::after {
+  background-color: #00ed64; /* Brand green */
+}
+
+.stage-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f4f7f6;
+  border: 2px solid #e1e5e8;
+  color: #a8b3bc;
+  font-size: 1.2rem;
+  z-index: 2;
+  position: relative;
+}
+
+.stepper-stage.completed .stage-icon {
+  background-color: #00ed64;
+  border-color: #001e2b;
+  color: #001e2b;
+}
+
+.stepper-stage.active .stage-icon {
+  background-color: #001e2b;
+  border-color: #001e2b;
+  color: #00ed64;
+}
+
+.stepper-stage.denied .stage-icon,
+.stepper-stage.unresolved .stage-icon {
+  background-color: #fff8e0;
+  border-color: #fa6e39;
+  color: #fa6e39;
+}
+
+.stage-label {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #5c6c7a;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stepper-stage.active .stage-label {
+  color: #001e2b;
+  font-weight: 600;
+}
+
+/* Callout Card for Latest Remarks */
+.remarks-callout {
+  background-color: #e3fcef; /* Surface Feature */
+  border-left: 4px solid #00ed64;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 4px;
+}
+
+.remarks-callout.warning {
+  background-color: #fff8e0;
+  border-left-color: #fa6e39;
+}
+
+.remarks-callout-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.remarks-author {
+  font-weight: 600;
+  color: #001e2b;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.remarks-role-badge {
+  background-color: #001e2b;
+  color: #ffffff;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.remarks-time {
+  font-size: 0.75rem;
+  color: #5c6c7a;
+}
+
+.remarks-text {
+  font-size: 0.9rem;
+  color: #1c2d38;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Audit Timeline */
+.audit-timeline {
+  margin-top: 1.5rem;
+  border-top: 1px solid #e1e5e8;
+  padding-top: 1rem;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.timeline-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 24px;
+  bottom: -24px;
+  left: 11px;
+  width: 2px;
+  background-color: #eceff1;
+}
+
+.timeline-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #00ed64;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #001e2b;
+  font-size: 0.8rem;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.timeline-dot.error {
+  background-color: #fa6e39;
+  color: #ffffff;
+}
+
+.timeline-content {
+  flex: 1;
+}
+
+.timeline-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.timeline-status {
+  font-weight: 600;
+  color: #001e2b;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+}
+
+.timeline-body {
+  background-color: #f9fbfa;
+  border: 1px solid #e1e5e8;
+  border-radius: 6px;
+  padding: 0.75rem;
+  font-size: 0.85rem;
+  color: #3d4f5b;
+}

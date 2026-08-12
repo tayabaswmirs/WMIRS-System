@@ -142,10 +142,29 @@ export const INCIDENT_TYPE_META = {
 export const SEVERITY_LEVELS = ["Low", "Medium", "High", "Critical"];
 
 /**
- * All statuses an admin can assign to an incident report.
- * Ordered from newest/open to closed.
+ * All statuses in the new 8-state workflow.
  */
-export const ADMIN_STATUSES = ["Submitted", "Under Review", "Resolved", "Dismissed"];
+export const LOG_STATUS = {
+  SUBMITTED: "submitted",
+  DENIED: "denied",
+  ASSIGNED: "assigned",
+  RESOLVED: "resolved",
+  VERIFIED: "verified",
+  UNRESOLVED: "unresolved",
+  PENDING_COMPLETION: "pending completion",
+  COMPLETED: "completed"
+};
+
+export const STATUS_METADATA = {
+  submitted: { label: "Submitted", color: "blue", stepIndex: 0 },
+  denied: { label: "Denied", color: "red", stepIndex: -1 },
+  assigned: { label: "Open Assignment", color: "orange", stepIndex: 1 },
+  resolved: { label: "Pending Verification", color: "teal", stepIndex: 2 },
+  verified: { label: "Pending Completion", color: "purple", stepIndex: 3 },
+  unresolved: { label: "Unresolved (Open Assignment)", color: "orange", stepIndex: 1 },
+  "pending completion": { label: "Pending Completion", color: "purple", stepIndex: 3 }, // Added this to match the string
+  completed: { label: "Completed", color: "green", stepIndex: 4 }
+};
 
 /**
  * Returns the CSS class suffix for a given severity string.
