@@ -145,7 +145,7 @@ function AdminDashboard() {
     /* --- Tier 1: KPI Metrics --- */
     const urgentThreats = incidents.filter(
       (i) => (i.severity === "Critical" || i.severity === "High") &&
-             i.status !== "Resolved" && i.status !== "Dismissed"
+             i.status?.toLowerCase() !== "completed" && i.status?.toLowerCase() !== "denied"
     ).length;
 
     const totalIncidents = incidents.length;
@@ -167,10 +167,12 @@ function AdminDashboard() {
     // Resolution velocity
     let resolvedCount = 0;
     incidents.forEach((i) => {
-      if (i.status === "Resolved" || i.status === "Dismissed") resolvedCount++;
+      const status = i.status?.toLowerCase();
+      if (status === "completed" || status === "denied") resolvedCount++;
     });
     logs.forEach((l) => {
-      if (l.status === "Approved" || l.status === "Rejected/Flagged") resolvedCount++;
+      const status = l.status?.toLowerCase();
+      if (status === "completed" || status === "denied") resolvedCount++;
     });
     const velocity = totalSubmissions > 0
       ? Math.round((resolvedCount / totalSubmissions) * 100)
@@ -202,7 +204,8 @@ function AdminDashboard() {
       const entry = monthlyMap.get(m);
       entry.incidents++;
       entry.total++;
-      if (i.status === "Resolved" || i.status === "Dismissed") entry.resolved++;
+      const status = i.status?.toLowerCase();
+      if (status === "completed" || status === "denied") entry.resolved++;
     });
 
     logs.forEach((l) => {
@@ -212,7 +215,8 @@ function AdminDashboard() {
       const entry = monthlyMap.get(m);
       entry.monitoring++;
       entry.total++;
-      if (l.status === "Approved" || l.status === "Rejected/Flagged") entry.resolved++;
+      const status = l.status?.toLowerCase();
+      if (status === "completed" || status === "denied") entry.resolved++;
     });
 
     const monthlyData = Array.from(monthlyMap.values()).map((d) => ({

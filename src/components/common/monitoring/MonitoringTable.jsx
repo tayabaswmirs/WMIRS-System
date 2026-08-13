@@ -1,4 +1,5 @@
-import { getStatusClass, formatLogDate } from "../../../utils/monitoringUtils";
+import { getStatusClass, getStatusLabel, formatLogDate } from "../../../utils/monitoringUtils";
+import { LOG_STATUS, STATUS_METADATA } from "../../../utils/incidentConstants";
 
 const CATEGORY_MAP = {
   "BMS":        { icon: "forest",        color: "#00b545", label: "Biodiversity" },
@@ -16,7 +17,7 @@ function MonitoringTable({ logs, isAdmin, onStatusChange, onViewDetails }) {
     );
   }
 
-  const statuses = ["Submitted", "Under Review", "Approved", "Rejected/Flagged"];
+  // statuses are fetched from LOG_STATUS for consistency
 
   return (
     <div className="inc-table-wrap">
@@ -75,18 +76,20 @@ function MonitoringTable({ logs, isAdmin, onStatusChange, onViewDetails }) {
                       <select
                         value={log.status}
                         onChange={(e) => onStatusChange(log.id, e.target.value)}
-                        className={`admin-status-select admin-status-select--${getStatusClass(log.status)}`}
+                        className={`admin-status-select admin-status-select--${log.status?.toLowerCase().replace(/\s+/g, "-")}`}
                         aria-label={`Change status for log ${log.id}`}
                         title="Override status"
                         style={{ minWidth: "130px" }}
                       >
-                      {statuses.map((s) => (
-                        <option key={s} value={s}>{s}</option>
+                      {Object.values(LOG_STATUS).map((s) => (
+                        <option key={s} value={s}>
+                          {STATUS_METADATA[s?.toLowerCase()]?.label || s}
+                        </option>
                       ))}
                     </select>
                   ) : (
                     <span className={`status-badge ${getStatusClass(log.status)}`}>
-                      {log.status}
+                      {getStatusLabel(log.status)}
                     </span>
                   )}
                 </td>

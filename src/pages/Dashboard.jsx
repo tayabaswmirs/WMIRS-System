@@ -7,7 +7,7 @@ import DashboardLayout from "../components/layout/DashboardLayout";
 function Dashboard() {
   const { currentUser, profileData } = useAuth();
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ total: 0, pending: 0, resolved: 0 });
+  const [stats, setStats] = useState({ total: 0, active: 0, resolved: 0, verified: 0, completed: 0 });
   const [recentReports, setRecentReports] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -18,14 +18,23 @@ function Dashboard() {
 
     // Load recent reports and compute stats in real-time
     const unsubscribe = subscribeToReporterIncidents(currentUser.uid, (reports) => {
-      const pendingCount = reports.filter((r) => r.status === "Submitted" || r.status === "Under Review").length;
-      const resolvedCount = reports.filter((r) => r.status === "Resolved").length;
+      // Single-pass reducer to calculate stats following client-side best practices
+      const computedStats = reports.reduce((acc, r) => {
+        const status = r.status?.toLowerCase();
+        acc.total += 1;
+        if (status === "assigned" || status === "unresolved") {
+          acc.active += 1;
+        } else if (status === "resolved") {
+          acc.resolved += 1;
+        } else if (status === "verified" || status === "pending completion") {
+          acc.verified += 1;
+        } else if (status === "completed") {
+          acc.completed += 1;
+        }
+        return acc;
+      }, { total: 0, active: 0, resolved: 0, verified: 0, completed: 0 });
 
-      setStats({
-        total: reports.length,
-        pending: pendingCount,
-        resolved: resolvedCount,
-      });
+      setStats(computedStats);
       setRecentReports(reports.slice(0, 3));
       setLoading(false);
     });
@@ -80,10 +89,10 @@ function Dashboard() {
             </div>
           </div>
 
-          {/* Stats Column */}
-          <div className="dashboard-stats-col">
+          {/* Stats Column - structured as a responsive subgrid */}
+          <div className="dashboard-stats-col" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "12px" }}>
             <div className="card-base stat-card">
-              <span className="material-symbols-outlined stat-card__icon text-accent">report</span>
+              <span className="material-symbols-outlined stat-card__icon" style={{ color: "#3d8eff" }}>upload_file</span>
               <div className="stat-card__content">
                 <span className="stat-card__label">Total Submitted</span>
                 <span className="stat-card__val">{loading ? "..." : stats.total}</span>
@@ -91,18 +100,34 @@ function Dashboard() {
             </div>
 
             <div className="card-base stat-card">
-              <span className="material-symbols-outlined stat-card__icon text-warning">pending_actions</span>
+              <span className="material-symbols-outlined stat-card__icon" style={{ color: "#fa6e39" }}>assignment_late</span>
               <div className="stat-card__content">
-                <span className="stat-card__label">Pending Action</span>
-                <span className="stat-card__val">{loading ? "..." : stats.pending}</span>
+                <span className="stat-card__label">Active Tasks</span>
+                <span className="stat-card__val">{loading ? "..." : stats.active}</span>
               </div>
             </div>
 
             <div className="card-base stat-card">
-              <span className="material-symbols-outlined stat-card__icon text-success">task_alt</span>
+              <span className="material-symbols-outlined stat-card__icon" style={{ color: "#00a35c" }}>pending_actions</span>
               <div className="stat-card__content">
-                <span className="stat-card__label">Resolved Cases</span>
+                <span className="stat-card__label">Pending Verification</span>
                 <span className="stat-card__val">{loading ? "..." : stats.resolved}</span>
+              </div>
+            </div>
+
+            <div className="card-base stat-card">
+              <span className="material-symbols-outlined stat-card__icon" style={{ color: "#7b3ff2" }}>verified</span>
+              <div className="stat-card__content">
+                <span className="stat-card__label">Pending Completion</span>
+                <span className="stat-card__val">{loading ? "..." : stats.verified}</span>
+              </div>
+            </div>
+
+            <div className="card-base stat-card">
+              <span className="material-symbols-outlined stat-card__icon" style={{ color: "#00ed64" }}>task_alt</span>
+              <div className="stat-card__content">
+                <span className="stat-card__label">Completed Cases</span>
+                <span className="stat-card__val">{loading ? "..." : stats.completed}</span>
               </div>
             </div>
           </div>

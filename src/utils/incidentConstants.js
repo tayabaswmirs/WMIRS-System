@@ -166,6 +166,28 @@ export const STATUS_METADATA = {
   completed: { label: "Completed", color: "green", stepIndex: 4 }
 };
 
+export const STATUS_GROUPS = {
+  "Submitted": ["submitted", "under review"],
+  "Denied": ["denied"],
+  "Open Assignment": ["assigned", "unresolved"],
+  "Pending Verification": ["resolved"],
+  "Pending Completion": ["verified", "pending completion"],
+  "Completed": ["completed"]
+};
+
+export const getStatusesByLabel = (label) => {
+  if (label === "All" || !label) {
+    return Object.values(LOG_STATUS);
+  }
+  return STATUS_GROUPS[label] || [];
+};
+
+export const getStatusLabel = (status) => {
+  const norm = status?.toLowerCase();
+  return STATUS_METADATA[norm]?.label || status || "Unknown";
+};
+
+
 /**
  * Returns the CSS class suffix for a given severity string.
  * @param {string} severity

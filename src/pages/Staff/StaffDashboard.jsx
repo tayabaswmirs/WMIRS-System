@@ -9,6 +9,7 @@ import AdminIncidentTable from "../../components/common/AdminIncidentTable";
 import MonitoringTable from "../../components/common/monitoring/MonitoringTable";
 import ConfirmationModal from "../../components/common/ConfirmationModal";
 import StatPill from "../../components/common/StatPill";
+import { getStatusesByLabel } from "../../utils/incidentConstants";
 import "../../styles/dashboard.css";
 
 function StaffDashboard() {
@@ -43,32 +44,30 @@ function StaffDashboard() {
     };
   }, [staffScope, isIncidents]);
 
-  const STATUS_FILTERS = isIncidents 
-    ? ["All", "Submitted", "Under Review", "Resolved", "Dismissed"]
-    : ["All", "Submitted", "Under Review", "Approved", "Rejected/Flagged"];
+  const STATUS_FILTERS = ["All", "Submitted", "Denied", "Open Assignment", "Pending Verification", "Pending Completion", "Completed"];
 
   const stats = useMemo(() => {
-    if (isIncidents) {
-      return {
-        total: items.length,
-        submitted: items.filter((r) => r.status === "Submitted").length,
-        underReview: items.filter((r) => r.status === "Under Review").length,
-        resolved: items.filter((r) => r.status === "Resolved").length,
-      };
-    } else {
-      return {
-        total: items.length,
-        submitted: items.filter((r) => r.status === "Submitted").length,
-        underReview: items.filter((r) => r.status === "Under Review").length,
-        approved: items.filter((r) => r.status === "Approved").length,
-      };
-    }
-  }, [items, isIncidents]);
+    // Single-pass reducer to calculate stats following client-side best practices
+    return items.reduce((acc, r) => {
+      const status = r.status?.toLowerCase();
+      acc.total += 1;
+      if (status === "submitted" || status === "under review") {
+        acc.submitted += 1;
+      } else if (status === "assigned" || status === "unresolved") {
+        acc.active += 1;
+      } else if (status === "resolved") {
+        acc.resolved += 1;
+      } else if (status === "verified" || status === "pending completion" || status === "completed" || status === "denied") {
+        acc.approved += 1;
+      }
+      return acc;
+    }, { total: 0, submitted: 0, active: 0, resolved: 0, approved: 0 });
+  }, [items]);
 
   const filteredItems = useMemo(() => {
     const byStatus = activeFilter === "All" 
       ? items 
-      : items.filter((r) => r.status === activeFilter);
+      : items.filter((r) => getStatusesByLabel(activeFilter).includes(r.status?.toLowerCase()));
       
     if (!searchQuery.trim()) return byStatus;
     const q = searchQuery.toLowerCase();
@@ -101,9 +100,7 @@ function StaffDashboard() {
     });
   };
 
-  const isLocking = isIncidents 
-    ? (confirmDialog?.newStatus === "Resolved" || confirmDialog?.newStatus === "Dismissed")
-    : (confirmDialog?.newStatus === "Approved" || confirmDialog?.newStatus === "Rejected/Flagged");
+  const isLocking = confirmDialog?.newStatus === "completed" || confirmDialog?.newStatus === "denied";
 
   const executeStatusChange = async () => {
     if (!confirmDialog) return;
@@ -147,15 +144,11 @@ function StaffDashboard() {
             </p>
           </div>
           <div className="inc-hero__stats">
-            <StatPill icon="inventory_2"     label="Total"        count={stats.total}       color="var(--brand-green, #00ed64)" />
-            <StatPill icon="mark_email_unread" label="Submitted"  count={stats.submitted}   color="#3d8eff" />
-            <StatPill icon="pending_actions"  label="Under Review" count={stats.underReview} color="#f5a524" />
-            <StatPill 
-              icon="task_alt" 
-              label={isIncidents ? "Resolved" : "Approved"} 
-              count={isIncidents ? stats.resolved : stats.approved} 
-              color="#00ed64" 
-            />
+            <StatPill icon="inventory_2" label="Total" count={stats.total} color="#a8b3bc" />
+            <StatPill icon="mark_email_unread" label="Awaiting Review" count={stats.submitted} color="#3d8eff" />
+            <StatPill icon="assignment" label="Active Tasks" count={stats.active} color="#fa6e39" />
+            <StatPill icon="pending_actions" label="Pending Verification" count={stats.resolved} color="#00a35c" />
+            <StatPill icon="task_alt" label="Approved/Completed" count={stats.approved} color="#00ed64" />
           </div>
         </div>
 

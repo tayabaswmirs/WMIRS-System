@@ -1,11 +1,7 @@
-const STATUS_CLASSES = {
-  "Submitted":    "status-submitted",
-  "Under Review": "status-under-review",
-  "Approved":     "status-approved",
-  "Rejected/Flagged": "status-dismissed"
-};
+import { getStatusClass, getStatusLabel } from "./incidentConstants";
 
-export const getStatusClass = (status) => STATUS_CLASSES[status] ?? "status-submitted";
+export { getStatusClass, getStatusLabel };
+
 
 export const formatLogDate = (timestamp) => {
   if (!timestamp) return "N/A";

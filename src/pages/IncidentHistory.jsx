@@ -3,11 +3,12 @@ import { useAuth } from "../hooks/useAuth";
 import { subscribeToReporterIncidents } from "../firebase/services/incidentService";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import IncidentDetailsModal from "../components/common/IncidentDetailsModal";
-import { CATEGORY_META, getSeverityClass, getStatusClass, formatIncidentDate } from "../utils/incidentConstants";
+import { CATEGORY_META, getSeverityClass, getStatusClass, getStatusLabel, getStatusesByLabel, formatIncidentDate } from "../utils/incidentConstants";
+import StatPill from "../components/common/StatPill";
 import "../styles/dashboard.css";
 
 // Filter options rendered as tabs above the history table
-const STATUS_FILTERS = ["All", "Submitted", "Under Review", "Resolved", "Dismissed"];
+const STATUS_FILTERS = ["All", "Submitted", "Denied", "Open Assignment", "Pending Verification", "Pending Completion", "Completed"];
 
 function IncidentHistory() {
   const { currentUser } = useAuth();
@@ -24,19 +25,32 @@ function IncidentHistory() {
     return unsubscribe;
   }, [currentUser?.uid]);
 
-  /* Derived stats */
-  const stats = useMemo(() => ({
-    submitted:   incidents.filter((r) => r.status === "Submitted").length,
-    underReview: incidents.filter((r) => r.status === "Under Review").length,
-    resolved:    incidents.filter((r) => r.status === "Resolved").length,
-    dismissed:   incidents.filter((r) => r.status === "Dismissed").length,
-  }), [incidents]);
+  /* Derived stats using a high-performance single pass reducer */
+  const stats = useMemo(() => {
+    return incidents.reduce((acc, r) => {
+      const status = r.status?.toLowerCase();
+      if (status === "submitted" || status === "under review") {
+        acc.submitted += 1;
+      } else if (status === "denied") {
+        acc.denied += 1;
+      } else if (status === "assigned" || status === "unresolved") {
+        acc.active += 1;
+      } else if (status === "resolved") {
+        acc.resolved += 1;
+      } else if (status === "verified" || status === "pending completion") {
+        acc.verified += 1;
+      } else if (status === "completed") {
+        acc.completed += 1;
+      }
+      return acc;
+    }, { submitted: 0, denied: 0, active: 0, resolved: 0, verified: 0, completed: 0 });
+  }, [incidents]);
 
   /* Filtered + searched slice of the incident list */
   const filteredIncidents = useMemo(() => {
     const byStatus = activeFilter === "All"
       ? incidents
-      : incidents.filter((r) => r.status === activeFilter);
+      : incidents.filter((r) => getStatusesByLabel(activeFilter).includes(r.status?.toLowerCase()));
     if (!searchQuery.trim()) return byStatus;
     const q = searchQuery.toLowerCase();
     return byStatus.filter((r) =>
@@ -59,10 +73,11 @@ function IncidentHistory() {
             </p>
           </div>
           <div className="inc-hero__stats">
-            <StatPill icon="upload_file" label="Submitted" count={stats.submitted} color="#f5a524" />
-            <StatPill icon="manage_search" label="Under Review" count={stats.underReview} color="#0080ff" />
-            <StatPill icon="task_alt" label="Resolved" count={stats.resolved} color="#00ed64" />
-            <StatPill icon="block" label="Dismissed" count={stats.dismissed} color="var(--c-warn-text)" />
+            <StatPill icon="upload_file" label="Submitted" count={stats.submitted} color="#3d8eff" />
+            <StatPill icon="assignment" label="Open Assignment" count={stats.active} color="#fa6e39" />
+            <StatPill icon="pending_actions" label="Pending Verification" count={stats.resolved} color="#00a35c" />
+            <StatPill icon="verified" label="Pending Completion" count={stats.verified} color="#7b3ff2" />
+            <StatPill icon="task_alt" label="Completed" count={stats.completed} color="#00ed64" />
           </div>
         </div>
 
@@ -152,7 +167,7 @@ function IncidentHistory() {
                           <span className={`severity-badge ${getSeverityClass(rep.severity)}`}>{rep.severity}</span>
                         </td>
                         <td className="inc-table__td">
-                          <span className={`status-badge ${getStatusClass(rep.status)}`}>{rep.status}</span>
+                          <span className={`status-badge ${getStatusClass(rep.status)}`}>{getStatusLabel(rep.status)}</span>
                         </td>
                         <td className="inc-table__td inc-table__td--action">
                           <button
@@ -181,21 +196,6 @@ function IncidentHistory() {
         />
       </div>
     </DashboardLayout>
-  );
-}
-
-/* ─── Stat Pill ──────────────────────────────────────────────────────────── */
-function StatPill({ icon, label, count, color }) {
-  return (
-    <div className="inc-stat-pill">
-      <span className="material-symbols-outlined inc-stat-pill__icon" style={{ color }} aria-hidden="true">
-        {icon}
-      </span>
-      <div className="inc-stat-pill__body">
-        <span className="inc-stat-pill__count" style={{ color }}>{count}</span>
-        <span className="inc-stat-pill__label">{label}</span>
-      </div>
-    </div>
   );
 }
 
