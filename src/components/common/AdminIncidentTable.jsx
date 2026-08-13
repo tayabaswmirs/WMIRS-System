@@ -8,7 +8,7 @@ import { CATEGORY_META, LOG_STATUS, STATUS_METADATA, getSeverityClass, formatInc
  *   onStatusChange {Function} — (incidentId, newStatus) called on inline dropdown change
  *   onViewDetails  {Function} — (incident) called when the details icon is clicked
  */
-function AdminIncidentTable({ incidents, onStatusChange, onViewDetails }) {
+function AdminIncidentTable({ incidents, onStatusChange, onViewDetails, readOnly = false }) {
   if (incidents.length === 0) {
     return (
       <div className="inc-empty-state">
@@ -87,6 +87,7 @@ function AdminIncidentTable({ incidents, onStatusChange, onViewDetails }) {
                     className={`admin-status-select admin-status-select--${inc.status?.toLowerCase().replace(/\s+/g, "-")}`}
                     aria-label={`Change status for ${inc.incidentType}`}
                     title={"Override status"}
+                    disabled={readOnly}
                   >
                     {Object.values(LOG_STATUS).map((s) => (
                       <option key={s} value={s}>

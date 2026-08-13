@@ -10,7 +10,7 @@ const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
  * Step 2: Incident Sub-Category / Type Selection (visual card buttons)
  * Step 3: Fill Incident Details & Evidence Attachments
  */
-function IncidentForm({ onSubmit, isSubmitting, uploadProgress, formFeedback, setFormFeedback }) {
+function IncidentForm({ onSubmit, isSubmitting, uploadProgress, formFeedback, setFormFeedback, onBackToChoice }) {
   const fileInputRef = useRef(null);
 
   // Wizard step state: 1 = category, 2 = incident type, 3 = details & evidence form
@@ -115,11 +115,11 @@ function IncidentForm({ onSubmit, isSubmitting, uploadProgress, formFeedback, se
 
       {/* Feedback Banner */}
       {formFeedback?.message && (
-        <div className={`inc-form-alert inc-form-alert--${formFeedback.type}`} role="alert">
-          <span className="material-symbols-outlined inc-form-alert__icon">
+        <div className={`um-alert um-alert--${formFeedback.type}`} role="alert" style={{ marginBottom: "20px" }}>
+          <span className="material-symbols-outlined um-alert__icon">
             {formFeedback.type === "success" ? "check_circle" : formFeedback.type === "error" ? "error" : "info"}
           </span>
-          {formFeedback.message}
+          <span>{formFeedback.message}</span>
         </div>
       )}
 
@@ -128,6 +128,13 @@ function IncidentForm({ onSubmit, isSubmitting, uploadProgress, formFeedback, se
         {/* ── STEP 1: Category Selection ── */}
         {step === 1 && (
           <div className="mon-step" key="step-1">
+            {onBackToChoice && (
+              <div className="mon-breadcrumb" style={{ marginBottom: "20px" }}>
+                <button type="button" className="mon-breadcrumb__back" onClick={onBackToChoice}>
+                  <span className="material-symbols-outlined">arrow_back</span>Back
+                </button>
+              </div>
+            )}
             <div className="mon-step-label">
               <span className="mon-step-label__num">1</span>
               <span className="mon-step-label__text">Choose an Incident Category</span>
@@ -397,7 +404,7 @@ function IncidentForm({ onSubmit, isSubmitting, uploadProgress, formFeedback, se
               </div>
 
               {/* ─── Submit Footer ────────────────────────────────────── */}
-              <div className="inc-form__footer" style={{ position: "static", border: "none", padding: "16px 0 0 0" }}>
+              <div className="inc-form__footer" style={{ position: "static", borderTop: "1px solid var(--c-hairline)", padding: "20px var(--sp-xxl) var(--sp-xxl) var(--sp-xxl)", background: "transparent", marginTop: "24px" }}>
                 <span className="inc-form__footer-hint">
                   <span className="inc-form__required">*</span> Required fields
                 </span>

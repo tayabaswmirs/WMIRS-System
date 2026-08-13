@@ -3,15 +3,20 @@ import { useAuth } from "../../hooks/useAuth";
 import wmirsLogo from "../../assets/wmirs-logo.png";
 import "../../styles/dashboard.css";
 
-// Nav items configuration
 const NAV_ITEMS = [
   // Dashboard handles where it points based on role
   { id: "nav-dashboard",        icon: "dashboard",              label: "Dashboard",           path: "/dashboard", adminPath: "/admin/dashboard", staffPath: "/staff/dashboard", roles: ["admin", "staff", "ranger"] },
-  // Open Assignments for all
-  { id: "nav-assignments",      icon: "assignment",             label: "Open Assignments",    path: "/assignments", roles: ["admin", "staff", "ranger"] },
+  
+  // Scoped Staff Workspace links
+  { id: "nav-staff-awaiting",   icon: "mark_email_unread",      label: "Awaiting Review",      path: "/staff/workspace/awaiting-review", roles: ["staff"] },
+  { id: "nav-staff-active",     icon: "assignment",             label: "Active Assignments",   path: "/staff/workspace/active-assignments", roles: ["staff"] },
+  { id: "nav-staff-verify",     icon: "pending_actions",        label: "Pending Verification", path: "/staff/workspace/pending-verification", roles: ["staff"] },
+  { id: "nav-staff-archive",    icon: "task_alt",               label: "Completed Archive",    path: "/staff/workspace/completed-archive", roles: ["staff"] },
+
+  // Open Assignments (Admin and Ranger only)
+  { id: "nav-assignments",      icon: "assignment_ind",         label: "Open Assignments",    path: "/assignments", roles: ["admin", "ranger"] },
   // Forest Ranger Submission & History Links (Rangers Only)
-  { id: "nav-incidents",        icon: "warning",                label: "Submit Incident",     path: "/incidents", roles: ["ranger"] },
-  { id: "nav-monitoring",       icon: "monitoring",             label: "Submit Monitoring",   path: "/monitoring", roles: ["ranger"] },
+  { id: "nav-submit",           icon: "add_circle",             label: "Submit Report",       path: "/submit", roles: ["ranger"] },
   { id: "nav-inc-history",      icon: "history",                label: "Incident History",    path: "/incidents/history", roles: ["ranger"] },
   { id: "nav-mon-history",      icon: "history_edu",            label: "Monitoring History",  path: "/monitoring/history", roles: ["ranger"] },
   // Admin links
@@ -48,10 +53,7 @@ function Sidebar({ isOpen, onClose }) {
     if (location.pathname === targetPath) return true;
     
     // Prevent root paths from staying active when we are inside their history sub-paths
-    if (targetPath === "/monitoring" && location.pathname.startsWith("/monitoring/history")) {
-      return false;
-    }
-    if (targetPath === "/incidents" && location.pathname.startsWith("/incidents/history")) {
+    if (targetPath === "/submit" && (location.pathname.startsWith("/incidents/history") || location.pathname.startsWith("/monitoring/history"))) {
       return false;
     }
 

@@ -840,6 +840,12 @@
   color: var(--c-green-dark);
 }
 
+.um-alert--info {
+  background: rgba(61, 79, 159, 0.08);
+  border: 1px solid rgba(61, 79, 159, 0.25);
+  color: #3d4f9f;
+}
+
 /* ── Loading state ───────────────────────────────────────────── */
 .um-loading-state {
   display: flex;
@@ -4125,7 +4131,7 @@ button:disabled,
   font-weight: 600;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--c-steel);
+  color: var(--c-on-dark, #ffffff);
 }
 
 /* ── Breadcrumb Trail ── */

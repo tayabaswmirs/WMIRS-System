@@ -1,29 +1,109 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import DashboardLayout from "../../components/layout/DashboardLayout";
-import { subscribeToAllIncidents, updateLogWorkflowStatus } from "../../firebase/services/incidentService";
-import { subscribeToCategoryMonitoring, reviewMonitoringAtomic } from "../../firebase/services/monitoringService";
-import IncidentDetailsModal from "../../components/common/IncidentDetailsModal";
-import MonitoringDetailsModal from "../../components/common/monitoring/MonitoringDetailsModal";
-import AdminIncidentTable from "../../components/common/AdminIncidentTable";
-import MonitoringTable from "../../components/common/monitoring/MonitoringTable";
-import ConfirmationModal from "../../components/common/ConfirmationModal";
+import { subscribeToAllIncidents } from "../../firebase/services/incidentService";
+import { subscribeToCategoryMonitoring } from "../../firebase/services/monitoringService";
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  Cell, AreaChart, Area, CartesianGrid
+} from "recharts";
 import StatPill from "../../components/common/StatPill";
-import { getStatusesByLabel } from "../../utils/incidentConstants";
 import "../../styles/dashboard.css";
 
-function StaffDashboard() {
-  const { currentUser, staffScope } = useAuth();
+/* ── Color & Chart Config Tokens ─────────────────────────── */
+const SEVERITY_COLORS = {
+  Critical: "#ff5722",
+  High: "#f5a524",
+  Medium: "#3d8eff",
+  Low: "#00ed64"
+};
 
+const CHART_COLORS = ["#00ed64", "#3d8eff", "#fa6e39", "#7b3ff2", "#ffc107", "#00b545"];
+
+const MONTH_LABELS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+const TOOLTIP_STYLE = {
+  backgroundColor: "#001e2b",
+  border: "1px solid #1c2d38",
+  borderRadius: "var(--card-radius, 12px)",
+  boxShadow: "var(--card-shadow, rgba(0, 30, 43, 0.08) 0px 4px 12px 0px)",
+  fontSize: "12px",
+  color: "#ffffff"
+};
+
+/* ── Reusable Gauge Ring ──────────────────────────────────── */
+function GaugeRing({ value, color, label }) {
+  const RADIUS = 68;
+  const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+  const offset = CIRCUMFERENCE - (value / 100) * CIRCUMFERENCE;
+
+  return (
+    <div className="dash-gauge">
+      <div className="dash-gauge__ring">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <circle className="dash-gauge__ring-bg" cx="80" cy="80" r={RADIUS} />
+          <circle
+            className="dash-gauge__ring-fg"
+            cx="80" cy="80" r={RADIUS}
+            stroke={color}
+            strokeDasharray={CIRCUMFERENCE}
+            strokeDashoffset={offset}
+          />
+        </svg>
+        <span className="dash-gauge__pct">{value}%</span>
+      </div>
+      <span className="dash-gauge__label">{label}</span>
+    </div>
+  );
+}
+
+/* ── Chart Card Wrapper ───────────────────────────────────── */
+function ChartCard({ icon, title, subtitle, children }) {
+  return (
+    <div className="dash-chart-card">
+      <div className="dash-chart-card__header">
+        <span className="material-symbols-outlined dash-chart-card__header-icon" aria-hidden="true">
+          {icon}
+        </span>
+        <div>
+          <div className="dash-chart-card__title">{title}</div>
+          {subtitle ? <div className="dash-chart-card__subtitle">{subtitle}</div> : null}
+        </div>
+      </div>
+      <div className="dash-chart-card__body">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/* ── KPI Card ─────────────────────────────────────────────── */
+function KpiCard({ variant, icon, value, label, sub }) {
+  return (
+    <div className={`dash-kpi-card dash-kpi-card--${variant}`}>
+      <div className="dash-kpi-card__icon-wrap">
+        <span className="material-symbols-outlined dash-kpi-card__icon" aria-hidden="true">
+          {icon}
+        </span>
+      </div>
+      <div className="dash-kpi-card__body">
+        <span className="dash-kpi-card__value">{value}</span>
+        <span className="dash-kpi-card__label">{label}</span>
+        {sub ? <span className="dash-kpi-card__sub">{sub}</span> : null}
+      </div>
+    </div>
+  );
+}
+
+/* ── Main Component ───────────────────────────────────────── */
+function StaffDashboard() {
+  const { staffScope } = useAuth();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [confirmDialog, setConfirmDialog] = useState(null);
 
   const isIncidents = staffScope === "incidents";
 
+  // Data fetching subscription based on scope
   useEffect(() => {
     let unsubscribe;
     if (isIncidents) {
@@ -36,202 +116,269 @@ function StaffDashboard() {
         setItems(data);
         setLoading(false);
       });
-    } else {
-      setTimeout(() => setLoading(false), 0);
     }
     return () => {
       if (unsubscribe) unsubscribe();
     };
   }, [staffScope, isIncidents]);
 
-  const STATUS_FILTERS = ["All", "Submitted", "Denied", "Open Assignment", "Pending Verification", "Pending Completion", "Completed"];
+  // Scoped Analytics computations
+  const analytics = useMemo(() => {
+    // 1. KPI Counts
+    let total = items.length;
+    let awaitingReview = 0;
+    let activeTasks = 0;
+    let resolvedCount = 0;
+    let completedCount = 0;
+    let urgentThreats = 0;
 
-  const stats = useMemo(() => {
-    // Single-pass reducer to calculate stats following client-side best practices
-    return items.reduce((acc, r) => {
-      const status = r.status?.toLowerCase();
-      acc.total += 1;
+    // 2. Monthly Trend Data Map
+    const monthlyMap = new Map();
+    MONTH_LABELS.forEach((m, idx) => {
+      monthlyMap.set(idx, { month: m, volume: 0, resolved: 0 });
+    });
+
+    // 3. Incidents specific data structures
+    const severityCount = { Critical: 0, High: 0, Medium: 0, Low: 0 };
+    const incidentCategories = {};
+
+    // 4. Monitoring specific data structures
+    let compliantCount = 0;
+    let nonCompliantCount = 0;
+    const subcategoryCount = {};
+
+    items.forEach((item) => {
+      const status = item.status?.toLowerCase();
+      const severity = item.severity;
+      const ts = item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000) : null;
+
+      // Status aggregations
       if (status === "submitted" || status === "under review") {
-        acc.submitted += 1;
+        awaitingReview++;
       } else if (status === "assigned" || status === "unresolved") {
-        acc.active += 1;
+        activeTasks++;
       } else if (status === "resolved") {
-        acc.resolved += 1;
+        resolvedCount++;
       } else if (status === "verified" || status === "pending completion" || status === "completed" || status === "denied") {
-        acc.approved += 1;
+        completedCount++;
       }
-      return acc;
-    }, { total: 0, submitted: 0, active: 0, resolved: 0, approved: 0 });
-  }, [items]);
 
-  const filteredItems = useMemo(() => {
-    const byStatus = activeFilter === "All" 
-      ? items 
-      : items.filter((r) => getStatusesByLabel(activeFilter).includes(r.status?.toLowerCase()));
-      
-    if (!searchQuery.trim()) return byStatus;
-    const q = searchQuery.toLowerCase();
-    
-    return byStatus.filter((item) => {
+      // Monthly aggregations
+      if (ts) {
+        const m = ts.getMonth();
+        const entry = monthlyMap.get(m);
+        if (entry) {
+          entry.volume++;
+          if (status === "completed" || status === "denied") {
+            entry.resolved++;
+          }
+        }
+      }
+
+      // Domain-specific calculations
       if (isIncidents) {
-        return (
-          item.incidentType?.toLowerCase().includes(q) ||
-          item.category?.toLowerCase().includes(q) ||
-          item.location?.toLowerCase().includes(q) ||
-          item.reporter?.name?.toLowerCase().includes(q)
-        );
+        if ((severity === "Critical" || severity === "High") && status !== "completed" && status !== "denied") {
+          urgentThreats++;
+        }
+        if (severityCount[severity] !== undefined) {
+          severityCount[severity]++;
+        }
+        const category = item.category || "Unknown";
+        incidentCategories[category] = (incidentCategories[category] || 0) + 1;
       } else {
-        return (
-          item.subcategory?.toLowerCase().includes(q) ||
-          item.category?.toLowerCase().includes(q) ||
-          item.reporter?.name?.toLowerCase().includes(q) ||
-          item.speciesName?.toLowerCase().includes(q) ||
-          item.avianSpecies?.toLowerCase().includes(q) ||
-          item.barangay?.toLowerCase().includes(q) ||
-          item.waterBody?.toLowerCase().includes(q)
-        );
+        if (item.compliant === true) {
+          compliantCount++;
+        } else if (item.compliant === false) {
+          nonCompliantCount++;
+        }
+        const subcat = item.subcategory || "Unknown";
+        subcategoryCount[subcat] = (subcategoryCount[subcat] || 0) + 1;
       }
     });
-  }, [items, activeFilter, searchQuery, isIncidents]);
 
-  const handleStatusChangeRequest = (itemId, newStatus, remarks) => {
-    return new Promise((resolve, reject) => {
-      setConfirmDialog({ itemId, newStatus, remarks, resolve, reject });
-    });
-  };
+    const monthlyData = Array.from(monthlyMap.values()).map((d) => ({
+      ...d,
+      velocity: d.volume > 0 ? Math.round((d.resolved / d.volume) * 100) : 0
+    }));
 
-  const isLocking = confirmDialog?.newStatus === "completed" || confirmDialog?.newStatus === "denied";
+    const velocity = total > 0 ? Math.round((completedCount / total) * 100) : 0;
 
-  const executeStatusChange = async () => {
-    if (!confirmDialog) return;
-    const { itemId, newStatus, remarks, resolve } = confirmDialog;
-    try {
-      if (isIncidents) {
-        await updateLogWorkflowStatus(itemId, "Incident", newStatus, currentUser.uid, currentUser.displayName, remarks);
-      } else {
-        await reviewMonitoringAtomic(itemId, newStatus, currentUser.uid, currentUser.displayName, remarks);
-      }
-      if (selectedItem?.id === itemId) {
-        setSelectedItem((prev) => ({ ...prev, status: newStatus }));
-      }
-      resolve(true);
-    } catch (err) {
-      console.error(err);
-      if (confirmDialog.reject) confirmDialog.reject(err);
-    } finally {
-      setConfirmDialog(null);
-    }
-  };
+    const severityData = Object.entries(severityCount).map(([name, count]) => ({
+      name,
+      value: count
+    }));
 
-  const cancelStatusChange = () => {
-    if (confirmDialog?.resolve) {
-      confirmDialog.resolve(false);
-    }
-    setConfirmDialog(null);
-  };
+    const categoryData = Object.entries(incidentCategories).map(([name, value]) => ({
+      name: name.length > 20 ? name.substring(0, 18) + "…" : name,
+      value
+    }));
+
+    const complianceRate = (compliantCount + nonCompliantCount) > 0
+      ? Math.round((compliantCount / (compliantCount + nonCompliantCount)) * 100)
+      : 0;
+
+    const subcatData = Object.entries(subcategoryCount).map(([name, value]) => ({
+      name: name.replace(" Form", "").substring(0, 25),
+      value
+    }));
+
+    return {
+      total,
+      awaitingReview,
+      activeTasks,
+      resolvedCount,
+      completedCount,
+      urgentThreats,
+      velocity,
+      monthlyData,
+      severityData,
+      categoryData,
+      compliantCount,
+      nonCompliantCount,
+      complianceRate,
+      subcatData
+    };
+  }, [items, isIncidents]);
 
   return (
     <DashboardLayout>
       <div className="incidents-page">
+        {/* Scoped Dashboard Header */}
         <div className="inc-hero">
           <div className="inc-hero__left">
-            <span className="inc-hero__eyebrow">Staff Workspace</span>
+            <span className="inc-hero__eyebrow">Auditing & Intelligence</span>
             <h1 className="inc-hero__title">
-              {isIncidents ? "Incident Reports Review" : `${staffScope} Monitoring Review`}
+              {isIncidents ? "Incident Audits Dashboard" : `${staffScope} Monitoring Dashboard`}
             </h1>
             <p className="inc-hero__subtitle">
-              Review and update the status of {isIncidents ? "environmental incident reports" : "monitoring logs"}.
+              Visual field intelligence, severity metrics, and processing velocity scoped to your review domain.
             </p>
           </div>
           <div className="inc-hero__stats">
-            <StatPill icon="inventory_2" label="Total" count={stats.total} color="#a8b3bc" />
-            <StatPill icon="mark_email_unread" label="Awaiting Review" count={stats.submitted} color="#3d8eff" />
-            <StatPill icon="assignment" label="Active Tasks" count={stats.active} color="#fa6e39" />
-            <StatPill icon="pending_actions" label="Pending Verification" count={stats.resolved} color="#00a35c" />
-            <StatPill icon="task_alt" label="Approved/Completed" count={stats.approved} color="#00ed64" />
+            <StatPill icon="task_alt" label="Actioned" count={analytics.completedCount} color="#00ed64" />
+            <StatPill icon="pending_actions" label="Pending Verification" count={analytics.resolvedCount} color="#00a35c" />
           </div>
         </div>
 
-        <div className="inc-history-card card-base">
-          <div className="inc-history-card__head">
-            <h2 className="inc-history-card__title">All {isIncidents ? "Incident Reports" : "Monitoring Logs"}</h2>
-            <div className="inc-search-wrap">
-              <span className="material-symbols-outlined inc-search-icon">search</span>
-              <input
-                id="staff-search"
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={isIncidents ? "Search incidents..." : "Search logs..."}
-                className="inc-search-input"
-              />
-            </div>
-          </div>
-
-          <div className="inc-filter-tabs" role="tablist" aria-label="Filter items by status">
-            {STATUS_FILTERS.map((f) => (
-              <button
-                key={f}
-                role="tab"
-                aria-selected={activeFilter === f}
-                onClick={() => setActiveFilter(f)}
-                className={`inc-filter-tab${activeFilter === f ? " inc-filter-tab--active" : ""}`}
-                type="button"
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-
-          {loading ? (
-            <p className="loading-text" style={{ padding: "32px", textAlign: "center", color: "var(--c-steel)" }}>
-              Loading data...
-            </p>
-          ) : isIncidents ? (
-            <AdminIncidentTable
-              incidents={filteredItems}
-              onStatusChange={handleStatusChangeRequest}
-              onViewDetails={setSelectedItem}
+        {/* Scoped KPI Grid */}
+        <div className="dash-kpi-grid">
+          {isIncidents ? (
+            <KpiCard
+              variant="threat"
+              icon="warning"
+              value={analytics.urgentThreats}
+              label="Urgent Threats"
+              sub="Critical / High severity not closed"
             />
           ) : (
-            <MonitoringTable
-              logs={filteredItems}
-              isAdmin
-              onStatusChange={handleStatusChangeRequest}
-              onViewDetails={setSelectedItem}
+            <KpiCard
+              variant="comply"
+              icon="verified_user"
+              value={`${analytics.complianceRate}%`}
+              label="Compliance Rate"
+              sub={`${analytics.compliantCount} compliant · ${analytics.nonCompliantCount} violations`}
             />
           )}
+          <KpiCard
+            variant="field"
+            icon={isIncidents ? "content_paste_search" : "fact_check"}
+            value={analytics.total}
+            label="Domain Submissions"
+            sub={`Total reports under your scope`}
+          />
+          <KpiCard
+            variant="water"
+            icon="assignment"
+            value={analytics.activeTasks}
+            label="Active Queue"
+            sub="Ranger tasks currently unresolved"
+          />
+          <KpiCard
+            variant="gauge"
+            icon="speed"
+            value={`${analytics.velocity}%`}
+            label="Closed Rate"
+            sub={`${analytics.completedCount} closed / ${analytics.total} total`}
+          />
         </div>
 
-        {isIncidents ? (
-          <IncidentDetailsModal
-            incident={selectedItem}
-            onClose={() => setSelectedItem(null)}
-            isAdmin
-            onStatusChange={handleStatusChangeRequest}
-          />
+        {/* Scoped Visual Charts */}
+        {loading ? (
+          <p className="loading-text" style={{ padding: "64px", textAlign: "center", color: "var(--c-steel)" }}>
+            Loading dashboard analytics...
+          </p>
         ) : (
-          <MonitoringDetailsModal
-            log={selectedItem}
-            onClose={() => setSelectedItem(null)}
-            isAdmin
-            onStatusChange={handleStatusChangeRequest}
-          />
-        )}
+          <div className="dash-chart-grid dash-chart-grid--two">
+            {/* Chart 1: Scoped monthly trend */}
+            <ChartCard icon="monitoring" title="Monthly Submissions & Closures">
+              <div style={{ width: "100%", height: 320 }}>
+                <ResponsiveContainer>
+                  <AreaChart data={analytics.monthlyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="staffVolumeGlow" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3d8eff" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#3d8eff" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                    <XAxis dataKey="month" stroke="var(--c-stone)" fontSize={11} />
+                    <YAxis stroke="var(--c-stone)" fontSize={11} />
+                    <Tooltip contentStyle={TOOLTIP_STYLE} />
+                    <Area type="monotone" dataKey="volume" stroke="#3d8eff" strokeWidth={2} fillOpacity={1} fill="url(#staffVolumeGlow)" name="Submissions" />
+                    <Area type="monotone" dataKey="resolved" stroke="#00ed64" strokeWidth={2} fillOpacity={0} name="Closures" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </ChartCard>
 
-        <ConfirmationModal
-          isOpen={!!confirmDialog}
-          title={isLocking ? "Lock Status?" : "Confirm Status Change"}
-          message={
-            isLocking 
-              ? `Are you sure you want to change the status to "${confirmDialog?.newStatus}"? This action is irreversible and the item will be locked.`
-              : `Are you sure you want to change the status to "${confirmDialog?.newStatus}"?`
-          }
-          onConfirm={executeStatusChange}
-          onCancel={cancelStatusChange}
-          confirmText={isLocking ? "Confirm & Lock" : "Confirm"}
-          isDestructive={isLocking}
-        />
+            {/* Chart 2: Domain metrics (Severity matrix for Incidents, subcategory for Monitoring) */}
+            {isIncidents ? (
+              <ChartCard icon="bar_chart" title="Incident Severity Breakdown">
+                <div style={{ width: "100%", height: 320 }}>
+                  <ResponsiveContainer>
+                    <BarChart data={analytics.severityData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                      <XAxis dataKey="name" stroke="var(--c-stone)" fontSize={11} />
+                      <YAxis stroke="var(--c-stone)" fontSize={11} />
+                      <Tooltip contentStyle={TOOLTIP_STYLE} />
+                      <Bar dataKey="value" name="Reports">
+                        {analytics.severityData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={SEVERITY_COLORS[entry.name] || "#3d8eff"} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </ChartCard>
+            ) : (
+              <ChartCard icon="bar_chart" title="Monitoring Subcategory Breakdown">
+                <div style={{ width: "100%", height: 320 }}>
+                  <ResponsiveContainer>
+                    <BarChart data={analytics.subcatData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                      <XAxis dataKey="name" stroke="var(--c-stone)" fontSize={10} angle={-15} textAnchor="end" interval={0} />
+                      <YAxis stroke="var(--c-stone)" fontSize={11} />
+                      <Tooltip contentStyle={TOOLTIP_STYLE} />
+                      <Bar dataKey="value" name="Logs">
+                        {analytics.subcatData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </ChartCard>
+            )}
+
+            {/* Gauge Row (Resolution Velocity vs Compliance / Category split) */}
+            <ChartCard icon="donut_large" title="Review Metrics Oversight">
+              <div className="flex justify-around items-center h-[300px]">
+                <GaugeRing value={analytics.velocity} color="#00ed64" label="Resolution Velocity" />
+                {!isIncidents && <GaugeRing value={analytics.complianceRate} color="#3d8eff" label="Compliance Rate" />}
+              </div>
+            </ChartCard>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );

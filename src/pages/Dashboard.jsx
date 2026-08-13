@@ -70,21 +70,12 @@ function Dashboard() {
             </p>
             <div style={{ display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }}>
               <button
-                onClick={() => navigate("/incidents")}
+                onClick={() => navigate("/submit")}
                 className="button-primary"
-                id="dashboard-report-cta-btn"
+                id="dashboard-submit-cta-btn"
                 type="button"
               >
-                Report New Incident
-              </button>
-              <button
-                onClick={() => navigate("/monitoring")}
-                className="button-primary"
-                id="dashboard-monitoring-cta-btn"
-                type="button"
-                style={{ backgroundColor: "var(--c-teal-dark, #001e2b)", border: "1px solid rgba(255,255,255,0.2)" }}
-              >
-                Log Ecological Monitoring
+                New Submission
               </button>
             </div>
           </div>
@@ -143,7 +134,7 @@ function Dashboard() {
               <span className="material-symbols-outlined empty-icon">assignment_late</span>
               <p className="empty-text">No incidents reported yet.</p>
               <button 
-                onClick={() => navigate("/incidents")} 
+                onClick={() => navigate("/submit")} 
                 className="button-link"
                 type="button"
               >
