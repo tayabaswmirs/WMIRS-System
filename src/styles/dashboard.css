@@ -4802,3 +4802,75 @@ button:disabled,
 .dash-chart-card--dark .gauge-legend-item {
   color: var(--c-on-dark-muted) !important;
 }
+
+/* Mint (Soft Green Wash) */
+.dash-chart-card--mint {
+  background-color: #d1f2dd !important; /* more saturated mint */
+  border-color: #a7f3d0 !important;
+  color: #065f46 !important;
+  box-shadow: 0 4px 20px rgba(6, 95, 70, 0.05) !important;
+}
+.dash-chart-card--mint .dash-chart-card__title {
+  color: #064e3b !important;
+}
+.dash-chart-card--mint .dash-chart-card__subtitle {
+  color: #047857 !important;
+  opacity: 0.9;
+}
+.dash-chart-card--mint .dash-chart-card__header-icon {
+  color: #059669 !important;
+}
+
+/* Purple (Soft Lavender Wash) */
+.dash-chart-card--purple {
+  background-color: #ebd9fc !important; /* more saturated lavender */
+  border-color: #ddd6fe !important;
+  color: #5b21b6 !important;
+  box-shadow: 0 4px 20px rgba(91, 33, 182, 0.05) !important;
+}
+.dash-chart-card--purple .dash-chart-card__title {
+  color: #4c1d95 !important;
+}
+.dash-chart-card--purple .dash-chart-card__subtitle {
+  color: #6d28d9 !important;
+  opacity: 0.9;
+}
+.dash-chart-card--purple .dash-chart-card__header-icon {
+  color: #7c3aed !important;
+}
+
+/* Warm (Soft Peach/Amber Wash) */
+.dash-chart-card--warm {
+  background-color: #ffdcc3 !important; /* more saturated peach */
+  border-color: #fed7aa !important;
+  color: #9a3412 !important;
+  box-shadow: 0 4px 20px rgba(154, 52, 18, 0.05) !important;
+}
+.dash-chart-card--warm .dash-chart-card__title {
+  color: #7c2d12 !important;
+}
+.dash-chart-card--warm .dash-chart-card__subtitle {
+  color: #c2410c !important;
+  opacity: 0.9;
+}
+.dash-chart-card--warm .dash-chart-card__header-icon {
+  color: #ea580c !important;
+}
+
+/* Blue (Soft Slate Blue Wash) */
+.dash-chart-card--blue {
+  background-color: #cbe3f9 !important; /* more saturated blue */
+  border-color: #bae6fd !important;
+  color: #075985 !important;
+  box-shadow: 0 4px 20px rgba(7, 89, 133, 0.05) !important;
+}
+.dash-chart-card--blue .dash-chart-card__title {
+  color: #0369a1 !important;
+}
+.dash-chart-card--blue .dash-chart-card__subtitle {
+  color: #0284c7 !important;
+  opacity: 0.9;
+}
+.dash-chart-card--blue .dash-chart-card__header-icon {
+  color: #0284c7 !important;
+}

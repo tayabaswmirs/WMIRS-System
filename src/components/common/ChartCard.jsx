@@ -1,6 +1,9 @@
-export default function ChartCard({ icon, title, subtitle, extraHeader, variant, children }) {
+export default function ChartCard({ icon, title, subtitle, extraHeader, variant, accentColor, children }) {
+  const variantClass = variant ? `dash-chart-card--${variant}` : "";
+  const cardStyle = accentColor ? { borderTop: `4px solid ${accentColor}` } : {};
+
   return (
-    <div className={`dash-chart-card ${variant === "dark" ? "dash-chart-card--dark" : ""}`}>
+    <div className={`dash-chart-card ${variantClass}`} style={cardStyle}>
       <div className="dash-chart-card__header" style={{ justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-sm)" }}>
           <span className="material-symbols-outlined dash-chart-card__header-icon" aria-hidden="true">

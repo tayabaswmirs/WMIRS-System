@@ -505,7 +505,7 @@ function StaffDashboard() {
           ) : (
             <>
               <div className="dash-row-70-30">
-                <ChartCard icon="list_alt" title="Recent Incidents" subtitle="Last 5 reported ecological threats">
+                <ChartCard icon="list_alt" title="Recent Incidents" subtitle="Last 5 reported ecological threats" accentColor="#fa6e39">
                   <RecentLogsList
                     items={analytics.recentIncidents}
                     type="incident"
@@ -532,7 +532,7 @@ function StaffDashboard() {
                   />
                 </ChartCard>
 
-                <ChartCard icon="assignment" title="Open Recent Assignments" subtitle="Last 5 assigned or unresolved incident tasks">
+                <ChartCard icon="assignment" title="Open Recent Assignments" subtitle="Last 5 assigned or unresolved incident tasks" accentColor="#7b3ff2">
                   <RecentLogsList
                     items={analytics.openRecentAssignments}
                     type="incident"
@@ -543,7 +543,7 @@ function StaffDashboard() {
 
               {/* Row 4: Horizontal Stacked Bar Chart */}
               <div className="dash-full-width-row">
-                <ChartCard icon="bar_chart" title="No. of Incidents" subtitle="Incident volume breakdown by category and severity">
+                <ChartCard icon="bar_chart" title="No. of Incidents" subtitle="Incident volume breakdown by category and severity" variant="mint" accentColor="#00ed64">
                   <ResponsiveContainer width="100%" height={260}>
                     <BarChart
                       data={analytics.categorySeverityData}
@@ -570,6 +570,8 @@ function StaffDashboard() {
                   icon="trending_up"
                   title="Logging Per Day"
                   subtitle="Submission trend per incident category over time"
+                  variant="blue"
+                  accentColor="#3d8eff"
                   extraHeader={
                     <div className="time-tabs">
                       {["1D", "1W", "1M"].map((range) => (
@@ -586,11 +588,45 @@ function StaffDashboard() {
                 >
                   <ResponsiveContainer width="100%" height={260}>
                     <ComposedChart data={analytics.logBuckets} margin={{ top: 15, right: 10, left: -20, bottom: 5 }}>
+                      <defs>
+                        <linearGradient id="forestGlow" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#00a35c" stopOpacity={0.15} />
+                          <stop offset="95%" stopColor="#00a35c" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="biodiversityGlow" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#7b3ff2" stopOpacity={0.15} />
+                          <stop offset="95%" stopColor="#7b3ff2" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="waterGlow" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3d4f9f" stopOpacity={0.15} />
+                          <stop offset="95%" stopColor="#3d4f9f" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="wasteGlow" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#fa6e39" stopOpacity={0.15} />
+                          <stop offset="95%" stopColor="#fa6e39" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="complianceGlow" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#f06bb8" stopOpacity={0.15} />
+                          <stop offset="95%" stopColor="#f06bb8" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="landGlow" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#00684a" stopOpacity={0.15} />
+                          <stop offset="95%" stopColor="#00684a" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--c-hairline)" />
                       <XAxis dataKey="label" stroke="var(--c-stone)" fontSize={11} />
                       <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
                       <Tooltip contentStyle={TOOLTIP_STYLE} />
                       <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
+
+                      <Area type="monotone" dataKey="Forest Management" stroke="none" fill="url(#forestGlow)" legendType="none" />
+                      <Area type="monotone" dataKey="Biodiversity Monitoring" stroke="none" fill="url(#biodiversityGlow)" legendType="none" />
+                      <Area type="monotone" dataKey="Water Resources Management" stroke="none" fill="url(#waterGlow)" legendType="none" />
+                      <Area type="monotone" dataKey="Waste Management" stroke="none" fill="url(#wasteGlow)" legendType="none" />
+                      <Area type="monotone" dataKey="Environmental Compliance" stroke="none" fill="url(#complianceGlow)" legendType="none" />
+                      <Area type="monotone" dataKey="Land and Ecosystem Protection" stroke="none" fill="url(#landGlow)" legendType="none" />
+
                       <Line type="monotone" dataKey="Forest Management" name="Forest Mgmt" stroke="#00a35c" strokeWidth={2} dot={false} />
                       <Line type="monotone" dataKey="Biodiversity Monitoring" name="Biodiversity" stroke="#7b3ff2" strokeWidth={2} dot={false} />
                       <Line type="monotone" dataKey="Water Resources Management" name="Water Mgmt" stroke="#3d4f9f" strokeWidth={2} dot={false} />
@@ -608,6 +644,8 @@ function StaffDashboard() {
                   icon="monitoring"
                   title="Severity"
                   subtitle="Incident volume trend grouped by severity level"
+                  variant="warm"
+                  accentColor="#ff5722"
                   extraHeader={
                     <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-sm)" }}>
                       <select
@@ -646,11 +684,35 @@ function StaffDashboard() {
                 >
                   <ResponsiveContainer width="100%" height={260}>
                     <ComposedChart data={analytics.severityTrendBuckets} margin={{ top: 15, right: 10, left: -20, bottom: 5 }}>
+                      <defs>
+                        <linearGradient id="lowGlow" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#00ed64" stopOpacity={0.15} />
+                          <stop offset="95%" stopColor="#00ed64" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="mediumGlow" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3d8eff" stopOpacity={0.15} />
+                          <stop offset="95%" stopColor="#3d8eff" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="highGlow" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#f5a524" stopOpacity={0.15} />
+                          <stop offset="95%" stopColor="#f5a524" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="criticalGlow" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#ff5722" stopOpacity={0.15} />
+                          <stop offset="95%" stopColor="#ff5722" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--c-hairline)" />
                       <XAxis dataKey="label" stroke="var(--c-stone)" fontSize={11} />
                       <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
                       <Tooltip contentStyle={TOOLTIP_STYLE} />
                       <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
+
+                      <Area type="monotone" dataKey="Low" stroke="none" fill="url(#lowGlow)" legendType="none" />
+                      <Area type="monotone" dataKey="Medium" stroke="none" fill="url(#mediumGlow)" legendType="none" />
+                      <Area type="monotone" dataKey="High" stroke="none" fill="url(#highGlow)" legendType="none" />
+                      <Area type="monotone" dataKey="Critical" stroke="none" fill="url(#criticalGlow)" legendType="none" />
+
                       <Line type="monotone" dataKey="Low" name="Low" stroke="#00ed64" strokeWidth={2} dot={false} />
                       <Line type="monotone" dataKey="Medium" name="Medium" stroke="#3d8eff" strokeWidth={2} dot={false} />
                       <Line type="monotone" dataKey="High" name="High" stroke="#f5a524" strokeWidth={2} dot={false} />

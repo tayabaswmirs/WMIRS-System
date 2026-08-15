@@ -10,7 +10,7 @@ import { subscribeToAllIncidents } from "../firebase/services/incidentService";
 import { subscribeToAllMonitoring } from "../firebase/services/monitoringService";
 import {
   XAxis, YAxis, Tooltip, ResponsiveContainer,
-  Legend, ComposedChart, Line, CartesianGrid
+  Legend, ComposedChart, Line, CartesianGrid, Area
 } from "recharts";
 import "../styles/dashboard.css";
 
@@ -308,7 +308,7 @@ function AdminDashboard() {
         {/* ══ TIER 2 & 3: Overhauled Visual Grid ═════════════════ */}
         <div className="dash-row-70-30">
           {/* Row 1: Recent Incidents List (70%) & Incident Gauge (30%) */}
-          <ChartCard icon="list_alt" title="Recent Incidents" subtitle="Last 5 reported ecological threats">
+          <ChartCard icon="list_alt" title="Recent Incidents" subtitle="Last 5 reported ecological threats" accentColor="#fa6e39">
             <RecentLogsList
               items={recentIncidents}
               type="incident"
@@ -335,7 +335,7 @@ function AdminDashboard() {
             />
           </ChartCard>
 
-          <ChartCard icon="list_alt" title="Recent Monitoring Logs" subtitle="Last 5 reported field observations">
+          <ChartCard icon="list_alt" title="Recent Monitoring Logs" subtitle="Last 5 reported field observations" accentColor="#00ed64">
             <RecentLogsList
               items={recentLogs}
               type="monitoring"
@@ -350,6 +350,8 @@ function AdminDashboard() {
             icon="trending_up"
             title="No of Logging"
             subtitle="Comparison trend of incidents vs monitoring submissions"
+            variant="blue"
+            accentColor="#3d8eff"
             extraHeader={
               <div className="time-tabs">
                 <button
@@ -375,6 +377,16 @@ function AdminDashboard() {
           >
             <ResponsiveContainer width="100%" height={260}>
               <ComposedChart data={chartData} margin={{ top: 15, right: 10, left: -20, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="adminIncidentGlow" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#7b3ff2" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#7b3ff2" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="adminMonitoringGlow" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#00ed64" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#00ed64" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--c-hairline)" />
                 <XAxis dataKey="label" stroke="var(--c-stone)" fontSize={11} />
                 <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
@@ -384,6 +396,20 @@ function AdminDashboard() {
                   labelStyle={{ color: "#00ed64", fontWeight: 700 }}
                 />
                 <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
+                <Area
+                  type="monotone"
+                  dataKey="incidents"
+                  stroke="none"
+                  fill="url(#adminIncidentGlow)"
+                  legendType="none"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="monitoring"
+                  stroke="none"
+                  fill="url(#adminMonitoringGlow)"
+                  legendType="none"
+                />
                 <Line
                   type="monotone"
                   dataKey="incidents"
