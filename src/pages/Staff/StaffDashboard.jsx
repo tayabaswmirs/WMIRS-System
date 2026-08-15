@@ -148,6 +148,14 @@ function StaffDashboard() {
   // Scoped Analytics computations
   const analytics = useMemo(() => {
     if (isIncidents) {
+      console.log("=== STAFF DASHBOARD DIAGNOSTICS ===");
+      console.log("Items count:", items.length);
+      console.log("Items details:", JSON.stringify(items.map(item => ({
+        id: item.id,
+        category: item.category,
+        severity: item.severity,
+        status: item.status
+      }))));
       // 1. KPI Counts
       const totalIncidents = items.length;
       let openCount = 0;
@@ -229,11 +237,19 @@ function StaffDashboard() {
       const categorySeverityData = categoriesList.map((cat) => {
         const counts = { Low: 0, Medium: 0, High: 0, Critical: 0 };
         items.forEach((item) => {
-          if (item.category === cat) {
-            const sev = item.severity || "Low";
-            if (counts[sev] !== undefined) {
-              counts[sev]++;
-            }
+          const itemCat = item.category?.trim().toLowerCase() || "";
+          const listCat = cat.trim().toLowerCase();
+          const isMatch = itemCat === listCat || listCat.includes(itemCat) || itemCat.includes(listCat);
+
+          if (isMatch) {
+            const rawSev = item.severity || "Low";
+            let sev = "Low";
+            const norm = rawSev.toLowerCase();
+            if (norm === "medium") sev = "Medium";
+            else if (norm === "high") sev = "High";
+            else if (norm === "critical") sev = "Critical";
+
+            counts[sev]++;
           }
         });
         return {
@@ -242,6 +258,15 @@ function StaffDashboard() {
           ...counts
         };
       });
+
+      // Calculate maximum total incident count for dynamic X-axis ruler domain
+      const totalSums = categorySeverityData.map(d => d.Low + d.Medium + d.High + d.Critical);
+      const dataMax = Math.max(...totalSums, 0);
+      // Dynamically set based on the highest count, plus 1 for breathing room
+      const maxIncidentCount = dataMax > 0 ? dataMax + 1 : 5;
+
+      console.log("Calculated categorySeverityData:", JSON.stringify(categorySeverityData));
+      console.log("Calculated maxIncidentCount:", maxIncidentCount);
 
       // 6. Logging Per Day Category trends
       const now = new Date();
@@ -279,8 +304,13 @@ function StaffDashboard() {
         const ts = item.createdAt?.seconds ? item.createdAt.seconds * 1000 : null;
         if (!ts || ts < startTimestamp) return;
 
-        const cat = item.category;
-        if (!categoriesList.includes(cat)) return;
+        const itemCat = item.category?.trim().toLowerCase() || "";
+        const matchedCat = categoriesList.find(cat => {
+          const lc = cat.trim().toLowerCase();
+          return itemCat === lc || lc.includes(itemCat) || itemCat.includes(lc);
+        });
+
+        if (!matchedCat) return;
 
         let bestIdx = 0;
         let minDiff = Infinity;
@@ -292,7 +322,7 @@ function StaffDashboard() {
           }
         });
 
-        logBuckets[bestIdx][cat]++;
+        logBuckets[bestIdx][matchedCat]++;
       });
 
       // 7. Severity trends
@@ -328,13 +358,22 @@ function StaffDashboard() {
       }
 
       items.forEach((item) => {
-        if (categoryFilter !== "All" && item.category !== categoryFilter) return;
+        if (categoryFilter !== "All") {
+          const itemCat = item.category?.trim().toLowerCase() || "";
+          const filterCat = categoryFilter.trim().toLowerCase();
+          const isFilterMatch = itemCat === filterCat || filterCat.includes(itemCat) || itemCat.includes(filterCat);
+          if (!isFilterMatch) return;
+        }
 
         const ts = item.createdAt?.seconds ? item.createdAt.seconds * 1000 : null;
         if (!ts || ts < sevStartTimestamp) return;
 
-        const sev = item.severity || "Low";
-        if (!severities.includes(sev)) return;
+        const rawSev = item.severity || "Low";
+        let sev = "Low";
+        const norm = rawSev.toLowerCase();
+        if (norm === "medium") sev = "Medium";
+        else if (norm === "high") sev = "High";
+        else if (norm === "critical") sev = "Critical";
 
         let bestIdx = 0;
         let minDiff = Infinity;
@@ -359,6 +398,7 @@ function StaffDashboard() {
         recentIncidents,
         openRecentAssignments,
         categorySeverityData,
+        maxIncidentCount,
         logBuckets,
         severityTrendBuckets,
         categoriesList
@@ -546,12 +586,20 @@ function StaffDashboard() {
                 <ChartCard icon="bar_chart" title="No. of Incidents" subtitle="Incident volume breakdown by category and severity" variant="mint" accentColor="#00ed64">
                   <ResponsiveContainer width="100%" height={260}>
                     <BarChart
+                      key={`barchart-${items.length}`}
                       data={analytics.categorySeverityData}
-                      layout="y"
-                      margin={{ top: 10, right: 10, left: 10, bottom: 5 }}
+                      layout="vertical"
+                      margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--c-hairline)" />
-                      <XAxis type="number" stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" horizontal={false} vertical={true} />
+                      <XAxis
+                        type="number"
+                        stroke="var(--c-stone)"
+                        fontSize={11}
+                        allowDecimals={false}
+                        domain={[0, analytics.maxIncidentCount]}
+                        tickCount={analytics.maxIncidentCount <= 10 ? analytics.maxIncidentCount + 1 : undefined}
+                      />
                       <YAxis dataKey="name" type="category" stroke="var(--c-stone)" fontSize={11} width={120} />
                       <Tooltip contentStyle={TOOLTIP_STYLE} />
                       <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
@@ -614,9 +662,9 @@ function StaffDashboard() {
                           <stop offset="95%" stopColor="#00684a" stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--c-hairline)" />
-                      <XAxis dataKey="label" stroke="var(--c-stone)" fontSize={11} />
-                      <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
+                      <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
+                      <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={false} />
                       <Tooltip contentStyle={TOOLTIP_STYLE} />
                       <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
 
@@ -702,9 +750,9 @@ function StaffDashboard() {
                           <stop offset="95%" stopColor="#ff5722" stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--c-hairline)" />
-                      <XAxis dataKey="label" stroke="var(--c-stone)" fontSize={11} />
-                      <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
+                      <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
+                      <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={false} />
                       <Tooltip contentStyle={TOOLTIP_STYLE} />
                       <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
 

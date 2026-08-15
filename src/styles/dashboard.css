@@ -4805,10 +4805,10 @@ button:disabled,
 
 /* Mint (Soft Green Wash) */
 .dash-chart-card--mint {
-  background-color: #d1f2dd !important; /* more saturated mint */
-  border-color: #a7f3d0 !important;
+  background-color: #a7f3d0 !important; /* more vivid mint */
+  border-color: #6ee7b7 !important;
   color: #065f46 !important;
-  box-shadow: 0 4px 20px rgba(6, 95, 70, 0.05) !important;
+  box-shadow: 0 4px 20px rgba(6, 95, 70, 0.08) !important;
 }
 .dash-chart-card--mint .dash-chart-card__title {
   color: #064e3b !important;
@@ -4823,10 +4823,10 @@ button:disabled,
 
 /* Purple (Soft Lavender Wash) */
 .dash-chart-card--purple {
-  background-color: #ebd9fc !important; /* more saturated lavender */
-  border-color: #ddd6fe !important;
+  background-color: #e9d5ff !important; /* more vivid lavender */
+  border-color: #d8b4fe !important;
   color: #5b21b6 !important;
-  box-shadow: 0 4px 20px rgba(91, 33, 182, 0.05) !important;
+  box-shadow: 0 4px 20px rgba(91, 33, 182, 0.08) !important;
 }
 .dash-chart-card--purple .dash-chart-card__title {
   color: #4c1d95 !important;
@@ -4841,10 +4841,10 @@ button:disabled,
 
 /* Warm (Soft Peach/Amber Wash) */
 .dash-chart-card--warm {
-  background-color: #ffdcc3 !important; /* more saturated peach */
-  border-color: #fed7aa !important;
+  background-color: #fed7aa !important; /* more vivid peach */
+  border-color: #fdba74 !important;
   color: #9a3412 !important;
-  box-shadow: 0 4px 20px rgba(154, 52, 18, 0.05) !important;
+  box-shadow: 0 4px 20px rgba(154, 52, 18, 0.08) !important;
 }
 .dash-chart-card--warm .dash-chart-card__title {
   color: #7c2d12 !important;
@@ -4859,10 +4859,10 @@ button:disabled,
 
 /* Blue (Soft Slate Blue Wash) */
 .dash-chart-card--blue {
-  background-color: #cbe3f9 !important; /* more saturated blue */
-  border-color: #bae6fd !important;
+  background-color: #bae6fd !important; /* more vivid blue */
+  border-color: #7dd3fc !important;
   color: #075985 !important;
-  box-shadow: 0 4px 20px rgba(7, 89, 133, 0.05) !important;
+  box-shadow: 0 4px 20px rgba(7, 89, 133, 0.08) !important;
 }
 .dash-chart-card--blue .dash-chart-card__title {
   color: #0369a1 !important;
