@@ -4561,3 +4561,244 @@ button:disabled,
     flex-direction: column;
   }
 }
+
+/* ── OVERHAUL DASHBOARD NEW COMPONENTS (MongoDB Spec) ──────── */
+.dash-kpi-grid--three {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+.dash-row-70-30 {
+  display: grid;
+  grid-template-columns: 7fr 3fr;
+  gap: var(--sp-xl);
+  margin-top: var(--sp-xl);
+  width: 100%;
+}
+
+.dash-row-30-70 {
+  display: grid;
+  grid-template-columns: 3fr 7fr;
+  gap: var(--sp-xl);
+  margin-top: var(--sp-xl);
+  width: 100%;
+}
+
+.dash-full-width-row {
+  width: 100%;
+  margin-top: var(--sp-xl);
+}
+
+/* Gauge Containers */
+.gauge-card-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding-bottom: var(--sp-sm);
+  min-height: 240px;
+}
+
+.gauge-center-label {
+  position: absolute;
+  bottom: 25px;
+  left: 50%;
+  transform: translate(-50%, 0);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.gauge-center-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--c-ink);
+  line-height: 1.1;
+}
+
+.gauge-center-text {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--c-stone);
+  letter-spacing: 0.5px;
+}
+
+.gauge-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-sm);
+  margin-top: var(--sp-md);
+  width: 100%;
+}
+
+.gauge-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--c-slate);
+}
+
+.gauge-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Recent Logs List Items */
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-sm);
+  margin-top: var(--sp-md);
+}
+
+.recent-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+  padding: var(--sp-sm) var(--sp-md);
+  border-radius: var(--r-md);
+  border: 1px solid var(--c-hairline-soft);
+  background: var(--c-canvas);
+  transition: all var(--transition);
+  min-height: 60px;
+}
+
+.recent-item:hover {
+  border-color: var(--c-hairline-strong);
+  background: var(--c-surface-soft);
+  box-shadow: 0 2px 8px rgba(0, 30, 43, 0.04);
+  transform: translateY(-1px);
+}
+
+.recent-item__status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.recent-item__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.recent-item__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2px;
+  gap: var(--sp-sm);
+}
+
+.recent-item__category {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-item__time {
+  font-size: 11px;
+  color: var(--c-stone);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.recent-item__snippet {
+  font-size: 12px;
+  color: var(--c-steel);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Time Series Pill Buttons */
+.time-tabs {
+  display: flex;
+  gap: var(--sp-xs);
+}
+
+.time-tab {
+  background: none;
+  border: 1px solid var(--c-hairline);
+  border-radius: var(--r-full);
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-steel);
+  transition: all var(--transition);
+  cursor: pointer;
+}
+
+.time-tab:hover {
+  border-color: var(--c-steel);
+  color: var(--c-ink);
+}
+
+.time-tab--active {
+  background: var(--c-ink);
+  border-color: var(--c-ink);
+  color: var(--c-on-dark);
+}
+
+/* Responsive Overrides for New Grid */
+@media (max-width: 767px) {
+  .dash-kpi-grid--three {
+    grid-template-columns: 1fr !important;
+  }
+  .dash-row-70-30,
+  .dash-row-30-70 {
+    grid-template-columns: 1fr;
+    gap: var(--sp-lg);
+    margin-top: var(--sp-lg);
+  }
+  .dash-full-width-row {
+    margin-top: var(--sp-lg);
+  }
+  .gauge-center-label {
+    bottom: 20px;
+  }
+}
+
+/* Dark Theme Chart Card Styling (MongoDB visual spec) */
+.dash-chart-card--dark {
+  background-color: var(--c-teal-deep) !important;
+  border-color: var(--c-hairline-dark) !important;
+  color: var(--c-on-dark) !important;
+  box-shadow: var(--shadow-2) !important;
+}
+
+.dash-chart-card--dark .dash-chart-card__title {
+  color: var(--c-on-dark) !important;
+}
+
+.dash-chart-card--dark .dash-chart-card__subtitle {
+  color: var(--c-on-dark-muted) !important;
+}
+
+.dash-chart-card--dark .dash-chart-card__header-icon {
+  color: var(--c-green) !important;
+}
+
+.dash-chart-card--dark .gauge-center-value {
+  color: var(--c-on-dark) !important;
+}
+
+.dash-chart-card--dark .gauge-center-text {
+  color: var(--c-on-dark-muted) !important;
+}
+
+.dash-chart-card--dark .gauge-legend-item {
+  color: var(--c-on-dark-muted) !important;
+}
