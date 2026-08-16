@@ -4590,33 +4590,48 @@ button:disabled,
 
 /* Gauge Containers */
 .gauge-card-container {
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   height: 100%;
-  padding-bottom: var(--sp-sm);
+  width: 100%;
+  padding-bottom: var(--sp-xs);
   min-height: 240px;
+}
+
+.gauge-chart-wrapper {
+  position: relative;
+  width: 100%;
+  height: 205px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 .gauge-center-label {
   position: absolute;
-  bottom: 25px;
+  bottom: 10px;
   left: 50%;
-  transform: translate(-50%, 0);
+  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
+  pointer-events: none;
+  line-height: 1;
 }
 
 .gauge-center-value {
-  font-size: 28px;
+  font-size: 40px;
   font-weight: 700;
   color: var(--c-ink);
-  line-height: 1.1;
+  line-height: 1;
+  letter-spacing: -0.5px;
+  font-family: var(--font-display);
 }
 
 .gauge-center-text {
@@ -4624,32 +4639,133 @@ button:disabled,
   font-weight: 600;
   text-transform: uppercase;
   color: var(--c-stone);
-  letter-spacing: 0.5px;
+  letter-spacing: 1.2px;
+  margin-top: 4px;
 }
 
-.gauge-legend {
+/* Status Breakdown Box */
+.gauge-status-box {
+  width: 100%;
+  margin-top: auto;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  background: var(--c-surface-soft);
+  border: 1px solid var(--c-hairline-soft);
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--sp-sm);
-  margin-top: var(--sp-md);
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gauge-status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   width: 100%;
 }
 
-.gauge-legend-item {
+.gauge-status-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--c-slate);
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 22px;
 }
 
-.gauge-legend-dot {
-  width: 8px;
-  height: 8px;
+.gauge-status-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.gauge-status-dot {
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   flex-shrink: 0;
+}
+
+.gauge-status-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--c-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gauge-status-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.gauge-status-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--c-ink);
+  background: var(--c-hairline);
+  padding: 2px 9px;
+  border-radius: var(--r-full);
+  font-variant-numeric: tabular-nums;
+}
+
+.gauge-status-pct {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--c-green-dark);
+  min-width: 32px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Distribution mini-bar */
+.gauge-dist-bar {
+  display: flex;
+  height: 4px;
+  border-radius: var(--r-full);
+  overflow: hidden;
+  background: var(--c-hairline-soft);
+  gap: 2px;
+  width: 100%;
+}
+
+.gauge-dist-segment {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* Inactive Zero Pills */
+.gauge-zero-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--c-hairline-soft);
+}
+
+.gauge-zero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--c-stone);
+  padding: 2px 6px;
+  border-radius: var(--r-full);
+  background: rgba(0, 0, 0, 0.03);
+  white-space: nowrap;
+}
+
+.gauge-zero-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  opacity: 0.6;
 }
 
 /* Recent Logs List Items */
@@ -4723,6 +4839,47 @@ button:disabled,
   white-space: nowrap;
 }
 
+/* Recent Item Empty Slot Placeholder */
+.recent-item--empty {
+  border: 1px dashed var(--c-hairline-strong);
+  background: rgba(0, 0, 0, 0.015);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.recent-item--empty:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--c-hairline-strong);
+  background: rgba(0, 0, 0, 0.015);
+}
+
+.recent-item__status-dot--empty {
+  border: 1.5px dashed var(--c-stone);
+  background: transparent !important;
+  box-shadow: none !important;
+  opacity: 0.4;
+}
+
+.recent-item__category--empty {
+  color: var(--c-stone);
+  font-weight: 500;
+  font-style: italic;
+}
+
+.recent-item__time--empty {
+  color: var(--c-muted);
+}
+
+.recent-item__snippet--empty {
+  color: var(--c-muted);
+  font-style: italic;
+}
+
+.gauge-status-row--zero .gauge-status-pct {
+  color: var(--c-stone);
+}
+
 /* Time Series Pill Buttons */
 .time-tabs {
   display: flex;
@@ -4766,9 +4923,6 @@ button:disabled,
   .dash-full-width-row {
     margin-top: var(--sp-lg);
   }
-  .gauge-center-label {
-    bottom: 20px;
-  }
 }
 
 /* Dark Theme Chart Card Styling (MongoDB visual spec) */
@@ -4799,8 +4953,35 @@ button:disabled,
   color: var(--c-on-dark-muted) !important;
 }
 
-.dash-chart-card--dark .gauge-legend-item {
+.dash-chart-card--dark .gauge-status-box {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border-color: var(--c-hairline-dark) !important;
+}
+
+.dash-chart-card--dark .gauge-status-name {
+  color: var(--c-on-dark) !important;
+}
+
+.dash-chart-card--dark .gauge-status-count {
+  color: var(--c-on-dark) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+.dash-chart-card--dark .gauge-status-pct {
+  color: var(--c-green) !important;
+}
+
+.dash-chart-card--dark .gauge-dist-bar {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.dash-chart-card--dark .gauge-zero-pills {
+  border-top-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.dash-chart-card--dark .gauge-zero-pill {
   color: var(--c-on-dark-muted) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
 }
 
 /* Mint (Soft Green Wash) */

@@ -9,7 +9,6 @@ import {
   serverTimestamp, 
   updateDoc,
   getDoc,
-  runTransaction,
   deleteDoc,
   arrayUnion
 } from "firebase/firestore";
@@ -258,63 +257,17 @@ export const updateIncidentStatus = async (incidentId, status, adminUid) => {
 
 /**
  * Atomically updates the status of a reported incident.
- * Prevents race conditions where two staff members review the same report simultaneously.
+ * Logs the action into the workflow history array.
  *
  * @param {string} incidentId - Unique Firestore document ID
- * @param {string} status     - New status value ('Resolved' | 'Dismissed')
+ * @param {string} status     - New status value
  * @param {string} reviewerUid - UID of the staff performing the review
+ * @param {string} reviewerName - Display name of the staff performing the review
  * @param {string} remarks    - Optional reviewer remarks
  * @returns {Promise<void>}
  */
-export const reviewIncidentAtomic = async (incidentId, status, reviewerUid, remarks) => {
-  const docRef = doc(db, "incidents", incidentId);
-
-  await runTransaction(db, async (transaction) => {
-    const docSnap = await transaction.get(docRef);
-    if (!docSnap.exists()) {
-      throw new Error("Incident document does not exist.");
-    }
-
-    const data = docSnap.data();
-    // If the status is already resolved or dismissed, throw concurrency error
-    if (data.status === "Resolved" || data.status === "Dismissed") {
-      throw new Error("REPORT_ALREADY_REVIEWED");
-    }
-
-    const updatePayload = {
-      status,
-      updatedAt: serverTimestamp(),
-      updatedBy: reviewerUid,
-      reviewerRemarks: remarks || ""
-    };
-
-    transaction.update(docRef, updatePayload);
-  });
-
-  // Cleanup storage if dismissed
-  if (status === "Dismissed") {
-    try {
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const evidence = docSnap.data().evidence || [];
-        const deletePromises = evidence.map((file) => {
-          if (file.url) {
-            const fileRef = ref(storage, file.url);
-            return deleteObject(fileRef).catch((e) => {
-              console.warn(`Failed to delete storage file ${file.url}:`, e);
-            });
-          }
-          return Promise.resolve();
-        });
-        
-        await Promise.all(deletePromises);
-        // Clear the evidence array after deletion
-        await updateDoc(docRef, { evidence: [] });
-      }
-    } catch (err) {
-      console.error("Error cleaning up evidence for dismissed report:", err);
-    }
-  }
+export const reviewIncidentAtomic = async (incidentId, status, reviewerUid, reviewerName, remarks) => {
+  return updateLogWorkflowStatus(incidentId, "Incident", status, reviewerUid, reviewerName, remarks);
 };
 
 /**

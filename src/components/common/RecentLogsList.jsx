@@ -29,39 +29,59 @@ const getStatusDotColor = (status) => {
   return "var(--c-accent-blue)";
 };
 
-export default function RecentLogsList({ items, type, emptyMessage }) {
+export default function RecentLogsList({ items = [], type, emptyMessage }) {
+  const displayItems = (items || []).slice(0, 5);
+  const emptySlotsCount = Math.max(0, 5 - displayItems.length);
+
   return (
     <div className="recent-list">
-      {items.length > 0 ? (
-        items.map((item, idx) => (
-          <div key={item.id || idx} className="recent-item">
-            <span
-              className="recent-item__status-dot"
-              style={{ backgroundColor: getStatusDotColor(item.status) }}
-            />
-            <div className="recent-item__content">
-              <div className="recent-item__header">
-                <span className="recent-item__category">
-                  {type === "incident" ? item.category : (item.subcategory || "General Monitoring")}
-                </span>
-                <span className="recent-item__time">
-                  {formatRelativeTime(item.createdAt)}
-                </span>
-              </div>
-              <p className="recent-item__snippet">
-                {type === "incident" 
-                  ? (item.description || "No description provided.") 
-                  : `Reported by Ranger (Barangay: ${item.barangay || "N/A"})`}
-              </p>
+      {displayItems.map((item, idx) => (
+        <div key={item.id || `item-${idx}`} className="recent-item">
+          <span
+            className="recent-item__status-dot"
+            style={{ backgroundColor: getStatusDotColor(item.status) }}
+          />
+          <div className="recent-item__content">
+            <div className="recent-item__header">
+              <span className="recent-item__category">
+                {type === "incident" ? item.category : (item.subcategory || "General Monitoring")}
+              </span>
+              <span className="recent-item__time">
+                {formatRelativeTime(item.createdAt)}
+              </span>
             </div>
+            <p className="recent-item__snippet">
+              {type === "incident" 
+                ? (item.description || "No description provided.") 
+                : `Reported by Ranger (Barangay: ${item.barangay || "N/A"})`}
+            </p>
           </div>
-        ))
-      ) : (
-        <div className="dash-empty">
-          <span className="material-symbols-outlined dash-empty__icon">list_alt</span>
-          <span className="dash-empty__text">{emptyMessage}</span>
         </div>
-      )}
+      ))}
+
+      {Array.from({ length: emptySlotsCount }).map((_, slotIdx) => (
+        <div
+          key={`empty-slot-${slotIdx}`}
+          className="recent-item recent-item--empty"
+        >
+          <span className="recent-item__status-dot recent-item__status-dot--empty" />
+          <div className="recent-item__content">
+            <div className="recent-item__header">
+              <span className="recent-item__category recent-item__category--empty">
+                {displayItems.length === 0 && slotIdx === 0
+                  ? (emptyMessage || "No logs reported yet")
+                  : "Empty slot"}
+              </span>
+              <span className="recent-item__time recent-item__time--empty">—</span>
+            </div>
+            <p className="recent-item__snippet recent-item__snippet--empty">
+              {displayItems.length === 0 && slotIdx === 0
+                ? "Awaiting new field submissions..."
+                : "No log recorded for this position"}
+            </p>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { subscribeToAllIncidents, updateLogWorkflowStatus } from "../../firebase/services/incidentService";
+import { subscribeToAllIncidents, reviewIncidentAtomic } from "../../firebase/services/incidentService";
 import { subscribeToCategoryMonitoring, reviewMonitoringAtomic } from "../../firebase/services/monitoringService";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import AdminIncidentTable from "../../components/common/AdminIncidentTable";
@@ -138,10 +138,13 @@ function StaffStageWorkspace() {
     if (!confirmDialog) return;
     const { itemId, newStatus, remarks, resolve } = confirmDialog;
     try {
+      const reviewerName = currentUser?.displayName || "Staff Member";
+      const reviewerNotes = remarks || "Staff status update";
+
       if (isIncidents) {
-        await updateLogWorkflowStatus(itemId, newStatus, currentUser.uid, currentUser.displayName, remarks || "Staff status update");
+        await reviewIncidentAtomic(itemId, newStatus, currentUser.uid, reviewerName, reviewerNotes);
       } else {
-        await reviewMonitoringAtomic(itemId, newStatus, currentUser.uid, currentUser.displayName, remarks || "Staff status update");
+        await reviewMonitoringAtomic(itemId, newStatus, currentUser.uid, reviewerName, reviewerNotes);
       }
       if (selectedItem?.id === itemId) {
         setSelectedItem((prev) => ({ ...prev, status: newStatus }));
