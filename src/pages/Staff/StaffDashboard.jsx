@@ -286,8 +286,9 @@ function StaffDashboard() {
 
       const startTimestamp = now.getTime() - timeLimitMs;
       const logBuckets = [];
+      const logHalf = Math.floor(numBuckets / 2);
 
-      for (let i = numBuckets - 1; i >= 0; i--) {
+      for (let i = logHalf; i > logHalf - numBuckets; i--) {
         const d = new Date(now.getTime() - i * (timeRange === "1D" ? 3600000 : 86400000));
         const label = timeRange === "1D"
           ? d.toLocaleTimeString(undefined, { hour: "numeric", minute: "numeric", hour12: true })
@@ -343,8 +344,9 @@ function StaffDashboard() {
       const sevStartTimestamp = now.getTime() - sevTimeLimitMs;
       const severityTrendBuckets = [];
       const severities = ["Low", "Medium", "High", "Critical"];
+      const sevHalf = Math.floor(sevNumBuckets / 2);
 
-      for (let i = sevNumBuckets - 1; i >= 0; i--) {
+      for (let i = sevHalf; i > sevHalf - sevNumBuckets; i--) {
         const d = new Date(now.getTime() - i * (severityTimeRange === "1D" ? 3600000 : 86400000));
         const label = severityTimeRange === "1D"
           ? d.toLocaleTimeString(undefined, { hour: "numeric", minute: "numeric", hour12: true })
@@ -638,28 +640,28 @@ function StaffDashboard() {
                     <ComposedChart data={analytics.logBuckets} margin={{ top: 15, right: 10, left: -20, bottom: 5 }}>
                       <defs>
                         <linearGradient id="forestGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#00a35c" stopOpacity={0.15} />
-                          <stop offset="95%" stopColor="#00a35c" stopOpacity={0} />
+                          <stop offset="5%" stopColor="#00a35c" stopOpacity={0.5} />
+                          <stop offset="95%" stopColor="#00a35c" stopOpacity={0.1} />
                         </linearGradient>
                         <linearGradient id="biodiversityGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#7b3ff2" stopOpacity={0.15} />
-                          <stop offset="95%" stopColor="#7b3ff2" stopOpacity={0} />
+                          <stop offset="5%" stopColor="#7b3ff2" stopOpacity={0.5} />
+                          <stop offset="95%" stopColor="#7b3ff2" stopOpacity={0.1} />
                         </linearGradient>
                         <linearGradient id="waterGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3d4f9f" stopOpacity={0.15} />
-                          <stop offset="95%" stopColor="#3d4f9f" stopOpacity={0} />
+                          <stop offset="5%" stopColor="#3d4f9f" stopOpacity={0.5} />
+                          <stop offset="95%" stopColor="#3d4f9f" stopOpacity={0.1} />
                         </linearGradient>
                         <linearGradient id="wasteGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#fa6e39" stopOpacity={0.15} />
-                          <stop offset="95%" stopColor="#fa6e39" stopOpacity={0} />
+                          <stop offset="5%" stopColor="#fa6e39" stopOpacity={0.5} />
+                          <stop offset="95%" stopColor="#fa6e39" stopOpacity={0.1} />
                         </linearGradient>
                         <linearGradient id="complianceGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#f06bb8" stopOpacity={0.15} />
-                          <stop offset="95%" stopColor="#f06bb8" stopOpacity={0} />
+                          <stop offset="5%" stopColor="#f06bb8" stopOpacity={0.5} />
+                          <stop offset="95%" stopColor="#f06bb8" stopOpacity={0.1} />
                         </linearGradient>
                         <linearGradient id="landGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#00684a" stopOpacity={0.15} />
-                          <stop offset="95%" stopColor="#00684a" stopOpacity={0} />
+                          <stop offset="5%" stopColor="#00684a" stopOpacity={0.5} />
+                          <stop offset="95%" stopColor="#00684a" stopOpacity={0.1} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
@@ -735,20 +737,20 @@ function StaffDashboard() {
                     <ComposedChart data={analytics.severityTrendBuckets} margin={{ top: 15, right: 10, left: -20, bottom: 5 }}>
                       <defs>
                         <linearGradient id="lowGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#00ed64" stopOpacity={0.15} />
-                          <stop offset="95%" stopColor="#00ed64" stopOpacity={0} />
+                          <stop offset="5%" stopColor="#00ed64" stopOpacity={0.5} />
+                          <stop offset="95%" stopColor="#00ed64" stopOpacity={0.1} />
                         </linearGradient>
                         <linearGradient id="mediumGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3d8eff" stopOpacity={0.15} />
-                          <stop offset="95%" stopColor="#3d8eff" stopOpacity={0} />
+                          <stop offset="5%" stopColor="#3d8eff" stopOpacity={0.5} />
+                          <stop offset="95%" stopColor="#3d8eff" stopOpacity={0.1} />
                         </linearGradient>
                         <linearGradient id="highGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#f5a524" stopOpacity={0.15} />
-                          <stop offset="95%" stopColor="#f5a524" stopOpacity={0} />
+                          <stop offset="5%" stopColor="#f5a524" stopOpacity={0.5} />
+                          <stop offset="95%" stopColor="#f5a524" stopOpacity={0.1} />
                         </linearGradient>
                         <linearGradient id="criticalGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#ff5722" stopOpacity={0.15} />
-                          <stop offset="95%" stopColor="#ff5722" stopOpacity={0} />
+                          <stop offset="5%" stopColor="#ff5722" stopOpacity={0.5} />
+                          <stop offset="95%" stopColor="#ff5722" stopOpacity={0.1} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />

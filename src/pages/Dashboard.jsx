@@ -54,16 +54,16 @@ function Dashboard() {
   return (
     <DashboardLayout>
       <div className="dashboard-view">
-        {/* Page Header */}
-        <div className="dashboard-view__header">
-          <span className="dashboard-view__eyebrow">Overview</span>
-          <h1 className="dashboard-view__title">Welcome back, {displayName} 👋</h1>
-        </div>
-
         {/* Action Panel & Stats Grid */}
         <div className="dashboard-grid">
           {/* CTA Reporting Card */}
           <div className="card-feature-dark dashboard-cta-card">
+            {/* Page Header Moved Inside Box */}
+            <div className="dashboard-view__header" style={{ marginBottom: "32px" }}>
+              <span className="dashboard-view__eyebrow" style={{ color: "var(--c-green)" }}>OVERVIEW</span>
+              <h1 className="dashboard-view__title" style={{ color: "#ffffff", margin: 0 }}>Welcome back, {displayName} 👋</h1>
+            </div>
+            
             <h2 className="dashboard-cta-card__title">Field Operations</h2>
             <p className="dashboard-cta-card__desc">
               Help protect Tayabas' ecosystem. Submit comprehensive incident reports or log scheduled ecological monitoring data.

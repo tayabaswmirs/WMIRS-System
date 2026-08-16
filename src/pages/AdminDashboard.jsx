@@ -157,7 +157,7 @@ function AdminDashboard() {
     const now = new Date();
     if (timeRange === "1D") {
       const buckets = [];
-      for (let i = 23; i >= 0; i--) {
+      for (let i = 12; i >= -11; i--) {
         const d = new Date(now.getTime() - i * 3600000);
         d.setMinutes(0, 0, 0);
         buckets.push({
@@ -186,7 +186,7 @@ function AdminDashboard() {
       return buckets;
     } else if (timeRange === "1W") {
       const buckets = [];
-      for (let i = 6; i >= 0; i--) {
+      for (let i = 3; i >= -3; i--) {
         const d = new Date(now.getTime() - i * 86400000);
         d.setHours(0, 0, 0, 0);
         buckets.push({
@@ -219,7 +219,7 @@ function AdminDashboard() {
       return buckets;
     } else { // "1M"
       const buckets = [];
-      for (let i = 29; i >= 0; i--) {
+      for (let i = 15; i >= -14; i--) {
         const d = new Date(now.getTime() - i * 86400000);
         d.setHours(0, 0, 0, 0);
         buckets.push({
@@ -379,12 +379,12 @@ function AdminDashboard() {
               <ComposedChart data={chartData} margin={{ top: 15, right: 10, left: -20, bottom: 5 }}>
                 <defs>
                   <linearGradient id="adminIncidentGlow" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#7b3ff2" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="#7b3ff2" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#7b3ff2" stopOpacity={0.5} />
+                    <stop offset="95%" stopColor="#7b3ff2" stopOpacity={0.1} />
                   </linearGradient>
                   <linearGradient id="adminMonitoringGlow" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#00ed64" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="#00ed64" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#00ed64" stopOpacity={0.5} />
+                    <stop offset="95%" stopColor="#00ed64" stopOpacity={0.1} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--c-hairline)" />
