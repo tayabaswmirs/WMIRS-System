@@ -695,10 +695,11 @@ function StaffDashboard() {
                   variant="warm"
                   accentColor="#ff5722"
                   extraHeader={
-                    <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-sm)" }}>
+                    <div className="dash-chart-controls">
                       <select
                         value={categoryFilter}
                         onChange={(e) => setCategoryFilter(e.target.value)}
+                        className="dash-chart-select"
                         style={{
                           background: "var(--c-canvas)",
                           border: "1px solid var(--c-hairline)",

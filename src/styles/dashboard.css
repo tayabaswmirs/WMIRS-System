@@ -4380,13 +4380,36 @@ button:disabled,
 .dash-chart-card__header {
   display: flex;
   align-items: center;
-  gap: var(--sp-sm);
+  justify-content: space-between;
+  gap: var(--sp-md);
   margin-bottom: var(--sp-lg);
+  flex-wrap: wrap;
+}
+
+.dash-chart-card__header-main {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.dash-chart-card__title-wrap {
+  min-width: 0;
+}
+
+.dash-chart-card__header-extra {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .dash-chart-card__header-icon {
   font-size: 20px;
   color: var(--c-stone);
+  flex-shrink: 0;
 }
 
 .dash-chart-card__title {
@@ -4400,6 +4423,7 @@ button:disabled,
   font-size: 12px;
   color: var(--c-stone);
   margin-top: 2px;
+  line-height: 1.4;
 }
 
 .dash-chart-card__body {
@@ -4882,8 +4906,11 @@ button:disabled,
 
 /* Time Series Pill Buttons */
 .time-tabs {
-  display: flex;
+  display: inline-flex;
+  align-items: center;
   gap: var(--sp-xs);
+  flex-shrink: 0;
+  width: auto;
 }
 
 .time-tab {
@@ -4896,6 +4923,7 @@ button:disabled,
   color: var(--c-steel);
   transition: all var(--transition);
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .time-tab:hover {
@@ -4922,6 +4950,37 @@ button:disabled,
   }
   .dash-full-width-row {
     margin-top: var(--sp-lg);
+  }
+
+  .dash-chart-card__header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--sp-sm);
+  }
+
+  .dash-chart-card__header-main {
+    width: 100%;
+  }
+
+  .dash-chart-card__header-extra {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--sp-sm);
+  }
+
+  .dash-chart-controls {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-sm);
+  }
+
+  .dash-chart-select {
+    flex: 1;
+    min-width: 0;
   }
 }
 

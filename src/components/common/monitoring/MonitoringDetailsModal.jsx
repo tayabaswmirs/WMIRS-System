@@ -268,7 +268,7 @@ function DrawerContent({ log, onClose, onStatusChange }) {
         {/* ── Context-Sensitive Action Buttons ─────────────────────────── */}
         {((userRole === "staff" && ["submitted", "under review"].includes(log.status?.toLowerCase())) ||
           (userRole === "staff" && log.status?.toLowerCase() === "resolved") ||
-          (userRole === "admin" && !["completed", "denied"].includes(log.status?.toLowerCase()))) && (
+          (userRole === "admin" && ["verified", "pending completion"].includes(log.status?.toLowerCase()))) && (
           <div className="inc-drawer__admin-panel">
             {userRole === "staff" && ["submitted", "under review"].includes(log.status?.toLowerCase()) && (
               <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -302,7 +302,7 @@ function DrawerContent({ log, onClose, onStatusChange }) {
                 </button>
               </div>
             )}
-            {userRole === "admin" && !["completed", "denied"].includes(log.status?.toLowerCase()) && (
+            {userRole === "admin" && ["verified", "pending completion"].includes(log.status?.toLowerCase()) && (
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <button 
                   className="btn-primary" style={{ flex: 1 }}

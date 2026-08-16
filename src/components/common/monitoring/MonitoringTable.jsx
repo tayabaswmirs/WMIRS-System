@@ -70,28 +70,11 @@ function MonitoringTable({ logs, isAdmin, onStatusChange, onViewDetails }) {
                   {formatLogDate(log.dateTime || log.createdAt)}
                 </td>
 
-                {/* Status Dropdown (Admin) or Status Badge (User) */}
+                {/* Status Badge */}
                 <td className="inc-table__td">
-                  {isAdmin ? (
-                      <select
-                        value={log.status}
-                        onChange={(e) => onStatusChange(log.id, e.target.value)}
-                        className={`admin-status-select admin-status-select--${log.status?.toLowerCase().replace(/\s+/g, "-")}`}
-                        aria-label={`Change status for log ${log.id}`}
-                        title="Override status"
-                        style={{ minWidth: "130px" }}
-                      >
-                      {Object.values(LOG_STATUS).map((s) => (
-                        <option key={s} value={s}>
-                          {STATUS_METADATA[s?.toLowerCase()]?.label || s}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <span className={`status-badge ${getStatusClass(log.status)}`}>
-                      {getStatusLabel(log.status)}
-                    </span>
-                  )}
+                  <span className={`status-badge ${getStatusClass(log.status)}`}>
+                    {getStatusLabel(log.status)}
+                  </span>
                 </td>
 
                 {/* View Details Button */}

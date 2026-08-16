@@ -138,7 +138,11 @@ function OpenAssignments() {
                   {assignment.severity || "Standard"}
                 </span>
                 <span style={{ fontSize: '0.75rem', color: '#5c6c7a' }}>
-                  {new Date(assignment.createdAt).toLocaleDateString()}
+                  {assignment.createdAt?.toDate 
+                    ? assignment.createdAt.toDate().toLocaleDateString()
+                    : assignment.createdAt?.seconds 
+                      ? new Date(assignment.createdAt.seconds * 1000).toLocaleDateString()
+                      : new Date(assignment.createdAt).toLocaleDateString()}
                 </span>
               </div>
               
@@ -151,7 +155,7 @@ function OpenAssignments() {
               <div className="remarks-callout" style={{ padding: '0.75rem', marginTop: 'auto', marginBottom: '1rem' }}>
                 <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#001e2b', marginBottom: '0.25rem' }}>Task Instructions:</div>
                 <p style={{ fontSize: '0.8rem', color: '#1c2d38', margin: 0, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                  {getLatestStaffRemark(assignment.workflowHistory)}
+                  {getLatestStaffRemark(assignment.history || assignment.workflowHistory)}
                 </p>
               </div>
 
