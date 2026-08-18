@@ -5,10 +5,8 @@ import {
   query, 
   where, 
   orderBy, 
-  onSnapshot, 
+  onSnapshot,
   serverTimestamp, 
-  updateDoc,
-  runTransaction,
   deleteDoc,
   getDoc
 } from "firebase/firestore";
@@ -19,6 +17,8 @@ import {
   deleteObject
 } from "firebase/storage";
 import { db, storage } from "../firebase";
+import { LOG_STATUS } from "../../utils/incidentConstants";
+import { updateLogWorkflowStatus } from "./incidentService";
 
 /**
  * Uploads a single monitoring file to Firebase Storage.
@@ -86,7 +86,13 @@ export const createMonitoringLog = async (logData, files, onFileProgress) => {
     ...logData,
     id: logId,
     evidence: uploadedEvidence,
-    status: "Submitted",
+    status: LOG_STATUS.SUBMITTED,
+    history: [{
+      status: LOG_STATUS.SUBMITTED,
+      timestamp: new Date().toISOString(),
+      by: uid,
+      remarks: "Log submitted."
+    }],
     createdAt: serverTimestamp()
   };
 
@@ -185,62 +191,24 @@ export const subscribeToAllMonitoring = (callback) => {
 /**
  * Updates the verification status of a monitoring log, logging audit details.
  */
-export const updateMonitoringStatus = async (logId, status, adminUid, adminRemarks) => {
-  const docRef = doc(db, "monitoring", logId);
-  const updatePayload = {
-    status,
-    adminRemarks: adminRemarks || "",
-    updatedAt: serverTimestamp(),
-    updatedBy: adminUid
-  };
-
-  return updateDoc(docRef, updatePayload);
+export const updateMonitoringStatus = async (logId, status, adminUid, adminName, adminRemarks) => {
+  return updateLogWorkflowStatus(logId, "Monitoring", status, adminUid, adminName, adminRemarks);
 };
 
 /**
  * Atomically updates the status of a monitoring log.
  * Prevents race conditions where two staff members review the same log simultaneously.
  */
-export const reviewMonitoringAtomic = async (logId, status, reviewerUid, remarks) => {
-  const docRef = doc(db, "monitoring", logId);
-
-  await runTransaction(db, async (transaction) => {
-    const docSnap = await transaction.get(docRef);
-    if (!docSnap.exists()) {
-      throw new Error("Monitoring document does not exist.");
-    }
-
-    const data = docSnap.data();
-    if (data.status === "Resolved" || data.status === "Dismissed") {
-      throw new Error("REPORT_ALREADY_REVIEWED");
-    }
-
-    const updatePayload = {
-      status,
-      updatedAt: serverTimestamp(),
-      updatedBy: reviewerUid,
-      reviewerRemarks: remarks || ""
-    };
-
-    transaction.update(docRef, updatePayload);
-  });
+export const reviewMonitoringAtomic = async (logId, status, reviewerUid, reviewerName, remarks) => {
+  // Utilizing the centralized update logic
+  return updateLogWorkflowStatus(logId, "Monitoring", status, reviewerUid, reviewerName, remarks);
 };
 
 /**
  * Admin override for monitoring status.
  */
-export const adminOverrideMonitoring = async (logId, status, adminUid, reason) => {
-  const docRef = doc(db, "monitoring", logId);
-  const updatePayload = {
-    status,
-    updatedAt: serverTimestamp(),
-    adminOverride: {
-      adminUid,
-      reason,
-      timestamp: serverTimestamp()
-    }
-  };
-  return updateDoc(docRef, updatePayload);
+export const adminOverrideMonitoring = async (logId, status, adminUid, adminName, reason) => {
+  return updateLogWorkflowStatus(logId, "Monitoring", status, adminUid, adminName, `ADMIN OVERRIDE: ${reason}`);
 };
 
 /**

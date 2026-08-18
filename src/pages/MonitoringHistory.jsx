@@ -4,8 +4,10 @@ import { subscribeToReporterMonitoring } from "../firebase/services/monitoringSe
 import DashboardLayout from "../components/layout/DashboardLayout";
 import MonitoringTable from "../components/common/monitoring/MonitoringTable";
 import MonitoringDetailsModal from "../components/common/monitoring/MonitoringDetailsModal";
+import StatPill from "../components/common/StatPill";
+import { getStatusesByLabel } from "../utils/incidentConstants";
 
-const STATUS_FILTERS = ["All", "Submitted", "Under Review", "Approved", "Rejected/Flagged"];
+const STATUS_FILTERS = ["All", "Submitted", "Denied", "Open Assignment", "Pending Verification", "Pending Completion", "Completed"];
 
 function MonitoringHistory() {
   const { currentUser } = useAuth();
@@ -25,17 +27,31 @@ function MonitoringHistory() {
     return unsubscribe;
   }, [currentUser?.uid]);
 
-  const stats = useMemo(() => ({
-    submitted:   logs.filter((r) => r.status === "Submitted").length,
-    underReview: logs.filter((r) => r.status === "Under Review").length,
-    approved:    logs.filter((r) => r.status === "Approved").length,
-    rejected:    logs.filter((r) => r.status === "Rejected/Flagged").length,
-  }), [logs]);
+  /* Derived stats using single-pass performance loop */
+  const stats = useMemo(() => {
+    return logs.reduce((acc, r) => {
+      const status = r.status?.toLowerCase();
+      if (status === "submitted" || status === "under review") {
+        acc.submitted += 1;
+      } else if (status === "denied") {
+        acc.denied += 1;
+      } else if (status === "assigned" || status === "unresolved") {
+        acc.active += 1;
+      } else if (status === "resolved") {
+        acc.resolved += 1;
+      } else if (status === "verified" || status === "pending completion") {
+        acc.verified += 1;
+      } else if (status === "completed") {
+        acc.completed += 1;
+      }
+      return acc;
+    }, { submitted: 0, denied: 0, active: 0, resolved: 0, verified: 0, completed: 0 });
+  }, [logs]);
 
   const filteredLogs = useMemo(() => {
     const byStatus = activeFilter === "All" 
       ? logs 
-      : logs.filter((log) => log.status === activeFilter);
+      : logs.filter((log) => getStatusesByLabel(activeFilter).includes(log.status?.toLowerCase()));
 
     if (!searchQuery.trim()) return byStatus;
     const q = searchQuery.toLowerCase();
@@ -62,10 +78,11 @@ function MonitoringHistory() {
             </p>
           </div>
           <div className="inc-hero__stats">
-            <StatPill icon="upload_file" label="Submitted" count={stats.submitted} color="#f5a524" />
-            <StatPill icon="manage_search" label="Under Review" count={stats.underReview} color="#0080ff" />
-            <StatPill icon="task_alt" label="Approved" count={stats.approved} color="#00ed64" />
-            <StatPill icon="block" label="Rejected" count={stats.rejected} color="var(--c-warn-text)" />
+            <StatPill icon="upload_file" label="Submitted" count={stats.submitted} color="#3d8eff" />
+            <StatPill icon="assignment" label="Open Assignment" count={stats.active} color="#fa6e39" />
+            <StatPill icon="pending_actions" label="Pending Verification" count={stats.resolved} color="#00a35c" />
+            <StatPill icon="verified" label="Pending Completion" count={stats.verified} color="#7b3ff2" />
+            <StatPill icon="task_alt" label="Completed" count={stats.completed} color="#00ed64" />
           </div>
         </div>
 
@@ -121,21 +138,6 @@ function MonitoringHistory() {
         />
       </div>
     </DashboardLayout>
-  );
-}
-
-/* ─── Stat Pill ──────────────────────────────────────────────────────────── */
-function StatPill({ icon, label, count, color }) {
-  return (
-    <div className="inc-stat-pill">
-      <span className="material-symbols-outlined inc-stat-pill__icon" style={{ color }} aria-hidden="true">
-        {icon}
-      </span>
-      <div className="inc-stat-pill__body">
-        <span className="inc-stat-pill__count" style={{ color }}>{count}</span>
-        <span className="inc-stat-pill__label">{label}</span>
-      </div>
-    </div>
   );
 }
 

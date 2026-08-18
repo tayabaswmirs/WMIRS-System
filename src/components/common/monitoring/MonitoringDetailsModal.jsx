@@ -1,5 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useAuth } from "../../../hooks/useAuth";
 import { formatLogDate, getStatusClass } from "../../../utils/monitoringUtils";
+import { LOG_STATUS } from "../../../utils/incidentConstants";
+import WorkflowStepper from "../WorkflowStepper";
+import WorkflowActionModal from "../WorkflowActionModal";
 
 const CATEGORY_MAP = {
   "BMS":        { icon: "forest",        color: "#00b545", label: "Biodiversity" },
@@ -7,7 +11,7 @@ const CATEGORY_MAP = {
   "Compliance": { icon: "verified_user", color: "#fa6e39", label: "Compliance" }
 };
 
-function MonitoringDetailsModal({ log, onClose, isAdmin = false, onStatusChange }) {
+function MonitoringDetailsModal({ log, onClose, onStatusChange }) {
   const isOpen = Boolean(log);
 
   return (
@@ -28,7 +32,7 @@ function MonitoringDetailsModal({ log, onClose, isAdmin = false, onStatusChange 
           <DrawerContent
             log={log}
             onClose={onClose}
-            isAdmin={isAdmin}
+            onClose={onClose}
             onStatusChange={onStatusChange}
           />
         )}
@@ -37,33 +41,34 @@ function MonitoringDetailsModal({ log, onClose, isAdmin = false, onStatusChange 
   );
 }
 
-function DrawerContent({ log, onClose, isAdmin, onStatusChange }) {
+function DrawerContent({ log, onClose, onStatusChange }) {
+  const { userRole } = useAuth();
   const catMeta = CATEGORY_MAP[log.category] ?? { icon: "report", color: "#00ed64", label: log.category };
-  
-  const [draftStatus, setDraftStatus]   = useState(log.status);
-  const [adminRemarks, setAdminRemarks] = useState(log.adminRemarks || "");
-  const [saving, setSaving]             = useState(false);
-  const [saveFeedback, setSaveFeedback] = useState({ type: "", message: "" });
+  const [actionModalOpen, setActionModalOpen] = useState(false);
+  const [actionType, setActionType] = useState(null);
 
-  const isLocked = log.status === "Approved" || log.status === "Rejected/Flagged";
+  const handleActionClick = (type, nextStatus, title, confirmLabel, variant = 'primary') => {
+    setActionType({ type, nextStatus, title, confirmLabel, variant });
+    setActionModalOpen(true);
+  };
 
-  const handleStatusSave = async () => {
-    setSaving(true);
-    setSaveFeedback({ type: "", message: "" });
+  const handleActionSubmit = async (remarks) => {
     try {
-      await onStatusChange(log.id, draftStatus, adminRemarks);
-      setSaveFeedback({ type: "success", message: "Verification status saved." });
-    } catch (err) {
-      console.error(err);
-      if (err.message === "REPORT_ALREADY_REVIEWED") {
-        setSaveFeedback({ type: "error", message: "Report already updated by another reviewer." });
-      } else {
-        setSaveFeedback({ type: "error", message: "Failed to update status." });
+      if (onStatusChange) {
+        await onStatusChange(log.id, actionType.nextStatus, remarks);
       }
+    } catch (error) {
+      console.error(error);
     } finally {
-      setSaving(false);
+      setActionModalOpen(false);
+      setActionType(null);
     }
   };
+
+  const latestRemark = useMemo(() => {
+    if (!log.workflowHistory || !log.workflowHistory.length) return null;
+    return log.workflowHistory[log.workflowHistory.length - 1];
+  }, [log.workflowHistory]);
 
   return (
     <>
@@ -103,6 +108,20 @@ function DrawerContent({ log, onClose, isAdmin, onStatusChange }) {
 
       {/* Body */}
       <div className="inc-drawer__body">
+        <WorkflowStepper currentStatus={log.status} />
+
+        {latestRemark && (
+          <div className={`remarks-callout ${['denied', 'unresolved'].includes(log.status) ? 'warning' : ''}`}>
+            <div className="remarks-callout-header">
+              <span className="remarks-author">
+                {latestRemark.actorName} 
+                <span className="remarks-role-badge">{latestRemark.actorRole}</span>
+              </span>
+              <span className="remarks-time">{formatLogDate(latestRemark.timestamp)}</span>
+            </div>
+            <p className="remarks-text">{latestRemark.remarks}</p>
+          </div>
+        )}
         {/* Reporter info */}
         <div className="inc-drawer__meta-grid">
           <MetaCell label="Reported By" icon="person" value={`${log.reporter?.name ?? "Unknown"} (${log.reporter?.email ?? ""})`} />
@@ -159,102 +178,158 @@ function DrawerContent({ log, onClose, isAdmin, onStatusChange }) {
           )}
         </div>
 
-        {/* Admin remarks display for staff */}
-        {!isAdmin && log.adminRemarks && (
-          <div className="inc-drawer__desc-section" style={{ marginTop: "16px", background: "var(--c-surface-soft)", padding: "12px", borderRadius: "var(--r-md)" }}>
-            <span className="inc-drawer__section-label" style={{ color: "var(--c-green-dark)" }}>
-              <span className="material-symbols-outlined inc-drawer__section-label-icon">comment</span>
-              Admin Feedback / Remarks
+        {/* Field Resolution Findings Callout (for Staff & Admin Verification) */}
+        {(log.resolutionNotes || log.resolutionEvidence) && (
+          <div className="inc-drawer__desc-section" style={{ backgroundColor: 'rgba(0, 237, 100, 0.06)', border: '1px solid rgba(0, 237, 100, 0.25)', borderRadius: '12px', padding: '16px', marginTop: '16px' }}>
+            <span className="inc-drawer__section-label" style={{ color: 'var(--brand-green-dark, #008f3d)', fontWeight: 700 }}>
+              <span className="material-symbols-outlined inc-drawer__section-label-icon" style={{ color: 'var(--brand-green-dark, #008f3d)' }}>task_alt</span>
+              Ranger Resolution Findings & Evidence
             </span>
-            <p className="inc-drawer__desc-text" style={{ fontStyle: "italic" }}>{log.adminRemarks}</p>
+            {log.resolutionNotes && (
+              <p className="inc-drawer__desc-text" style={{ marginTop: '8px', color: '#001e2b', fontWeight: 500 }}>
+                {log.resolutionNotes}
+              </p>
+            )}
+            {log.resolutionEvidence && (
+              <div style={{ marginTop: '12px' }}>
+                <span className="inc-drawer__section-label" style={{ fontSize: '12px', marginBottom: '6px' }}>
+                  Resolution File Attachment:
+                </span>
+                <a
+                  href={typeof log.resolutionEvidence === 'string' ? log.resolutionEvidence : log.resolutionEvidence.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inc-drawer__evidence-tile"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 12px', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid var(--c-hairline-strong)', textDecoration: 'none' }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--brand-green-dark, #008f3d)' }}>attachment</span>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--c-text-primary)' }}>
+                    {typeof log.resolutionEvidence === 'object' ? log.resolutionEvidence.name : 'View Resolution Document / Photo'}
+                  </span>
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px', color: 'var(--c-text-muted)' }}>open_in_new</span>
+                </a>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Admin Audit Control Panel */}
-        {isAdmin && (
-          <div className="inc-drawer__admin-panel">
+        {/* Audit Timeline */}
+        {((log.history && log.history.length > 0) || (log.workflowHistory && log.workflowHistory.length > 0)) && (
+          <div className="audit-timeline">
             <span className="inc-drawer__section-label">
-              <span className="material-symbols-outlined inc-drawer__section-label-icon">
-                {isLocked ? "lock" : "admin_panel_settings"}
-              </span>
-              Admin Verification Audit
+              <span className="material-symbols-outlined inc-drawer__section-label-icon">history</span>
+              Audit Timeline
             </span>
+            {(log.history || log.workflowHistory).slice().reverse().map((hist, idx) => {
+              const statusName = hist.toStatus || hist.action || "Updated";
+              const authorName = hist.actorName || hist.by || "User";
+              const authorRole = hist.actorRole || "User";
+              const notesText  = hist.remarks || hist.notes;
+              const isError = ['denied', 'unresolved'].includes(statusName?.toLowerCase());
 
-            {isLocked ? (
-              <div className="inc-drawer__admin-locked-banner" style={{ background: "rgba(0, 104, 74, 0.08)", borderColor: "rgba(0, 104, 74, 0.15)", color: "var(--c-green-dark)" }}>
-                <span className="material-symbols-outlined" aria-hidden="true">lock</span>
-                <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, fontWeight: "600" }}>Log Audited — {log.status}</p>
-                  {log.adminRemarks && (
-                    <p style={{ margin: "4px 0 0", fontSize: "13px", fontStyle: "italic", opacity: 0.8 }}>
-                      Remarks: "{log.adminRemarks}"
-                    </p>
-                  )}
+              return (
+                <div key={idx} className="timeline-item">
+                  <div className={`timeline-dot ${isError ? 'error' : ''}`}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>
+                      {isError ? 'error' : 'done'}
+                    </span>
+                  </div>
+                  <div className="timeline-content">
+                    <div className="timeline-header">
+                      <span className="timeline-status" style={{ textTransform: 'capitalize' }}>
+                        {statusName}
+                      </span>
+                      <span className="remarks-time">{formatLogDate(hist.timestamp)}</span>
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#5c6c7a', marginBottom: '0.25rem' }}>
+                      By: {authorName} {authorRole !== 'User' ? `(${authorRole})` : ''}
+                    </div>
+                    {notesText && <div className="timeline-body">{notesText}</div>}
+                    {hist.evidenceFile && (
+                      <div style={{ marginTop: '6px' }}>
+                        <a
+                          href={typeof hist.evidenceFile === 'string' ? hist.evidenceFile : hist.evidenceFile.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ fontSize: '12px', color: 'var(--brand-green-dark, #008f3d)', textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>attach_file</span>
+                          View Attachment
+                        </a>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                <div>
-                  <label className="inc-form__label" htmlFor="mon-admin-status" style={{ fontSize: "12px", marginBottom: "4px" }}>
-                    Select Verification Status
-                  </label>
-                  <select
-                    id="mon-admin-status"
-                    value={draftStatus}
-                    onChange={(e) => {
-                      setDraftStatus(e.target.value);
-                      setSaveFeedback({ type: "", message: "" });
-                    }}
-                    className={`admin-status-select admin-status-select--${getStatusClass(draftStatus)}`}
-                    style={{ width: "100%", height: "38px" }}
-                    disabled={saving}
-                  >
-                    {["Submitted", "Under Review", "Approved", "Rejected/Flagged"].map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                </div>
+              );
+            })}
+          </div>
+        )}
 
-                <div>
-                  <label className="inc-form__label" htmlFor="mon-admin-remarks" style={{ fontSize: "12px", marginBottom: "4px" }}>
-                    Admin Audit Notes / Remarks
-                  </label>
-                  <textarea
-                    id="mon-admin-remarks"
-                    value={adminRemarks}
-                    onChange={(e) => setAdminRemarks(e.target.value)}
-                    placeholder="Provide compliance review notes, corrections required, or verification comments..."
-                    className="inc-form__textarea"
-                    rows={3}
-                    style={{ fontSize: "13px" }}
-                    disabled={saving}
-                  />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleStatusSave}
-                  disabled={saving || (draftStatus === log.status && adminRemarks === (log.adminRemarks || ""))}
-                  className="button-primary inc-drawer__admin-save-btn"
-                  id="mon-drawer-admin-save-btn"
-                  style={{ width: "100%" }}
+        {/* ── Context-Sensitive Action Buttons ─────────────────────────── */}
+        {((userRole === "staff" && ["submitted", "under review"].includes(log.status?.toLowerCase())) ||
+          (userRole === "staff" && log.status?.toLowerCase() === "resolved") ||
+          (userRole === "admin" && ["verified", "pending completion"].includes(log.status?.toLowerCase()))) && (
+          <div className="inc-drawer__admin-panel">
+            {userRole === "staff" && ["submitted", "under review"].includes(log.status?.toLowerCase()) && (
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button 
+                  className="btn-primary" style={{ flex: 1 }}
+                  onClick={() => handleActionClick('approve', LOG_STATUS.ASSIGNED, 'Open Assignment', 'Approve & Assign')}
                 >
-                  <span className="material-symbols-outlined" aria-hidden="true">
-                    {saving ? "hourglass_top" : "check_circle"}
-                  </span>
-                  {saving ? "Saving Review..." : "Submit Verification Review"}
+                  Open Assignment
                 </button>
-
-                {saveFeedback.message && (
-                  <p className={`inc-drawer__admin-feedback inc-drawer__admin-feedback--${saveFeedback.type}`}>
-                    {saveFeedback.message}
-                  </p>
-                )}
+                <button 
+                  className="btn-danger" style={{ flex: 1 }}
+                  onClick={() => handleActionClick('deny', LOG_STATUS.DENIED, 'Deny Log', 'Deny', 'danger')}
+                >
+                  Deny Log
+                </button>
+              </div>
+            )}
+            {userRole === "staff" && log.status?.toLowerCase() === "resolved" && (
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button 
+                  className="btn-primary" style={{ flex: 1 }}
+                  onClick={() => handleActionClick('verify', LOG_STATUS.VERIFIED, 'Verify Resolution', 'Verify')}
+                >
+                  Verify Resolution
+                </button>
+                <button 
+                  className="btn-danger" style={{ flex: 1 }}
+                  onClick={() => handleActionClick('unresolve', LOG_STATUS.UNRESOLVED, 'Mark Unresolved', 'Mark Unresolved', 'danger')}
+                >
+                  Mark Unresolved
+                </button>
+              </div>
+            )}
+            {userRole === "admin" && ["verified", "pending completion"].includes(log.status?.toLowerCase()) && (
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button 
+                  className="btn-primary" style={{ flex: 1 }}
+                  onClick={() => handleActionClick('complete', LOG_STATUS.COMPLETED, 'Mark Complete', 'Complete')}
+                >
+                  Mark Complete
+                </button>
+                <button 
+                  className="btn-danger" style={{ flex: 1 }}
+                  onClick={() => handleActionClick('dispute', LOG_STATUS.UNRESOLVED, 'Dispute Log', 'Dispute', 'danger')}
+                >
+                  Dispute Log
+                </button>
               </div>
             )}
           </div>
         )}
       </div>
+
+      <WorkflowActionModal 
+        isOpen={actionModalOpen}
+        onClose={() => setActionModalOpen(false)}
+        title={actionType?.title || ''}
+        confirmLabel={actionType?.confirmLabel || ''}
+        variant={actionType?.variant || 'primary'}
+        onSubmit={handleActionSubmit}
+      />
     </>
   );
 }

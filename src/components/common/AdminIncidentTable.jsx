@@ -1,4 +1,4 @@
-import { CATEGORY_META, ADMIN_STATUSES, getSeverityClass, getStatusClass, formatIncidentDate } from "../../utils/incidentConstants";
+import { CATEGORY_META, LOG_STATUS, STATUS_METADATA, getSeverityClass, getStatusClass, formatIncidentDate } from "../../utils/incidentConstants";
 
 /**
  * AdminIncidentTable — renders the full incident list for admin review.
@@ -8,7 +8,7 @@ import { CATEGORY_META, ADMIN_STATUSES, getSeverityClass, getStatusClass, format
  *   onStatusChange {Function} — (incidentId, newStatus) called on inline dropdown change
  *   onViewDetails  {Function} — (incident) called when the details icon is clicked
  */
-function AdminIncidentTable({ incidents, onStatusChange, onViewDetails }) {
+function AdminIncidentTable({ incidents, onStatusChange, onViewDetails, readOnly = false }) {
   if (incidents.length === 0) {
     return (
       <div className="inc-empty-state">
@@ -79,19 +79,11 @@ function AdminIncidentTable({ incidents, onStatusChange, onViewDetails }) {
                   </span>
                 </td>
 
-                {/* Inline status dropdown */}
+              {/* Inline status dropdown */}
                 <td className="inc-table__td">
-                  <select
-                    value={inc.status}
-                    onChange={(e) => onStatusChange(inc.id, e.target.value)}
-                    className={`admin-status-select admin-status-select--${getStatusClass(inc.status)}`}
-                    aria-label={`Change status for ${inc.incidentType}`}
-                    title={"Override status"}
-                  >
-                    {ADMIN_STATUSES.map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
+                  <span className={`status-badge ${getStatusClass(inc.status)}`}>
+                    {STATUS_METADATA[inc.status?.toLowerCase()]?.label || inc.status}
+                  </span>
                 </td>
 
                 {/* Icon-only view button */}

@@ -9,10 +9,11 @@ import ConfirmModal from "../components/common/ConfirmModal";
 import ExportModal from "../components/common/ExportModal";
 import { exportToCSV, exportToPDF } from "../utils/exportService";
 import StatPill from "../components/common/StatPill";
+import { getStatusesByLabel } from "../utils/incidentConstants";
 import "../styles/dashboard.css";
 
 // Filter tab options displayed above the table
-const STATUS_FILTERS = ["All", "Submitted", "Under Review", "Resolved", "Dismissed"];
+const STATUS_FILTERS = ["All", "Submitted", "Denied", "Open Assignment", "Pending Verification", "Pending Completion", "Completed"];
 
 function AdminIncidents() {
   const { currentUser } = useAuth();
@@ -31,19 +32,29 @@ function AdminIncidents() {
     return unsubscribe;
   }, []);
 
-  /* Derived stat counters for the hero header */
-  const stats = useMemo(() => ({
-    total:       incidents.length,
-    submitted:   incidents.filter((r) => r.status === "Submitted").length,
-    underReview: incidents.filter((r) => r.status === "Under Review").length,
-    resolved:    incidents.filter((r) => r.status === "Resolved").length,
-  }), [incidents]);
+  /* Derived stat counters using single-pass reducer */
+  const stats = useMemo(() => {
+    return incidents.reduce((acc, r) => {
+      const status = r.status?.toLowerCase();
+      acc.total += 1;
+      if (status === "submitted" || status === "under review") {
+        acc.submitted += 1;
+      } else if (status === "assigned" || status === "unresolved") {
+        acc.active += 1;
+      } else if (status === "resolved") {
+        acc.resolved += 1;
+      } else if (status === "verified" || status === "pending completion" || status === "completed" || status === "denied") {
+        acc.approved += 1;
+      }
+      return acc;
+    }, { total: 0, submitted: 0, active: 0, resolved: 0, approved: 0 });
+  }, [incidents]);
 
   /* Filtered + searched list shown in the table */
   const filteredIncidents = useMemo(() => {
     const byStatus = activeFilter === "All"
       ? incidents
-      : incidents.filter((r) => r.status === activeFilter);
+      : incidents.filter((r) => getStatusesByLabel(activeFilter).includes(r.status?.toLowerCase()));
     if (!searchQuery.trim()) return byStatus;
     const q = searchQuery.toLowerCase();
     return byStatus.filter((r) =>
@@ -54,19 +65,19 @@ function AdminIncidents() {
     );
   }, [incidents, activeFilter, searchQuery]);
 
-  const handleStatusChangeRequest = (incidentId, newStatus) => {
+  const handleStatusChangeRequest = (incidentId, newStatus, remarks) => {
     return new Promise((resolve, reject) => {
-      setConfirmDialog({ incidentId, newStatus, resolve, reject });
+      setConfirmDialog({ incidentId, newStatus, remarks, resolve, reject });
     });
   };
 
-  const isLocking = confirmDialog?.newStatus === "Resolved" || confirmDialog?.newStatus === "Dismissed";
+  const isLocking = confirmDialog?.newStatus === "completed" || confirmDialog?.newStatus === "denied";
 
   const executeStatusChange = async () => {
     if (!confirmDialog) return;
-    const { incidentId, newStatus, resolve } = confirmDialog;
+    const { incidentId, newStatus, remarks, resolve } = confirmDialog;
     try {
-      await adminOverrideIncident(incidentId, newStatus, currentUser.uid, "Admin override via dashboard");
+      await adminOverrideIncident(incidentId, newStatus, currentUser.uid, currentUser.displayName, remarks || "Admin override via dashboard");
       if (selectedIncident?.id === incidentId) {
         setSelectedIncident((prev) => ({ ...prev, status: newStatus }));
       }
@@ -175,19 +186,11 @@ function AdminIncidents() {
             </p>
           </div>
           <div className="inc-hero__stats">
-            <StatPill icon="inventory_2"     label="Total"        count={stats.total}       color="var(--brand-green, #00ed64)" />
-            <StatPill icon="mark_email_unread" label="Submitted"  count={stats.submitted}   color="#3d8eff" />
-            <StatPill icon="pending_actions"  label="Under Review" count={stats.underReview} color="#f5a524" />
-            <StatPill icon="task_alt"         label="Resolved"    count={stats.resolved}    color="#00ed64" />
-          </div>
-          <div className="mt-6 flex">
-            <button 
-              onClick={() => setIsExportOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[var(--c-bg-subtle)] text-[var(--c-stone)] border border-[var(--c-border)] rounded hover:border-[var(--c-brand)] hover:text-[var(--c-brand)] transition-colors"
-            >
-              <span className="material-symbols-outlined text-[18px]">download</span>
-              Export Reports
-            </button>
+            <StatPill icon="inventory_2" label="Total" count={stats.total} color="#a8b3bc" />
+            <StatPill icon="mark_email_unread" label="Awaiting Review" count={stats.submitted} color="#3d8eff" />
+            <StatPill icon="assignment" label="Active Tasks" count={stats.active} color="#fa6e39" />
+            <StatPill icon="pending_actions" label="Pending Verification" count={stats.resolved} color="#00a35c" />
+            <StatPill icon="task_alt" label="Approved/Completed" count={stats.approved} color="#00ed64" />
           </div>
         </div>
 
@@ -231,6 +234,18 @@ function AdminIncidents() {
             onStatusChange={handleStatusChangeRequest}
             onViewDetails={setSelectedIncident}
           />
+        </div>
+
+        {/* Export Reports Button placed as a separate element below the table card */}
+        <div className="flex justify-end mt-6">
+          <button 
+            onClick={() => setIsExportOpen(true)}
+            className="flex items-center bg-[#00ed64] text-[#001e2b] font-semibold rounded-full hover:bg-[#00c552] active:bg-[#00a344] transition-all shadow-md hover:shadow-lg focus:outline-none"
+            style={{ padding: "12px 32px", gap: "8px" }}
+          >
+            <span className="material-symbols-outlined text-[20px]" style={{ margin: 0, padding: 0, lineHeight: 1 }}>download</span>
+            Export Reports
+          </button>
         </div>
 
         {/* Right-side detail drawer — admin mode */}

@@ -8,8 +8,9 @@ import StatPill from "../components/common/StatPill";
 import ConfirmModal from "../components/common/ConfirmModal";
 import ExportModal from "../components/common/ExportModal";
 import { exportToCSV, exportToPDF } from "../utils/exportService";
+import { getStatusesByLabel } from "../utils/incidentConstants";
 
-const STATUS_FILTERS = ["All", "Submitted", "Under Review", "Approved", "Rejected/Flagged"];
+const STATUS_FILTERS = ["All", "Submitted", "Denied", "Open Assignment", "Pending Verification", "Pending Completion", "Completed"];
 
 function AdminMonitoring() {
   const { currentUser } = useAuth();
@@ -22,12 +23,22 @@ function AdminMonitoring() {
   const [deleteDialog, setDeleteDialog] = useState(null);
   const [isExportOpen, setIsExportOpen] = useState(false);
 
-  const stats = useMemo(() => ({
-    total: logs.length,
-    submitted: logs.filter((l) => l.status === "Submitted").length,
-    underReview: logs.filter((l) => l.status === "Under Review").length,
-    approved: logs.filter((l) => l.status === "Approved").length,
-  }), [logs]);
+  const stats = useMemo(() => {
+    return logs.reduce((acc, r) => {
+      const status = r.status?.toLowerCase();
+      acc.total += 1;
+      if (status === "submitted" || status === "under review") {
+        acc.submitted += 1;
+      } else if (status === "assigned" || status === "unresolved") {
+        acc.active += 1;
+      } else if (status === "resolved") {
+        acc.resolved += 1;
+      } else if (status === "verified" || status === "pending completion" || status === "completed" || status === "denied") {
+        acc.approved += 1;
+      }
+      return acc;
+    }, { total: 0, submitted: 0, active: 0, resolved: 0, approved: 0 });
+  }, [logs]);
 
   useEffect(() => {
     const unsubscribe = subscribeToAllMonitoring((data) => {
@@ -39,9 +50,13 @@ function AdminMonitoring() {
 
   const handleStatusChange = async (logId, newStatus, remarks) => {
     if (!currentUser?.uid) return;
-    await adminOverrideMonitoring(logId, newStatus, currentUser.uid, remarks || "Admin override via dashboard");
-    if (selectedLog?.id === logId) {
-      setSelectedLog((prev) => ({ ...prev, status: newStatus, adminRemarks: remarks }));
+    try {
+      await adminOverrideMonitoring(logId, newStatus, currentUser.uid, currentUser.displayName, remarks || "Admin override via dashboard");
+      if (selectedLog?.id === logId) {
+        setSelectedLog((prev) => ({ ...prev, status: newStatus, adminRemarks: remarks }));
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -115,7 +130,7 @@ function AdminMonitoring() {
   const filteredLogs = useMemo(() => {
     const byStatus = activeFilter === "All" 
       ? logs 
-      : logs.filter((log) => log.status === activeFilter);
+      : logs.filter((log) => getStatusesByLabel(activeFilter).includes(log.status?.toLowerCase()));
 
     if (!searchQuery.trim()) return byStatus;
     const q = searchQuery.toLowerCase();
@@ -148,19 +163,11 @@ function AdminMonitoring() {
             </p>
           </div>
           <div className="inc-hero__stats">
-            <StatPill icon="inventory_2"     label="Total"        count={stats.total}       color="var(--brand-green, #00ed64)" />
-            <StatPill icon="mark_email_unread" label="Submitted"  count={stats.submitted}   color="#3d8eff" />
-            <StatPill icon="pending_actions"  label="Under Review" count={stats.underReview} color="#f5a524" />
-            <StatPill icon="task_alt"         label="Approved"    count={stats.approved}    color="#00ed64" />
-          </div>
-          <div className="mt-6 flex">
-            <button 
-              onClick={() => setIsExportOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[var(--c-bg-subtle)] text-[var(--c-stone)] border border-[var(--c-border)] rounded hover:border-[var(--c-brand)] hover:text-[var(--c-brand)] transition-colors"
-            >
-              <span className="material-symbols-outlined text-[18px]">download</span>
-              Export Logs
-            </button>
+            <StatPill icon="inventory_2" label="Total" count={stats.total} color="#a8b3bc" />
+            <StatPill icon="mark_email_unread" label="Awaiting Review" count={stats.submitted} color="#3d8eff" />
+            <StatPill icon="assignment" label="Active Tasks" count={stats.active} color="#fa6e39" />
+            <StatPill icon="pending_actions" label="Pending Verification" count={stats.resolved} color="#00a35c" />
+            <StatPill icon="task_alt" label="Approved/Completed" count={stats.approved} color="#00ed64" />
           </div>
         </div>
 
@@ -209,6 +216,17 @@ function AdminMonitoring() {
               onViewDetails={setSelectedLog}
             />
           )}
+        </div>
+
+        <div className="flex justify-end mt-6">
+          <button 
+            onClick={() => setIsExportOpen(true)}
+            className="flex items-center bg-[#00ed64] text-[#001e2b] font-semibold rounded-full hover:bg-[#00c552] active:bg-[#00a344] transition-all shadow-md hover:shadow-lg focus:outline-none"
+            style={{ padding: "12px 32px", gap: "8px" }}
+          >
+            <span className="material-symbols-outlined text-[20px]" style={{ margin: 0, padding: 0, lineHeight: 1 }}>download</span>
+            Export Logs
+          </button>
         </div>
 
         {/* Drawer Details Modal */}

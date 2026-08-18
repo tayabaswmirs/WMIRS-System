@@ -349,4 +349,41 @@ code {
   box-shadow: var(--shadow-3);
 }
 
+/* ── Global Button Styles ──────────────────────────────────── */
+.button-primary {
+  background-color: var(--c-primary, #00ed64);
+  color: var(--c-on-primary, #001e2b);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 22px;
+  border-radius: var(--r-full, 9999px);
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-xs, 8px);
+  cursor: pointer;
+  transition: background-color var(--transition), transform var(--transition), box-shadow var(--transition);
+  box-shadow: 0 4px 12px rgba(0, 237, 100, 0.2);
+}
+
+.button-primary:hover:not(:disabled) {
+  background-color: #00ff6c;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 237, 100, 0.35);
+}
+
+.button-primary:active:not(:disabled) {
+  background-color: var(--c-primary-pressed, #008c34);
+  transform: translateY(0);
+}
+
+.button-primary:disabled {
+  background-color: var(--c-hairline-strong, #c1ccd6);
+  color: var(--c-muted, #a8b3bc);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+
 

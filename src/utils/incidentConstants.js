@@ -142,10 +142,51 @@ export const INCIDENT_TYPE_META = {
 export const SEVERITY_LEVELS = ["Low", "Medium", "High", "Critical"];
 
 /**
- * All statuses an admin can assign to an incident report.
- * Ordered from newest/open to closed.
+ * All statuses in the new 8-state workflow.
  */
-export const ADMIN_STATUSES = ["Submitted", "Under Review", "Resolved", "Dismissed"];
+export const LOG_STATUS = {
+  SUBMITTED: "submitted",
+  DENIED: "denied",
+  ASSIGNED: "assigned",
+  RESOLVED: "resolved",
+  VERIFIED: "verified",
+  UNRESOLVED: "unresolved",
+  PENDING_COMPLETION: "pending completion",
+  COMPLETED: "completed"
+};
+
+export const STATUS_METADATA = {
+  submitted: { label: "Submitted", color: "blue", stepIndex: 0 },
+  denied: { label: "Denied", color: "red", stepIndex: -1 },
+  assigned: { label: "Open Assignment", color: "orange", stepIndex: 1 },
+  resolved: { label: "Pending Verification", color: "teal", stepIndex: 2 },
+  verified: { label: "Pending Completion", color: "purple", stepIndex: 3 },
+  unresolved: { label: "Unresolved (Open Assignment)", color: "orange", stepIndex: 1 },
+  "pending completion": { label: "Pending Completion", color: "purple", stepIndex: 3 }, // Added this to match the string
+  completed: { label: "Completed", color: "green", stepIndex: 4 }
+};
+
+export const STATUS_GROUPS = {
+  "Submitted": ["submitted", "under review"],
+  "Denied": ["denied"],
+  "Open Assignment": ["assigned", "unresolved"],
+  "Pending Verification": ["resolved"],
+  "Pending Completion": ["verified", "pending completion"],
+  "Completed": ["completed"]
+};
+
+export const getStatusesByLabel = (label) => {
+  if (label === "All" || !label) {
+    return Object.values(LOG_STATUS);
+  }
+  return STATUS_GROUPS[label] || [];
+};
+
+export const getStatusLabel = (status) => {
+  const norm = status?.toLowerCase();
+  return STATUS_METADATA[norm]?.label || status || "Unknown";
+};
+
 
 /**
  * Returns the CSS class suffix for a given severity string.

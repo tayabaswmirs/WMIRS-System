@@ -16,7 +16,28 @@ service cloud.firestore {
     function isAdmin() {
       return isAuthenticated() && 
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'admin';
+    }
+    
+    // Helper to check if the authenticated user is staff
+    function isStaff() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'staff';
+    }
+    
+    // Helper to check if the authenticated user is ranger
+    function isRanger() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'ranger';
+    }
+    
+    // Helper to get staff scope
+    function getStaffScope() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) 
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('staffScope', null)
+        : null;
     }
 
     // Rules for the users collection
@@ -24,10 +45,10 @@ service cloud.firestore {
       // Anyone authenticated can read their own profile, admins can read all profiles
       allow read: if isOwner(userId) || isAdmin();
       
-      // When creating a profile, the user must be authenticated as that UID and must register with role 'user'
+      // When creating a profile, the user must be authenticated as that UID and must register with role 'ranger' or 'user'
       allow create: if isAuthenticated() && 
                     isOwner(userId) && 
-                    request.resource.data.role == 'user';
+                    (request.resource.data.role == 'ranger' || request.resource.data.role == 'user');
                     
       // When updating, users can edit their profile details but CANNOT modify their own role. Admins can update anything.
       allow update: if (isOwner(userId) && request.resource.data.role == resource.data.role) || isAdmin();
@@ -44,15 +65,25 @@ service cloud.firestore {
                     
       // Users can read only their own reports; admins can read all reports; staff with scope 'incidents' can read all reports
       allow read: if isAuthenticated() && 
-                  (resource.data.reporter.uid == request.auth.uid || isAdmin() || (request.auth.token.role == 'staff' && request.auth.token.scope == 'incidents'));
+                  (resource.data.reporter.uid == request.auth.uid || 
+                   isAdmin() || 
+                   (request.auth.token.role == 'staff' && request.auth.token.scope == 'incidents') ||
+                   (isStaff() && getStaffScope() == 'incidents') ||
+                   (isRanger() && resource.data.status in ['assigned', 'unresolved'])
+                  );
 
-      // Only admins and authorized staff may update a report, and only specific status/audit fields
-      allow update: if (isAdmin() || (request.auth.token.role == 'staff' && request.auth.token.scope == 'incidents')) &&
+      // Only admins, authorized staff, or a ranger resolving an assignment may update a report
+      allow update: if isAuthenticated() && (
+                      isAdmin() || 
+                      (request.auth.token.role == 'staff' && request.auth.token.scope == 'incidents') ||
+                      (isStaff() && getStaffScope() == 'incidents') ||
+                      (isRanger() && resource.data.status in ['assigned', 'unresolved'] && request.resource.data.status == 'resolved')
+                    ) &&
                     request.resource.data.diff(resource.data).affectedKeys()
-                      .hasOnly(['status', 'updatedAt', 'updatedBy', 'evidence', 'reviewerRemarks', 'adminRemarks']);
+                      .hasOnly(['status', 'updatedAt', 'updatedBy', 'evidence', 'history', 'resolutionNotes', 'resolutionEvidence']);
 
-      // Deleting incident reports is strictly prohibited to preserve audit integrity
-      allow delete: if false;
+      // Deleting incident reports is restricted to administrators
+      allow delete: if isAdmin();
     }
 
     // Rules for the monitoring collection
@@ -63,15 +94,25 @@ service cloud.firestore {
                     
       // Users can read only their own monitoring logs; admins can read all logs; authorized staff can read their specific category logs
       allow read: if isAuthenticated() && 
-                  (resource.data.reporter.uid == request.auth.uid || isAdmin() || (request.auth.token.role == 'staff' && request.auth.token.scope == resource.data.category));
+                  (resource.data.reporter.uid == request.auth.uid || 
+                   isAdmin() || 
+                   (request.auth.token.role == 'staff' && request.auth.token.scope == resource.data.category) ||
+                   (isStaff() && getStaffScope() == resource.data.category) ||
+                   (isRanger() && resource.data.status in ['assigned', 'unresolved'])
+                  );
 
-      // Only admins and authorized staff may update a monitoring log, and only specific status/audit fields
-      allow update: if (isAdmin() || (request.auth.token.role == 'staff' && request.auth.token.scope == resource.data.category)) &&
+      // Only admins, authorized staff, or a ranger resolving an assignment may update a monitoring log
+      allow update: if isAuthenticated() && (
+                      isAdmin() || 
+                      (request.auth.token.role == 'staff' && request.auth.token.scope == resource.data.category) ||
+                      (isStaff() && getStaffScope() == resource.data.category) ||
+                      (isRanger() && resource.data.status in ['assigned', 'unresolved'] && request.resource.data.status == 'resolved')
+                    ) &&
                     request.resource.data.diff(resource.data).affectedKeys()
-                      .hasOnly(['status', 'adminRemarks', 'reviewerRemarks', 'updatedAt', 'updatedBy', 'evidence']);
+                      .hasOnly(['status', 'updatedAt', 'updatedBy', 'evidence', 'history', 'resolutionNotes', 'resolutionEvidence']);
 
-      // Deleting monitoring logs is prohibited
-      allow delete: if false;
+      // Deleting monitoring logs is restricted to administrators
+      allow delete: if isAdmin();
     }
   }
 }

@@ -6,12 +6,13 @@ import AdminDashboard from "../pages/AdminDashboard";
 import AdminIncidents from "../pages/AdminIncidents";
 import UserManagement from "../pages/UserManagement";
 import Profile from "../pages/Profile";
-import Incidents from "../pages/Incidents";
+import SubmitDashboard from "../pages/SubmitDashboard";
 import IncidentHistory from "../pages/IncidentHistory";
-import Monitoring from "../pages/Monitoring";
 import MonitoringHistory from "../pages/MonitoringHistory";
 import AdminMonitoring from "../pages/AdminMonitoring";
 import StaffDashboard from "../pages/Staff/StaffDashboard";
+import StaffStageWorkspace from "../pages/Staff/StaffStageWorkspace";
+import OpenAssignments from "../pages/OpenAssignments";
 import { ProtectedRoute } from "./ProtectedRoute";
 
 export default function AppRoutes() {
@@ -20,6 +21,16 @@ export default function AppRoutes() {
       <Route path="/" element={<Landing />} />
       <Route path="/landing" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+      
+      {/* ── Shared Routes ──────────────────────────────── */}
+      <Route 
+        path="/assignments" 
+        element={
+          <ProtectedRoute allowedRoles={["ranger", "staff", "admin"]}>
+            <OpenAssignments />
+          </ProtectedRoute>
+        } 
+      />
       
       {/* ── Forest Ranger Routes ──────────────────────────────── */}
       <Route 
@@ -32,28 +43,22 @@ export default function AppRoutes() {
       />
 
       <Route 
-        path="/incidents" 
+        path="/submit" 
         element={
           <ProtectedRoute allowedRoles={["ranger"]}>
-            <Incidents />
+            <SubmitDashboard />
           </ProtectedRoute>
         } 
       />
+
+      <Route path="/incidents" element={<Navigate to="/submit" replace />} />
+      <Route path="/monitoring" element={<Navigate to="/submit" replace />} />
 
       <Route 
         path="/incidents/history" 
         element={
           <ProtectedRoute allowedRoles={["ranger"]}>
             <IncidentHistory />
-          </ProtectedRoute>
-        } 
-      />
-
-      <Route 
-        path="/monitoring" 
-        element={
-          <ProtectedRoute allowedRoles={["ranger"]}>
-            <Monitoring />
           </ProtectedRoute>
         } 
       />
@@ -73,6 +78,15 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["staff"]}>
             <StaffDashboard />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/staff/workspace/:stageId" 
+        element={
+          <ProtectedRoute allowedRoles={["staff"]}>
+            <StaffStageWorkspace />
           </ProtectedRoute>
         } 
       />

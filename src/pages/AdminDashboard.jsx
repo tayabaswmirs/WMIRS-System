@@ -1,34 +1,18 @@
 import { useState, useEffect, useMemo } from "react";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import StatPill from "../components/common/StatPill";
+import KpiCard from "../components/common/KpiCard";
+import ChartCard from "../components/common/ChartCard";
+import StatusGauge from "../components/common/StatusGauge";
+import RecentLogsList from "../components/common/RecentLogsList";
 import { getAllUsers } from "../firebase/services/userService";
 import { subscribeToAllIncidents } from "../firebase/services/incidentService";
 import { subscribeToAllMonitoring } from "../firebase/services/monitoringService";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  Cell, Legend, ComposedChart, Line, Area,
-  AreaChart, CartesianGrid
+  XAxis, YAxis, Tooltip, ResponsiveContainer,
+  Legend, ComposedChart, Line, CartesianGrid, Area
 } from "recharts";
 import "../styles/dashboard.css";
-
-/* ── Color Tokens ─────────────────────────────────────────── */
-const SEVERITY_COLORS = {
-  Critical: "#ff5722",
-  High: "#f5a524",
-  Medium: "#3d8eff",
-  Low: "#00ed64"
-};
-
-const CATEGORY_LABELS = [
-  "Forest Management",
-  "Biodiversity Monitoring",
-  "Water Resources Management",
-  "Waste Management",
-  "Environmental Compliance",
-  "Land and Ecosystem Protection"
-];
-
-const MONTH_LABELS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 /** Shared dark-mode tooltip styling for Recharts */
 const TOOLTIP_STYLE = {
@@ -40,71 +24,26 @@ const TOOLTIP_STYLE = {
   color: "#ffffff"
 };
 
-/* ── Reusable Gauge Ring ──────────────────────────────────── */
-function GaugeRing({ value, color, label }) {
-  const RADIUS = 68;
-  const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-  const offset = CIRCUMFERENCE - (value / 100) * CIRCUMFERENCE;
-
-  return (
-    <div className="dash-gauge">
-      <div className="dash-gauge__ring">
-        <svg width="160" height="160" viewBox="0 0 160 160">
-          <circle className="dash-gauge__ring-bg" cx="80" cy="80" r={RADIUS} />
-          <circle
-            className="dash-gauge__ring-fg"
-            cx="80" cy="80" r={RADIUS}
-            stroke={color}
-            strokeDasharray={CIRCUMFERENCE}
-            strokeDashoffset={offset}
-          />
-        </svg>
-        <span className="dash-gauge__pct">{value}%</span>
-      </div>
-      <span className="dash-gauge__label">{label}</span>
-    </div>
-  );
-}
-
-/* ── Chart Card Wrapper ───────────────────────────────────── */
-function ChartCard({ icon, title, subtitle, children }) {
-  return (
-    <div className="dash-chart-card">
-      <div className="dash-chart-card__header">
-        <span className="material-symbols-outlined dash-chart-card__header-icon" aria-hidden="true">
-          {icon}
-        </span>
-        <div>
-          <div className="dash-chart-card__title">{title}</div>
-          {subtitle ? <div className="dash-chart-card__subtitle">{subtitle}</div> : null}
-        </div>
-      </div>
-      <div className="dash-chart-card__body">
-        {children}
-      </div>
-    </div>
-  );
-}
-
-/* ── KPI Card ─────────────────────────────────────────────── */
-function KpiCard({ variant, icon, value, label, sub }) {
-  return (
-    <div className={`dash-kpi-card dash-kpi-card--${variant}`}>
-      <div className="dash-kpi-card__icon-wrap">
-        <span className="material-symbols-outlined dash-kpi-card__icon" aria-hidden="true">
-          {icon}
-        </span>
-      </div>
-      <div className="dash-kpi-card__body">
-        <span className="dash-kpi-card__value">{value}</span>
-        <span className="dash-kpi-card__label">{label}</span>
-        {sub ? <span className="dash-kpi-card__sub">{sub}</span> : null}
-      </div>
-    </div>
-  );
-}
-
-
+/* ── Date and Color Formatting Utilities ───────────────────── */
+const getStatusGroup = (status) => {
+  const norm = status?.toLowerCase() || "";
+  if (norm === "submitted" || norm === "under review" || norm === "") {
+    return "Submitted";
+  }
+  if (norm === "assigned" || norm === "unresolved") {
+    return "Open Assignment";
+  }
+  if (norm === "resolved") {
+    return "Pending Verification";
+  }
+  if (norm === "verified" || norm === "pending completion") {
+    return "Pending Completion";
+  }
+  if (norm === "completed" || norm === "denied") {
+    return "Completed / Denied";
+  }
+  return "Submitted";
+};
 
 /* ═══════════════════════════════════════════════════════════════
    Main Admin Dashboard Component
@@ -114,6 +53,7 @@ function AdminDashboard() {
   const [incidents, setIncidents] = useState([]);
   const [logs, setLogs] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
+  const [timeRange, setTimeRange] = useState("1M"); // "1D", "1W", "1M"
 
   /* ── Data Fetching ─────────────────────────────────────── */
   useEffect(() => {
@@ -141,142 +81,177 @@ function AdminDashboard() {
   }, []);
 
   /* ── Computed Analytics ─────────────────────────────────── */
-  const analytics = useMemo(() => {
-    /* --- Tier 1: KPI Metrics --- */
-    const urgentThreats = incidents.filter(
-      (i) => (i.severity === "Critical" || i.severity === "High") &&
-             i.status !== "Resolved" && i.status !== "Dismissed"
+  const completedLogsCount = useMemo(() => {
+    const compIncidents = incidents.filter(
+      (i) => i.status === "completed" || i.status === "denied"
     ).length;
-
-    const totalIncidents = incidents.length;
-    const totalLogs = logs.length;
-    const totalSubmissions = totalIncidents + totalLogs;
-
-    // Water quality from "Local Water Source Monitoring Form" subcategory
-    const waterLogs = logs.filter((l) => l.subcategory === "Local Water Source Monitoring Form");
-    const waterLogCount = waterLogs.length;
-
-    // Plastic ban compliance from "Plastic Bag Ban Inspection Form" subcategory
-    const plasticLogs = logs.filter((l) => l.subcategory === "Plastic Bag Ban Inspection Form");
-    const compliantCount = plasticLogs.filter((l) => l.compliant === true).length;
-    const nonCompliantCount = plasticLogs.filter((l) => l.compliant === false).length;
-    const complianceRate = plasticLogs.length > 0
-      ? Math.round((compliantCount / plasticLogs.length) * 100)
-      : 0;
-
-    // Resolution velocity
-    let resolvedCount = 0;
-    incidents.forEach((i) => {
-      if (i.status === "Resolved" || i.status === "Dismissed") resolvedCount++;
-    });
-    logs.forEach((l) => {
-      if (l.status === "Approved" || l.status === "Rejected/Flagged") resolvedCount++;
-    });
-    const velocity = totalSubmissions > 0
-      ? Math.round((resolvedCount / totalSubmissions) * 100)
-      : 0;
-
-    /* --- Tier 2: Category × Severity Heat Matrix --- */
-    const severityMatrix = CATEGORY_LABELS.map((cat) => {
-      const catIncidents = incidents.filter((i) => i.category === cat);
-      return {
-        name: cat.length > 20 ? cat.substring(0, 18) + "…" : cat,
-        fullName: cat,
-        Critical: catIncidents.filter((i) => i.severity === "Critical").length,
-        High: catIncidents.filter((i) => i.severity === "High").length,
-        Medium: catIncidents.filter((i) => i.severity === "Medium").length,
-        Low: catIncidents.filter((i) => i.severity === "Low").length
-      };
-    }).filter((row) => row.Critical + row.High + row.Medium + row.Low > 0);
-
-    /* --- Tier 2: Monthly Submissions & Resolution Velocity --- */
-    const monthlyMap = new Map();
-    MONTH_LABELS.forEach((m, idx) => {
-      monthlyMap.set(idx, { month: m, incidents: 0, monitoring: 0, resolved: 0, total: 0 });
-    });
-
-    incidents.forEach((i) => {
-      const ts = i.createdAt?.seconds ? new Date(i.createdAt.seconds * 1000) : null;
-      if (!ts) return;
-      const m = ts.getMonth();
-      const entry = monthlyMap.get(m);
-      entry.incidents++;
-      entry.total++;
-      if (i.status === "Resolved" || i.status === "Dismissed") entry.resolved++;
-    });
-
-    logs.forEach((l) => {
-      const ts = l.createdAt?.seconds ? new Date(l.createdAt.seconds * 1000) : null;
-      if (!ts) return;
-      const m = ts.getMonth();
-      const entry = monthlyMap.get(m);
-      entry.monitoring++;
-      entry.total++;
-      if (l.status === "Approved" || l.status === "Rejected/Flagged") entry.resolved++;
-    });
-
-    const monthlyData = Array.from(monthlyMap.values()).map((d) => ({
-      ...d,
-      velocity: d.total > 0 ? Math.round((d.resolved / d.total) * 100) : 0
-    }));
-
-    /* --- Tier 3: Biodiversity Census (Avian + Wildlife) --- */
-    const bioMonthly = new Map();
-    MONTH_LABELS.forEach((m, idx) => {
-      bioMonthly.set(idx, { month: m, avian: 0, wildlife: 0 });
-    });
-
-    logs.forEach((l) => {
-      const ts = l.createdAt?.seconds ? new Date(l.createdAt.seconds * 1000) : null;
-      if (!ts) return;
-      const m = ts.getMonth();
-      const entry = bioMonthly.get(m);
-
-      if (l.subcategory === "Avian Tracking Form") {
-        entry.avian += Number(l.count) || 1;
-      } else if (l.subcategory === "Wildlife Observations Form") {
-        entry.wildlife += Number(l.quantity) || 1;
-      }
-    });
-
-    const biodiversityData = Array.from(bioMonthly.values())
-      .filter((d) => d.avian > 0 || d.wildlife > 0);
-
-    /* --- Tier 3: Waste Collection by Barangay --- */
-    const wasteByBarangay = {};
-    logs.filter((l) => l.subcategory === "Waste Collection Tracking Form").forEach((l) => {
-      const brgy = l.barangay || "Unknown";
-      let volume = Number(l.volumeValue) || 0;
-      // Normalize to kg
-      if (l.volumeUnit === "tons") volume *= 1000;
-      if (!wasteByBarangay[brgy]) wasteByBarangay[brgy] = 0;
-      wasteByBarangay[brgy] += volume;
-    });
-    const wasteData = Object.entries(wasteByBarangay)
-      .map(([name, value]) => ({
-        name: name.replace("Barangay ", "Brgy. "),
-        value: Math.round(value)
-      }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 8);
-
-    return {
-      urgentThreats,
-      totalIncidents,
-      totalLogs,
-      totalSubmissions,
-      waterLogCount,
-      compliantCount,
-      nonCompliantCount,
-      complianceRate,
-      velocity,
-      severityMatrix,
-      monthlyData,
-      biodiversityData,
-      wasteData,
-      plasticLogs
-    };
+    const compLogs = logs.filter(
+      (l) => l.status === "completed" || l.status === "denied"
+    ).length;
+    return compIncidents + compLogs;
   }, [incidents, logs]);
+
+  const recentIncidents = useMemo(() => {
+    return [...incidents]
+      .sort((a, b) => {
+        const secA = a.createdAt?.seconds || 0;
+        const secB = b.createdAt?.seconds || 0;
+        return secB - secA;
+      })
+      .slice(0, 5);
+  }, [incidents]);
+
+  const recentLogs = useMemo(() => {
+    return [...logs]
+      .sort((a, b) => {
+        const secA = a.createdAt?.seconds || 0;
+        const secB = b.createdAt?.seconds || 0;
+        return secB - secA;
+      })
+      .slice(0, 5);
+  }, [logs]);
+
+  const incidentGaugeData = useMemo(() => {
+    const countsMap = {
+      "Submitted": 0,
+      "Open Assignment": 0,
+      "Pending Verification": 0,
+      "Pending Completion": 0,
+      "Completed / Denied": 0
+    };
+    incidents.forEach((item) => {
+      const group = getStatusGroup(item.status);
+      countsMap[group]++;
+    });
+    return [
+      { name: "Submitted", value: countsMap["Submitted"], color: "var(--c-accent-blue)" },
+      { name: "Open Assignment", value: countsMap["Open Assignment"], color: "var(--c-accent-orange)" },
+      { name: "Pending Verification", value: countsMap["Pending Verification"], color: "var(--c-teal)" },
+      { name: "Pending Completion", value: countsMap["Pending Completion"], color: "var(--c-accent-purple)" },
+      { name: "Completed / Denied", value: countsMap["Completed / Denied"], color: "var(--c-green)" }
+    ];
+  }, [incidents]);
+
+  const monitoringGaugeData = useMemo(() => {
+    const countsMap = {
+      "Submitted": 0,
+      "Open Assignment": 0,
+      "Pending Verification": 0,
+      "Pending Completion": 0,
+      "Completed / Denied": 0
+    };
+    logs.forEach((item) => {
+      const group = getStatusGroup(item.status);
+      countsMap[group]++;
+    });
+    return [
+      { name: "Submitted", value: countsMap["Submitted"], color: "var(--c-accent-blue)" },
+      { name: "Open Assignment", value: countsMap["Open Assignment"], color: "var(--c-accent-orange)" },
+      { name: "Pending Verification", value: countsMap["Pending Verification"], color: "var(--c-teal)" },
+      { name: "Pending Completion", value: countsMap["Pending Completion"], color: "var(--c-accent-purple)" },
+      { name: "Completed / Denied", value: countsMap["Completed / Denied"], color: "var(--c-green)" }
+    ];
+  }, [logs]);
+
+  const chartData = useMemo(() => {
+    const now = new Date();
+    if (timeRange === "1D") {
+      const buckets = [];
+      for (let i = 12; i >= -11; i--) {
+        const d = new Date(now.getTime() - i * 3600000);
+        d.setMinutes(0, 0, 0);
+        buckets.push({
+          time: d,
+          label: d.toLocaleTimeString(undefined, { hour: "numeric", hour12: true }),
+          incidents: 0,
+          monitoring: 0
+        });
+      }
+      incidents.forEach((item) => {
+        const ts = item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000) : new Date(item.createdAt);
+        if (isNaN(ts.getTime())) return;
+        const diffHours = Math.floor((now - ts) / 3600000);
+        if (diffHours >= 0 && diffHours < 24) {
+          buckets[23 - diffHours].incidents++;
+        }
+      });
+      logs.forEach((item) => {
+        const ts = item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000) : new Date(item.createdAt);
+        if (isNaN(ts.getTime())) return;
+        const diffHours = Math.floor((now - ts) / 3600000);
+        if (diffHours >= 0 && diffHours < 24) {
+          buckets[23 - diffHours].monitoring++;
+        }
+      });
+      return buckets;
+    } else if (timeRange === "1W") {
+      const buckets = [];
+      for (let i = 3; i >= -3; i--) {
+        const d = new Date(now.getTime() - i * 86400000);
+        d.setHours(0, 0, 0, 0);
+        buckets.push({
+          time: d,
+          label: d.toLocaleDateString(undefined, { weekday: "short" }),
+          incidents: 0,
+          monitoring: 0
+        });
+      }
+      incidents.forEach((item) => {
+        const ts = item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000) : new Date(item.createdAt);
+        if (isNaN(ts.getTime())) return;
+        const itemDate = new Date(ts);
+        itemDate.setHours(0, 0, 0, 0);
+        const idx = buckets.findIndex((b) => b.time.getTime() === itemDate.getTime());
+        if (idx !== -1) {
+          buckets[idx].incidents++;
+        }
+      });
+      logs.forEach((item) => {
+        const ts = item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000) : new Date(item.createdAt);
+        if (isNaN(ts.getTime())) return;
+        const itemDate = new Date(ts);
+        itemDate.setHours(0, 0, 0, 0);
+        const idx = buckets.findIndex((b) => b.time.getTime() === itemDate.getTime());
+        if (idx !== -1) {
+          buckets[idx].monitoring++;
+        }
+      });
+      return buckets;
+    } else { // "1M"
+      const buckets = [];
+      for (let i = 15; i >= -14; i--) {
+        const d = new Date(now.getTime() - i * 86400000);
+        d.setHours(0, 0, 0, 0);
+        buckets.push({
+          time: d,
+          label: d.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+          incidents: 0,
+          monitoring: 0
+        });
+      }
+      incidents.forEach((item) => {
+        const ts = item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000) : new Date(item.createdAt);
+        if (isNaN(ts.getTime())) return;
+        const itemDate = new Date(ts);
+        itemDate.setHours(0, 0, 0, 0);
+        const idx = buckets.findIndex((b) => b.time.getTime() === itemDate.getTime());
+        if (idx !== -1) {
+          buckets[idx].incidents++;
+        }
+      });
+      logs.forEach((item) => {
+        const ts = item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000) : new Date(item.createdAt);
+        if (isNaN(ts.getTime())) return;
+        const itemDate = new Date(ts);
+        itemDate.setHours(0, 0, 0, 0);
+        const idx = buckets.findIndex((b) => b.time.getTime() === itemDate.getTime());
+        if (idx !== -1) {
+          buckets[idx].monitoring++;
+        }
+      });
+      return buckets;
+    }
+  }, [incidents, logs, timeRange]);
 
   /* ── Render ─────────────────────────────────────────────── */
   return (
@@ -306,274 +281,155 @@ function AdminDashboard() {
         </div>
 
         {/* ══ TIER 1: Executive KPI Summary Cards ════════════════ */}
-        <div className="dash-kpi-grid">
+        <div className="dash-kpi-grid dash-kpi-grid--three">
           <KpiCard
             variant="threat"
             icon="warning"
-            value={analytics.urgentThreats}
-            label="Urgent Threats"
-            sub="Unresolved Critical & High severity"
+            value={incidents.length}
+            label="Incidents Log"
+            sub="Total incidents reported"
           />
           <KpiCard
             variant="field"
             icon="forest"
-            value={analytics.totalSubmissions}
-            label="Field Activity"
-            sub={`${analytics.totalIncidents} incidents · ${analytics.totalLogs} logs`}
-          />
-          <KpiCard
-            variant="water"
-            icon="water_drop"
-            value={analytics.waterLogCount}
-            label="Water Surveys"
-            sub="Local water source monitoring logs"
+            value={logs.length}
+            label="Monitoring Logs"
+            sub="Total monitoring logs reported"
           />
           <KpiCard
             variant="comply"
             icon="verified_user"
-            value={`${analytics.complianceRate}%`}
-            label="Ban Compliance"
-            sub={`${analytics.compliantCount} compliant · ${analytics.nonCompliantCount} violations`}
+            value={completedLogsCount}
+            label="Completed Logs"
+            sub="Combined completed & denied logs"
           />
         </div>
 
-
-
-        <div className="dash-chart-grid dash-chart-grid--two">
-          {/* Chart 1: Category × Severity Heat Matrix */}
-          <ChartCard
-            icon="grid_view"
-            title="Incident Severity by Category"
-            subtitle="Stacked breakdown of incident severity across environmental domains"
-          >
-            {analytics.severityMatrix.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={analytics.severityMatrix}
-                  layout="vertical"
-                  margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--c-hairline)" horizontal={false} />
-                  <XAxis type="number" stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
-                  <YAxis
-                    dataKey="name"
-                    type="category"
-                    stroke="var(--c-stone)"
-                    fontSize={11}
-                    width={110}
-                    tick={{ fill: "var(--c-slate)" }}
-                  />
-                  <Tooltip
-                    contentStyle={TOOLTIP_STYLE}
-                    itemStyle={{ color: "#ffffff" }}
-                    labelStyle={{ color: "#00ed64", fontWeight: 700, marginBottom: 4 }}
-                    formatter={(val, name) => [val, name]}
-                    labelFormatter={(label, payload) => {
-                      const item = payload?.[0]?.payload;
-                      return item?.fullName || label;
-                    }}
-                  />
-                  <Legend
-                    wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }}
-                    iconType="circle"
-                    iconSize={8}
-                  />
-                  <Bar dataKey="Critical" stackId="sev" fill={SEVERITY_COLORS.Critical} radius={[0, 0, 0, 0]} />
-                  <Bar dataKey="High" stackId="sev" fill={SEVERITY_COLORS.High} />
-                  <Bar dataKey="Medium" stackId="sev" fill={SEVERITY_COLORS.Medium} />
-                  <Bar dataKey="Low" stackId="sev" fill={SEVERITY_COLORS.Low} radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="dash-empty">
-                <span className="material-symbols-outlined dash-empty__icon">query_stats</span>
-                <span className="dash-empty__text">No incident data yet</span>
-              </div>
-            )}
+        {/* ══ TIER 2 & 3: Overhauled Visual Grid ═════════════════ */}
+        <div className="dash-row-70-30">
+          {/* Row 1: Recent Incidents List (70%) & Incident Gauge (30%) */}
+          <ChartCard icon="list_alt" title="Recent Incidents" subtitle="Last 5 reported ecological threats" accentColor="#fa6e39">
+            <RecentLogsList
+              items={recentIncidents}
+              type="incident"
+              emptyMessage="No incidents reported yet"
+            />
           </ChartCard>
 
-          {/* Chart 2: Monthly Submissions + Velocity */}
+          <ChartCard icon="query_stats" title="Incidents Status" subtitle="Breakdown of incidents by status" variant="dark">
+            <StatusGauge
+              data={incidentGaugeData}
+              total={incidents.length}
+              label="Incidents"
+            />
+          </ChartCard>
+        </div>
+
+        <div className="dash-row-30-70">
+          {/* Row 2: Monitoring Gauge (30%) & Recent Monitoring Logs (70%) */}
+          <ChartCard icon="pie_chart" title="Monitoring Status" subtitle="Breakdown of monitoring logs by status" variant="dark">
+            <StatusGauge
+              data={monitoringGaugeData}
+              total={logs.length}
+              label="Monitoring Logs"
+            />
+          </ChartCard>
+
+          <ChartCard icon="list_alt" title="Recent Monitoring Logs" subtitle="Last 5 reported field observations" accentColor="#00ed64">
+            <RecentLogsList
+              items={recentLogs}
+              type="monitoring"
+              emptyMessage="No monitoring logs reported yet"
+            />
+          </ChartCard>
+        </div>
+
+        {/* Row 3: Logging Frequency Line Chart (Full Width) */}
+        <div className="dash-full-width-row">
           <ChartCard
             icon="trending_up"
-            title="Monthly Submissions & Resolution"
-            subtitle="Incident reports vs monitoring logs with resolution velocity trend"
+            title="No of Logging"
+            subtitle="Comparison trend of incidents vs monitoring submissions"
+            variant="blue"
+            accentColor="#3d8eff"
+            extraHeader={
+              <div className="time-tabs">
+                <button
+                  className={`time-tab ${timeRange === "1D" ? "time-tab--active" : ""}`}
+                  onClick={() => setTimeRange("1D")}
+                >
+                  1D
+                </button>
+                <button
+                  className={`time-tab ${timeRange === "1W" ? "time-tab--active" : ""}`}
+                  onClick={() => setTimeRange("1W")}
+                >
+                  1W
+                </button>
+                <button
+                  className={`time-tab ${timeRange === "1M" ? "time-tab--active" : ""}`}
+                  onClick={() => setTimeRange("1M")}
+                >
+                  1M
+                </button>
+              </div>
+            }
           >
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart
-                data={analytics.monthlyData}
-                margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-              >
+            <ResponsiveContainer width="100%" height={260}>
+              <ComposedChart data={chartData} margin={{ top: 15, right: 10, left: -20, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="adminIncidentGlow" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#7b3ff2" stopOpacity={0.5} />
+                    <stop offset="95%" stopColor="#7b3ff2" stopOpacity={0.1} />
+                  </linearGradient>
+                  <linearGradient id="adminMonitoringGlow" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#00ed64" stopOpacity={0.5} />
+                    <stop offset="95%" stopColor="#00ed64" stopOpacity={0.1} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--c-hairline)" />
-                <XAxis dataKey="month" stroke="var(--c-stone)" fontSize={11} />
-                <YAxis yAxisId="left" stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
-                <YAxis
-                  yAxisId="right"
-                  orientation="right"
-                  stroke="var(--c-stone)"
-                  fontSize={11}
-                  domain={[0, 100]}
-                  tickFormatter={(v) => `${v}%`}
-                />
+                <XAxis dataKey="label" stroke="var(--c-stone)" fontSize={11} />
+                <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
                 <Tooltip
                   contentStyle={TOOLTIP_STYLE}
                   itemStyle={{ color: "#ffffff" }}
                   labelStyle={{ color: "#00ed64", fontWeight: 700 }}
                 />
                 <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
-                <Bar yAxisId="left" dataKey="incidents" name="Incidents" fill="#ff5722" radius={[4, 4, 0, 0]} barSize={16} />
-                <Bar yAxisId="left" dataKey="monitoring" name="Monitoring" fill="#00ed64" radius={[4, 4, 0, 0]} barSize={16} />
+                <Area
+                  type="monotone"
+                  dataKey="incidents"
+                  stroke="none"
+                  fill="url(#adminIncidentGlow)"
+                  legendType="none"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="monitoring"
+                  stroke="none"
+                  fill="url(#adminMonitoringGlow)"
+                  legendType="none"
+                />
                 <Line
-                  yAxisId="right"
-                  dataKey="velocity"
-                  name="Resolution %"
+                  type="monotone"
+                  dataKey="incidents"
+                  name="Incident"
                   stroke="#7b3ff2"
-                  strokeWidth={2}
+                  strokeWidth={2.5}
                   dot={{ fill: "#7b3ff2", r: 3 }}
+                  activeDot={{ r: 5 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="monitoring"
+                  name="Monitoring Log"
+                  stroke="#00ed64"
+                  strokeWidth={2.5}
+                  dot={{ fill: "#00ed64", r: 3 }}
                   activeDot={{ r: 5 }}
                 />
               </ComposedChart>
             </ResponsiveContainer>
-          </ChartCard>
-        </div>
-
-
-
-        <div className="dash-chart-grid dash-chart-grid--three">
-          {/* Chart 3: Biodiversity & Fauna Census */}
-          <ChartCard
-            icon="pets"
-            title="Biodiversity Census"
-            subtitle="Avian counts & wildlife sightings by month"
-          >
-            {analytics.biodiversityData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={analytics.biodiversityData}
-                  margin={{ top: 10, right: 20, left: 0, bottom: 5 }}
-                >
-                  <defs>
-                    <linearGradient id="gradAvian" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#00ed64" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#00ed64" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="gradWildlife" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#7b3ff2" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#7b3ff2" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--c-hairline)" />
-                  <XAxis dataKey="month" stroke="var(--c-stone)" fontSize={11} />
-                  <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
-                  <Tooltip
-                    contentStyle={TOOLTIP_STYLE}
-                    itemStyle={{ color: "#ffffff" }}
-                    labelStyle={{ color: "#00ed64", fontWeight: 700 }}
-                  />
-                  <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
-                  <Area
-                    type="monotone"
-                    dataKey="avian"
-                    name="Avian Census"
-                    stroke="#00ed64"
-                    strokeWidth={2}
-                    fill="url(#gradAvian)"
-                    dot={{ fill: "#00ed64", r: 3 }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="wildlife"
-                    name="Wildlife Sightings"
-                    stroke="#7b3ff2"
-                    strokeWidth={2}
-                    fill="url(#gradWildlife)"
-                    dot={{ fill: "#7b3ff2", r: 3 }}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="dash-empty">
-                <span className="material-symbols-outlined dash-empty__icon">cruelty_free</span>
-                <span className="dash-empty__text">No biodiversity surveys yet</span>
-              </div>
-            )}
-          </ChartCard>
-
-          {/* Chart 4: Plastic Ban Compliance (Donut) + Gauge */}
-          <ChartCard
-            icon="verified_user"
-            title="Plastic Ban Compliance"
-            subtitle="Establishment inspection results"
-          >
-            {analytics.plasticLogs.length > 0 ? (
-              <>
-                <div className="dash-mini-stats">
-                  <div className="dash-mini-stat">
-                    <span className="dash-mini-stat__dot" style={{ background: "#00ed64" }} />
-                    <span className="dash-mini-stat__text">Compliant</span>
-                    <span className="dash-mini-stat__value">{analytics.compliantCount}</span>
-                  </div>
-                  <div className="dash-mini-stat">
-                    <span className="dash-mini-stat__dot" style={{ background: "#ff5722" }} />
-                    <span className="dash-mini-stat__text">Violation</span>
-                    <span className="dash-mini-stat__value">{analytics.nonCompliantCount}</span>
-                  </div>
-                </div>
-                <GaugeRing
-                  value={analytics.complianceRate}
-                  color={analytics.complianceRate >= 70 ? "#00ed64" : "#ff5722"}
-                  label="Overall compliance rate across inspected commercial establishments"
-                />
-              </>
-            ) : (
-              <div className="dash-empty">
-                <span className="material-symbols-outlined dash-empty__icon">storefront</span>
-                <span className="dash-empty__text">No plastic ban inspections yet</span>
-              </div>
-            )}
-          </ChartCard>
-
-          {/* Chart 5: Waste Collection by Barangay */}
-          <ChartCard
-            icon="delete_sweep"
-            title="Waste Collection Volume"
-            subtitle="Total waste collected by barangay (kg)"
-          >
-            {analytics.wasteData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={analytics.wasteData}
-                  layout="vertical"
-                  margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--c-hairline)" horizontal={false} />
-                  <XAxis type="number" stroke="var(--c-stone)" fontSize={11} />
-                  <YAxis
-                    dataKey="name"
-                    type="category"
-                    stroke="var(--c-stone)"
-                    fontSize={11}
-                    width={90}
-                    tick={{ fill: "var(--c-slate)" }}
-                  />
-                  <Tooltip
-                    contentStyle={TOOLTIP_STYLE}
-                    itemStyle={{ color: "#ffffff" }}
-                    labelStyle={{ color: "#00ed64", fontWeight: 700 }}
-                    formatter={(val) => [`${val} kg`, "Volume"]}
-                  />
-                  <Bar dataKey="value" name="Volume (kg)" radius={[0, 6, 6, 0]}>
-                    {analytics.wasteData.map((entry, idx) => (
-                      <Cell key={`waste-${idx}`} fill={idx % 2 === 0 ? "#fa6e39" : "#f5a524"} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="dash-empty">
-                <span className="material-symbols-outlined dash-empty__icon">recycling</span>
-                <span className="dash-empty__text">No waste collection logs yet</span>
-              </div>
-            )}
           </ChartCard>
         </div>
 
@@ -583,3 +439,4 @@ function AdminDashboard() {
 }
 
 export default AdminDashboard;
+
