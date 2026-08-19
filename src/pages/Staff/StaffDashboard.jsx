@@ -123,6 +123,7 @@ function StaffDashboard() {
   const [timeRange, setTimeRange] = useState("1M");
   const [severityTimeRange, setSeverityTimeRange] = useState("1M");
   const [categoryFilter, setCategoryFilter] = useState("All");
+  const [selectedWaterBody, setSelectedWaterBody] = useState("All");
 
   const isIncidents = staffScope === "incidents";
   const isBMS = staffScope === "BMS";
@@ -579,7 +580,15 @@ function StaffDashboard() {
       };
     } else if (isWater) {
       // Water Resource KPI Calculations
-      const total = items.length;
+      const uniqueWaterBodies = new Set();
+      items.forEach(item => {
+         if (item.waterBody) uniqueWaterBodies.add(item.waterBody);
+      });
+      const waterBodiesList = Array.from(uniqueWaterBodies).sort();
+
+      const filteredItems = selectedWaterBody === "All" ? items : items.filter(item => item.waterBody === selectedWaterBody);
+
+      const total = filteredItems.length;
       let surveysCount = 0;
       let conservationCount = 0;
       let threatsAlerts = 0;
@@ -600,7 +609,7 @@ function StaffDashboard() {
       let sumTemp = 0;
       let sumDO = 0;
 
-      items.forEach(item => {
+      filteredItems.forEach(item => {
         const isSurvey = item.subcategory === "Local Water Source Monitoring Form";
         const isConservation = item.subcategory === "Ecosystem Conservation Log";
         
@@ -680,6 +689,7 @@ function StaffDashboard() {
 
       const startTimestamp = now.getTime() - timeLimitMs;
       const waterLogBuckets = [];
+      const fieldKitTrendBuckets = [];
       const logHalf = Math.floor(numBuckets / 2);
 
       for (let i = logHalf; i > logHalf - numBuckets; i--) {
@@ -688,9 +698,16 @@ function StaffDashboard() {
           ? d.toLocaleTimeString(undefined, { hour: "numeric", minute: "numeric", hour12: true })
           : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
         waterLogBuckets.push({ label, timestamp: d.getTime(), "Water Source Surveys": 0, "Conservation Logs": 0 });
+        fieldKitTrendBuckets.push({
+          label,
+          timestamp: d.getTime(),
+          sumPH: 0, countPH: 0,
+          sumTemp: 0, countTemp: 0,
+          sumDO: 0, countDO: 0
+        });
       }
 
-      items.forEach((item) => {
+      filteredItems.forEach((item) => {
         const ts = item.createdAt?.seconds ? item.createdAt.seconds * 1000 : null;
         if (!ts || ts < startTimestamp) return;
 
@@ -706,7 +723,27 @@ function StaffDashboard() {
           }
         });
         waterLogBuckets[bestIdx][seriesName]++;
+
+        if (item.phLevel) {
+          fieldKitTrendBuckets[bestIdx].sumPH += Number(item.phLevel);
+          fieldKitTrendBuckets[bestIdx].countPH++;
+        }
+        if (item.temperature) {
+          fieldKitTrendBuckets[bestIdx].sumTemp += Number(item.temperature);
+          fieldKitTrendBuckets[bestIdx].countTemp++;
+        }
+        if (item.dissolvedOxygen) {
+          fieldKitTrendBuckets[bestIdx].sumDO += Number(item.dissolvedOxygen);
+          fieldKitTrendBuckets[bestIdx].countDO++;
+        }
       });
+
+      const fieldKitTrends = fieldKitTrendBuckets.map(b => ({
+        label: b.label,
+        "pH Level": b.countPH > 0 ? Number((b.sumPH / b.countPH).toFixed(1)) : 0,
+        "Temperature (°C)": b.countTemp > 0 ? Number((b.sumTemp / b.countTemp).toFixed(1)) : 0,
+        "Dissolved Oxygen (mg/L)": b.countDO > 0 ? Number((b.sumDO / b.countDO).toFixed(1)) : 0,
+      }));
       
       const recentWater = [...items]
         .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
@@ -734,8 +771,10 @@ function StaffDashboard() {
            totalKits,
            avgPH,
            avgTemp,
-           avgDO
-        }
+           avgDO,
+           trends: fieldKitTrends
+        },
+        waterBodiesList
       };
     } else {
       // 1. KPI Counts
@@ -829,7 +868,7 @@ function StaffDashboard() {
         subcatData
       };
     }
-  }, [items, isIncidents, isBMS, isWater, timeRange, severityTimeRange, categoryFilter]);
+  }, [items, isIncidents, isBMS, isWater, timeRange, severityTimeRange, categoryFilter, selectedWaterBody]);
 
   if (isIncidents) {
     return (
@@ -1546,6 +1585,85 @@ function StaffDashboard() {
                       </div>
                     </div>
                   </div>
+                </ChartCard>
+              </div>
+
+              {/* Tier 6: Field-Kit Temporal Trends */}
+              <div className="dash-full-width-row">
+                <ChartCard
+                  icon="science"
+                  title="Field-Kit Water Quality Trends"
+                  subtitle="Average pH, Temperature, and Dissolved Oxygen levels over time"
+                  variant="blue"
+                  accentColor="#00ed64"
+                  extraHeader={
+                    <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                      <select
+                        className="inc-form__input"
+                        style={{
+                          height: "30px",
+                          padding: "0 10px",
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          borderRadius: "var(--r-full, 9999px)",
+                          background: "#ffffff",
+                          color: "#001e2b",
+                          border: "1px solid var(--c-hairline)",
+                          cursor: "pointer"
+                        }}
+                        value={selectedWaterBody}
+                        onChange={(e) => setSelectedWaterBody(e.target.value)}
+                      >
+                        <option value="All">All Water Bodies</option>
+                        {analytics.waterBodiesList?.map((wb) => (
+                          <option key={wb} value={wb}>{wb}</option>
+                        ))}
+                      </select>
+                      <div className="time-tabs">
+                        {["1D", "1W", "1M"].map((range) => (
+                          <button
+                            key={range}
+                            className={`time-tab ${timeRange === range ? "time-tab--active" : ""}`}
+                            onClick={() => setTimeRange(range)}
+                          >
+                            {range}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  }
+                >
+                  <ResponsiveContainer width="100%" height={260}>
+                    <ComposedChart data={analytics.fieldKit.trends} margin={{ top: 15, right: 10, left: -20, bottom: 5 }}>
+                      <defs>
+                        <linearGradient id="phGlow" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#00ed64" stopOpacity={0.5} />
+                          <stop offset="95%" stopColor="#00ed64" stopOpacity={0.1} />
+                        </linearGradient>
+                        <linearGradient id="tempGlow" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3d8eff" stopOpacity={0.5} />
+                          <stop offset="95%" stopColor="#3d8eff" stopOpacity={0.1} />
+                        </linearGradient>
+                        <linearGradient id="doGlow" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#fa6e39" stopOpacity={0.5} />
+                          <stop offset="95%" stopColor="#fa6e39" stopOpacity={0.1} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
+                      <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
+                      <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={true} />
+                      <Tooltip contentStyle={TOOLTIP_STYLE} />
+                      <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
+
+                      <Area type="monotone" dataKey="pH Level" stroke="none" fill="url(#phGlow)" legendType="none" />
+                      <Area type="monotone" dataKey="Temperature (°C)" stroke="none" fill="url(#tempGlow)" legendType="none" />
+                      <Area type="monotone" dataKey="Dissolved Oxygen (mg/L)" stroke="none" fill="url(#doGlow)" legendType="none" />
+
+                      <Line type="monotone" dataKey="pH Level" stroke="#00ed64" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="Temperature (°C)" stroke="#3d8eff" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="Dissolved Oxygen (mg/L)" stroke="#fa6e39" strokeWidth={2} dot={false} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
                 </ChartCard>
               </div>
             </>

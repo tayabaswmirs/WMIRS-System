@@ -5222,3 +5222,76 @@ button:disabled,
   letter-spacing: -0.5px;
 }
 
+/* Water Trend Filter Controls & Dark Time Tabs */
+.water-trend-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.water-trend-select-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.water-trend-select-icon {
+  position: absolute;
+  left: 8px;
+  font-size: 16px;
+  color: var(--c-green, #00ed64);
+  pointer-events: none;
+}
+
+.water-filter-select {
+  height: 32px;
+  padding: 0 12px 0 28px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--r-full, 9999px);
+  background-color: #002838 !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  outline: none;
+  cursor: pointer;
+  transition: all var(--transition, 0.2s ease);
+}
+
+.water-filter-select:hover,
+.water-filter-select:focus {
+  border-color: #00ed64 !important;
+  box-shadow: 0 0 0 2px rgba(0, 237, 100, 0.2);
+}
+
+.water-filter-select option {
+  background-color: #001e2b !important;
+  color: #ffffff !important;
+  padding: 6px;
+}
+
+/* Dark Card Time Tabs Overrides */
+.dash-chart-card--dark .time-tab,
+.time-tab--dark {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #cbd5e1 !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  font-weight: 600;
+}
+
+.dash-chart-card--dark .time-tab:hover,
+.time-tab--dark:hover {
+  border-color: #00ed64 !important;
+  color: #ffffff !important;
+  background: rgba(0, 237, 100, 0.15) !important;
+}
+
+.dash-chart-card--dark .time-tab--active,
+.time-tab--dark.time-tab--active {
+  background: #00ed64 !important;
+  border-color: #00ed64 !important;
+  color: #001e2b !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px rgba(0, 237, 100, 0.3) !important;
+}
+
