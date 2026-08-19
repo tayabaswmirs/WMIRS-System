@@ -3,33 +3,33 @@
  * Used by IncidentForm for dynamic dropdown filtering.
  */
 export const INCIDENT_MAP = {
-  "Forest Management": [
+  "Forest Incidents": [
     "Illegal Logging", "Illegal Tree Cutting", "Kaingin / Slash-and-Burn",
     "Forest Fire", "Illegal Charcoal Production", "Timber Smuggling",
     "Encroachment in Protected Area", "Unauthorized Land Clearing",
     "Deforestation", "Illegal Gathering of Forest Products"
   ],
-  "Biodiversity Monitoring": [
+  "Wildlife Incidents": [
     "Wildlife Hunting", "Wildlife Capture", "Wildlife Trafficking",
     "Habitat Destruction", "Killing of Endangered Species",
     "Illegal Wildlife Possession", "Disturbance of Wildlife Habitat"
   ],
-  "Water Resources Management": [
+  "Water Resource Incidents": [
     "Water Pollution", "River Contamination", "Illegal Waste Disposal in Waterways",
     "Fish Kill Incident", "Oil Spill", "Illegal Quarrying Near Rivers",
     "Sewage Discharge", "Water Obstruction", "Chemical Contamination"
   ],
-  "Waste Management": [
+  "Waste Incidents": [
     "Illegal Dumping", "Open Burning of Waste", "Improper Waste Disposal",
     "Plastic Ban Violation", "Hazardous Waste Disposal",
     "Overflowing Garbage Area", "Unsegregated Waste", "Unauthorized Waste Collection"
   ],
-  "Environmental Compliance": [
+  "Compliance Incidents": [
     "Environmental Permit Violation", "Air Pollution Complaint", "Noise Pollution",
     "Unauthorized Construction", "Industrial Pollution", "Chemical Spill",
     "Smoke Emission Violation", "Business Non-Compliance", "Illegal Industrial Discharge"
   ],
-  "Land and Ecosystem Protection": [
+  "Ecosystem Protection Incidents": [
     "Soil Erosion", "Illegal Quarrying", "Land Conversion Violation",
     "Destruction of Natural Landscape", "Cave Disturbance", "Wetland Destruction"
   ]
@@ -42,6 +42,38 @@ export const INCIDENT_MAP = {
  * @type {Record<string, { icon: string, color: string, desc: string }>}
  */
 export const CATEGORY_META = {
+  "Forest Incidents": {
+    icon: "forest",
+    color: "#00a35c",
+    desc: "Tree cutting, illegal logging, slash-and-burn, forest fire, and timber smuggling."
+  },
+  "Wildlife Incidents": {
+    icon: "pets",
+    color: "#7b3ff2",
+    desc: "Wildlife hunting, illegal capture, trafficking, and habitat destruction."
+  },
+  "Water Resource Incidents": {
+    icon: "water_drop",
+    color: "#3d4f9f",
+    desc: "Water pollution, river contamination, fish kills, oil spills, and illegal quarrying."
+  },
+  "Waste Incidents": {
+    icon: "delete_sweep",
+    color: "#fa6e39",
+    desc: "Illegal dumping, open waste burning, plastic ban violations, and hazardous waste."
+  },
+  "Compliance Incidents": {
+    icon: "gavel",
+    color: "#f06bb8",
+    desc: "Permit violations, industrial emissions, chemical spills, and noise complaints."
+  },
+  "Ecosystem Protection Incidents": {
+    icon: "landscape",
+    color: "#00684a",
+    desc: "Soil erosion, illegal land quarrying, wetland destruction, and landscape damage."
+  },
+
+  // ── Backward-compatibility aliases for legacy category strings ──
   "Forest Management": {
     icon: "forest",
     color: "#00a35c",
@@ -57,7 +89,17 @@ export const CATEGORY_META = {
     color: "#3d4f9f",
     desc: "Water pollution, river contamination, fish kills, oil spills, and illegal quarrying."
   },
+  "Water resource incidents": {
+    icon: "water_drop",
+    color: "#3d4f9f",
+    desc: "Water pollution, river contamination, fish kills, oil spills, and illegal quarrying."
+  },
   "Waste Management": {
+    icon: "delete_sweep",
+    color: "#fa6e39",
+    desc: "Illegal dumping, open waste burning, plastic ban violations, and hazardous waste."
+  },
+  "waste incidents": {
     icon: "delete_sweep",
     color: "#fa6e39",
     desc: "Illegal dumping, open waste burning, plastic ban violations, and hazardous waste."
@@ -67,7 +109,17 @@ export const CATEGORY_META = {
     color: "#f06bb8",
     desc: "Permit violations, industrial emissions, chemical spills, and noise complaints."
   },
+  "compliance incidents": {
+    icon: "gavel",
+    color: "#f06bb8",
+    desc: "Permit violations, industrial emissions, chemical spills, and noise complaints."
+  },
   "Land and Ecosystem Protection": {
+    icon: "landscape",
+    color: "#00684a",
+    desc: "Soil erosion, illegal land quarrying, wetland destruction, and landscape damage."
+  },
+  "ecosystem protection incidents": {
     icon: "landscape",
     color: "#00684a",
     desc: "Soil erosion, illegal land quarrying, wetland destruction, and landscape damage."

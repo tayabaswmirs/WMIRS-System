@@ -226,20 +226,40 @@ function StaffDashboard() {
 
       // 5. Category Stacked Bar Data
       const categoriesList = [
-        "Forest Management",
-        "Biodiversity Monitoring",
-        "Water Resources Management",
-        "Waste Management",
-        "Environmental Compliance",
-        "Land and Ecosystem Protection"
+        "Forest Incidents",
+        "Wildlife Incidents",
+        "Water Resource Incidents",
+        "Waste Incidents",
+        "Compliance Incidents",
+        "Ecosystem Protection Incidents"
       ];
+
+      const LEGACY_CATEGORY_MAP = {
+        "forest management": "Forest Incidents",
+        "biodiversity monitoring": "Wildlife Incidents",
+        "water resources management": "Water Resource Incidents",
+        "water resource incidents": "Water Resource Incidents",
+        "waste management": "Waste Incidents",
+        "waste incidents": "Waste Incidents",
+        "environmental compliance": "Compliance Incidents",
+        "compliance incidents": "Compliance Incidents",
+        "land and ecosystem protection": "Ecosystem Protection Incidents",
+        "ecosystem protection incidents": "Ecosystem Protection Incidents"
+      };
+
+      const normalizeCategory = (cat) => {
+        if (!cat) return "";
+        const trimmed = cat.trim().toLowerCase();
+        if (LEGACY_CATEGORY_MAP[trimmed]) return LEGACY_CATEGORY_MAP[trimmed];
+        const found = categoriesList.find((c) => c.toLowerCase() === trimmed);
+        return found || cat;
+      };
 
       const categorySeverityData = categoriesList.map((cat) => {
         const counts = { Low: 0, Medium: 0, High: 0, Critical: 0 };
         items.forEach((item) => {
-          const itemCat = item.category?.trim().toLowerCase() || "";
-          const listCat = cat.trim().toLowerCase();
-          const isMatch = itemCat === listCat || listCat.includes(itemCat) || itemCat.includes(listCat);
+          const itemCat = normalizeCategory(item.category);
+          const isMatch = itemCat === cat || itemCat.toLowerCase() === cat.toLowerCase();
 
           if (isMatch) {
             const rawSev = item.severity || "Low";
@@ -253,7 +273,7 @@ function StaffDashboard() {
           }
         });
         return {
-          name: cat.replace(" Management", "").replace(" Monitoring", "").replace(" Protection", ""),
+          name: cat.replace(" Incidents", "").replace(" Resource", "").replace(" Protection", ""),
           fullName: cat,
           ...counts
         };
@@ -305,11 +325,8 @@ function StaffDashboard() {
         const ts = item.createdAt?.seconds ? item.createdAt.seconds * 1000 : null;
         if (!ts || ts < startTimestamp) return;
 
-        const itemCat = item.category?.trim().toLowerCase() || "";
-        const matchedCat = categoriesList.find(cat => {
-          const lc = cat.trim().toLowerCase();
-          return itemCat === lc || lc.includes(itemCat) || itemCat.includes(lc);
-        });
+        const itemCat = normalizeCategory(item.category);
+        const matchedCat = categoriesList.find((cat) => cat === itemCat || cat.toLowerCase() === itemCat.toLowerCase());
 
         if (!matchedCat) return;
 
@@ -361,9 +378,9 @@ function StaffDashboard() {
 
       items.forEach((item) => {
         if (categoryFilter !== "All") {
-          const itemCat = item.category?.trim().toLowerCase() || "";
-          const filterCat = categoryFilter.trim().toLowerCase();
-          const isFilterMatch = itemCat === filterCat || filterCat.includes(itemCat) || itemCat.includes(filterCat);
+          const itemCat = normalizeCategory(item.category);
+          const filterCat = categoryFilter.trim();
+          const isFilterMatch = itemCat === filterCat || itemCat.toLowerCase() === filterCat.toLowerCase();
           if (!isFilterMatch) return;
         }
 
@@ -670,19 +687,19 @@ function StaffDashboard() {
                       <Tooltip contentStyle={TOOLTIP_STYLE} />
                       <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
 
-                      <Area type="monotone" dataKey="Forest Management" stroke="none" fill="url(#forestGlow)" legendType="none" />
-                      <Area type="monotone" dataKey="Biodiversity Monitoring" stroke="none" fill="url(#biodiversityGlow)" legendType="none" />
-                      <Area type="monotone" dataKey="Water Resources Management" stroke="none" fill="url(#waterGlow)" legendType="none" />
-                      <Area type="monotone" dataKey="Waste Management" stroke="none" fill="url(#wasteGlow)" legendType="none" />
-                      <Area type="monotone" dataKey="Environmental Compliance" stroke="none" fill="url(#complianceGlow)" legendType="none" />
-                      <Area type="monotone" dataKey="Land and Ecosystem Protection" stroke="none" fill="url(#landGlow)" legendType="none" />
+                      <Area type="monotone" dataKey="Forest Incidents" stroke="none" fill="url(#forestGlow)" legendType="none" />
+                      <Area type="monotone" dataKey="Wildlife Incidents" stroke="none" fill="url(#biodiversityGlow)" legendType="none" />
+                      <Area type="monotone" dataKey="Water Resource Incidents" stroke="none" fill="url(#waterGlow)" legendType="none" />
+                      <Area type="monotone" dataKey="Waste Incidents" stroke="none" fill="url(#wasteGlow)" legendType="none" />
+                      <Area type="monotone" dataKey="Compliance Incidents" stroke="none" fill="url(#complianceGlow)" legendType="none" />
+                      <Area type="monotone" dataKey="Ecosystem Protection Incidents" stroke="none" fill="url(#landGlow)" legendType="none" />
 
-                      <Line type="monotone" dataKey="Forest Management" name="Forest Mgmt" stroke="#00a35c" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="Biodiversity Monitoring" name="Biodiversity" stroke="#7b3ff2" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="Water Resources Management" name="Water Mgmt" stroke="#3d4f9f" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="Waste Management" name="Waste Mgmt" stroke="#fa6e39" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="Environmental Compliance" name="Compliance" stroke="#f06bb8" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="Land and Ecosystem Protection" name="Land/Ecosystem" stroke="#00684a" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="Forest Incidents" name="Forest" stroke="#00a35c" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="Wildlife Incidents" name="Wildlife" stroke="#7b3ff2" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="Water Resource Incidents" name="Water" stroke="#3d4f9f" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="Waste Incidents" name="Waste" stroke="#fa6e39" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="Compliance Incidents" name="Compliance" stroke="#f06bb8" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="Ecosystem Protection Incidents" name="Ecosystem" stroke="#00684a" strokeWidth={2} dot={false} />
                     </ComposedChart>
                   </ResponsiveContainer>
                 </ChartCard>

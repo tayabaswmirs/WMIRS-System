@@ -1,14 +1,13 @@
-import { CATEGORY_META, LOG_STATUS, STATUS_METADATA, getSeverityClass, getStatusClass, formatIncidentDate } from "../../utils/incidentConstants";
+import { CATEGORY_META, STATUS_METADATA, getSeverityClass, getStatusClass, formatIncidentDate } from "../../utils/incidentConstants";
 
 /**
  * AdminIncidentTable — renders the full incident list for admin review.
  *
  * Props:
  *   incidents      {Array}    — filtered list of incident objects
- *   onStatusChange {Function} — (incidentId, newStatus) called on inline dropdown change
  *   onViewDetails  {Function} — (incident) called when the details icon is clicked
  */
-function AdminIncidentTable({ incidents, onStatusChange, onViewDetails, readOnly = false }) {
+function AdminIncidentTable({ incidents, onViewDetails }) {
   if (incidents.length === 0) {
     return (
       <div className="inc-empty-state">

@@ -37,6 +37,8 @@ function OpenAssignments() {
       const q = searchQuery.toLowerCase();
       list = list.filter((a) => 
         a.category?.toLowerCase().includes(q) ||
+        a.subcategory?.toLowerCase().includes(q) ||
+        a.incidentType?.toLowerCase().includes(q) ||
         a.location?.toLowerCase().includes(q) ||
         a.description?.toLowerCase().includes(q)
       );
@@ -146,7 +148,9 @@ function OpenAssignments() {
                 </span>
               </div>
               
-              <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', color: '#001e2b' }}>{assignment.category}</h3>
+              <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', color: '#001e2b' }}>
+                {assignment.subcategory || assignment.incidentType || assignment.category}
+              </h3>
               <p style={{ fontSize: '0.85rem', color: '#5c6c7a', display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.75rem' }}>
                 <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>location_on</span>
                 {assignment.location}

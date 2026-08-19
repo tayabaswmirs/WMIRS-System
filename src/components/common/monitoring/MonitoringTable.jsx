@@ -1,5 +1,4 @@
 import { getStatusClass, getStatusLabel, formatLogDate } from "../../../utils/monitoringUtils";
-import { LOG_STATUS, STATUS_METADATA } from "../../../utils/incidentConstants";
 
 const CATEGORY_MAP = {
   "BMS":        { icon: "forest",        color: "#00b545", label: "Biodiversity" },
@@ -7,7 +6,7 @@ const CATEGORY_MAP = {
   "Compliance": { icon: "verified_user", color: "#fa6e39", label: "Compliance" }
 };
 
-function MonitoringTable({ logs, isAdmin, onStatusChange, onViewDetails }) {
+function MonitoringTable({ logs, isAdmin, onViewDetails }) {
   if (logs.length === 0) {
     return (
       <div className="inc-empty-state">
