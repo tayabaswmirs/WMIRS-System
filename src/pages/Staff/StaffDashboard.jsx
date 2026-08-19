@@ -622,7 +622,7 @@ function StaffDashboard() {
 
         // Clarity vs Flow Rate
         if (isSurvey) {
-            const flow = item.flowRate || "Unknown Flow";
+            const flow = item.flowLevel || "Unknown Flow";
             const clarity = item.waterClarity || "Unknown Clarity";
             const key = flow;
             if (!clarityFlowDataMap[key]) {
@@ -643,9 +643,9 @@ function StaffDashboard() {
         }
         
         // Field-Kit Metrics
-        if (item.pHLevel || item.temperature || item.dissolvedOxygen) {
+        if (item.phLevel || item.temperature || item.dissolvedOxygen) {
            totalKits++;
-           if (item.pHLevel) sumPH += Number(item.pHLevel);
+           if (item.phLevel) sumPH += Number(item.phLevel);
            if (item.temperature) sumTemp += Number(item.temperature);
            if (item.dissolvedOxygen) sumDO += Number(item.dissolvedOxygen);
         }
@@ -1388,21 +1388,22 @@ function StaffDashboard() {
 
               {/* Tier 3: Chart 1 - Water Clarity vs Flow Condition */}
               <div className="dash-full-width-row">
-                <ChartCard icon="bar_chart" title="Water Clarity vs Flow Condition" subtitle="Cross-tabulation of Clarity and Flow rate occurrences" variant="mint" accentColor="#00ed64">
+                <ChartCard icon="bar_chart" title="Water Clarity vs Flow Condition" subtitle="Cross-tabulation of Clarity and Flow condition occurrences" variant="dark" accentColor="#00ed64">
                   <ResponsiveContainer width="100%" height={260}>
                     <BarChart
                       data={analytics.clarityFlowData}
                       margin={{ top: 10, right: 20, left: -20, bottom: 5 }}
+                      maxBarSize={48}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" vertical={false} />
                       <XAxis dataKey="flowRate" stroke="var(--c-stone)" fontSize={11} />
                       <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
                       <Tooltip contentStyle={TOOLTIP_STYLE} />
                       <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
-                      <Bar dataKey="Clear" name="Clear" fill="#00ed64" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="Slightly Turbid" name="Slightly Turbid" fill="#3d8eff" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="Highly Turbid" name="Highly Turbid" fill="#fa6e39" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="Stagnant / Algal Bloom" name="Stagnant / Algal Bloom" fill="#7b3ff2" radius={[4, 4, 0, 0]} />
+                      <Bar stackId="a" dataKey="Clear" name="Clear" fill="#00ed64" radius={[4, 4, 0, 0]} />
+                      <Bar stackId="a" dataKey="Slightly Turbid" name="Slightly Turbid" fill="#3d8eff" radius={[4, 4, 0, 0]} />
+                      <Bar stackId="a" dataKey="Highly Turbid" name="Highly Turbid" fill="#fa6e39" radius={[4, 4, 0, 0]} />
+                      <Bar stackId="a" dataKey="Stagnant / Algal Bloom" name="Stagnant / Algal Bloom" fill="#7b3ff2" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartCard>
