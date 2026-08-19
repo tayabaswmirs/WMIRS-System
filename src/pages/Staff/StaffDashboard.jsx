@@ -14,7 +14,7 @@ import {
 } from "recharts";
 import "../../styles/dashboard.css";
 
-/* ── Color & Chart Config Tokens ─────────────────────────── */
+/* ΓöÇΓöÇ Color & Chart Config Tokens ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 
 const CHART_COLORS = ["#00ed64", "#3d8eff", "#fa6e39", "#7b3ff2", "#ffc107", "#00b545"];
 
@@ -29,7 +29,7 @@ const TOOLTIP_STYLE = {
   color: "#ffffff"
 };
 
-/* ── Reusable Gauge Ring (Used by monitoring dashboard) ────── */
+/* ΓöÇΓöÇ Reusable Gauge Ring (Used by monitoring dashboard) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 function GaugeRing({ value, color, label }) {
   const RADIUS = 68;
   const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
@@ -55,7 +55,7 @@ function GaugeRing({ value, color, label }) {
   );
 }
 
-/* ── Local Chart Card Wrapper (Used by monitoring dashboard) ── */
+/* ΓöÇΓöÇ Local Chart Card Wrapper (Used by monitoring dashboard) ΓöÇΓöÇ */
 function LocalChartCard({ icon, title, subtitle, children }) {
   return (
     <div className="dash-chart-card">
@@ -75,7 +75,7 @@ function LocalChartCard({ icon, title, subtitle, children }) {
   );
 }
 
-/* ── Local KPI Card (Used by monitoring dashboard) ────────── */
+/* ΓöÇΓöÇ Local KPI Card (Used by monitoring dashboard) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 function LocalKpiCard({ variant, icon, value, label, sub }) {
   return (
     <div className={`dash-kpi-card dash-kpi-card--${variant}`}>
@@ -113,7 +113,7 @@ const getStatusGroup = (status) => {
   return "Submitted";
 };
 
-/* ── Main Component ───────────────────────────────────────── */
+/* ΓöÇΓöÇ Main Component ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
 function StaffDashboard() {
   const { staffScope } = useAuth();
   const [items, setItems] = useState([]);
@@ -126,6 +126,7 @@ function StaffDashboard() {
 
   const isIncidents = staffScope === "incidents";
   const isBMS = staffScope === "BMS";
+  const isWater = staffScope === "Water";
 
   // Data fetching subscription based on scope
   useEffect(() => {
@@ -144,7 +145,7 @@ function StaffDashboard() {
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, [staffScope, isIncidents, isBMS]);
+  }, [staffScope, isIncidents, isBMS, isWater]);
 
   // Scoped Analytics computations
   const analytics = useMemo(() => {
@@ -300,160 +301,7 @@ function StaffDashboard() {
       } else if (timeRange === "1W") {
         numBuckets = 7;
         timeLimitMs = 7 * 24 * 60 * 60 * 1000;
-          } else if (isBMS) {
-      // BMS KPI Calculations
-      const total = items.length;
-      let avianCount = 0;
-      let wildlifeCount = 0;
-      let completedCount = 0;
-      let totalOrganisms = 0;
-      
-      const bmsGaugeCounts = {
-        "Submitted": 0,
-        "Open Assignment": 0,
-        "Pending Verification": 0,
-        "Pending Completion": 0,
-        "Completed / Denied": 0
-      };
-
-      const taxonomicMap = {
-        "Avian": { organisms: 0, logs: 0 },
-        "Mammal": { organisms: 0, logs: 0 },
-        "Reptile": { organisms: 0, logs: 0 },
-        "Amphibian": { organisms: 0, logs: 0 },
-        "Insect": { organisms: 0, logs: 0 },
-        "Other": { organisms: 0, logs: 0 }
-      };
-
-      const avianBehaviors = {
-        "Nesting": 0,
-        "Foraging": 0,
-        "Flying": 0,
-        "Perching": 0
-      };
-
-      items.forEach(item => {
-        const isAvian = item.subcategory === "Avian Tracking Form";
-        const isWildlife = item.subcategory === "Wildlife Observations Form";
-        
-        if (isAvian) avianCount++;
-        if (isWildlife) wildlifeCount++;
-        
-        const statusNorm = item.status?.toLowerCase();
-        if (["verified", "pending completion", "completed", "denied"].includes(statusNorm)) {
-          completedCount++;
-        }
-        
-        const grp = getStatusGroup(item.status);
-        if (bmsGaugeCounts[grp] !== undefined) {
-          bmsGaugeCounts[grp]++;
-        }
-
-        const count = Number(item.count || item.quantity || 0);
-        totalOrganisms += count;
-
-        let taxClass = "Other";
-        if (isAvian || item.classification === "Avian") taxClass = "Avian";
-        else if (item.classification && taxonomicMap[item.classification]) taxClass = item.classification;
-
-        taxonomicMap[taxClass].logs++;
-        taxonomicMap[taxClass].organisms += count;
-
-        if (isAvian && Array.isArray(item.activities)) {
-          item.activities.forEach(act => {
-            if (avianBehaviors[act] !== undefined) {
-              avianBehaviors[act]++;
-            }
-          });
-        }
-      });
-
-      const taxonomicData = Object.keys(taxonomicMap).map(key => ({
-        name: key,
-        Organisms: taxonomicMap[key].organisms,
-        Logs: taxonomicMap[key].logs
-      }));
-      
-      const maxTaxonomic = Math.max(...taxonomicData.map(d => Math.max(d.Organisms, d.Logs)), 5);
-
-      const behaviorData = Object.keys(avianBehaviors).map(key => ({
-        name: key,
-        Count: avianBehaviors[key]
-      }));
-
-      // Temporal Logging Trends
-      const now = new Date();
-      let numBuckets;
-      let timeLimitMs;
-
-      if (timeRange === "1D") {
-        numBuckets = 24;
-        timeLimitMs = 24 * 60 * 60 * 1000;
-      } else if (timeRange === "1W") {
-        numBuckets = 7;
-        timeLimitMs = 7 * 24 * 60 * 60 * 1000;
       } else {
-        numBuckets = 30;
-        timeLimitMs = 30 * 24 * 60 * 60 * 1000;
-      }
-
-      const startTimestamp = now.getTime() - timeLimitMs;
-      const bmsLogBuckets = [];
-      const logHalf = Math.floor(numBuckets / 2);
-
-      for (let i = logHalf; i > logHalf - numBuckets; i--) {
-        const d = new Date(now.getTime() - i * (timeRange === "1D" ? 3600000 : 86400000));
-        const label = timeRange === "1D"
-          ? d.toLocaleTimeString(undefined, { hour: "numeric", minute: "numeric", hour12: true })
-          : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-        bmsLogBuckets.push({ label, timestamp: d.getTime(), "Avian Census": 0, "Wildlife Sightings": 0 });
-      }
-
-      items.forEach((item) => {
-        const ts = item.createdAt?.seconds ? item.createdAt.seconds * 1000 : null;
-        if (!ts || ts < startTimestamp) return;
-
-        const seriesName = item.subcategory === "Avian Tracking Form" ? "Avian Census" : "Wildlife Sightings";
-        
-        let bestIdx = 0;
-        let minDiff = Infinity;
-        bmsLogBuckets.forEach((bucket, idx) => {
-          const diff = Math.abs(bucket.timestamp - ts);
-          if (diff < minDiff) {
-            minDiff = diff;
-            bestIdx = idx;
-          }
-        });
-
-        bmsLogBuckets[bestIdx][seriesName]++;
-      });
-      
-      const recentBMS = [...items]
-        .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
-        .slice(0, 5);
-        
-      const bmsGaugeData = [
-        { name: "Submitted", value: bmsGaugeCounts["Submitted"], color: "#3d8eff" },
-        { name: "Open Assignment", value: bmsGaugeCounts["Open Assignment"], color: "#fa6e39" },
-        { name: "Pending Verification", value: bmsGaugeCounts["Pending Verification"], color: "#00a35c" },
-        { name: "Pending Completion", value: bmsGaugeCounts["Pending Completion"], color: "#7b3ff2" },
-        { name: "Completed / Denied", value: bmsGaugeCounts["Completed / Denied"], color: "#00ed64" }
-      ];
-
-      return {
-        total,
-        avianCount,
-        wildlifeCount,
-        completedCount,
-        totalOrganisms,
-        bmsGaugeData,
-        taxonomicData,
-        maxTaxonomic,
-        behaviorData,
-        bmsLogBuckets,
-        recentBMS
-      };
-    } else {
         numBuckets = 30;
         timeLimitMs = 30 * 24 * 60 * 60 * 1000;
       }
@@ -507,160 +355,7 @@ function StaffDashboard() {
       } else if (severityTimeRange === "1W") {
         sevNumBuckets = 7;
         sevTimeLimitMs = 7 * 24 * 60 * 60 * 1000;
-          } else if (isBMS) {
-      // BMS KPI Calculations
-      const total = items.length;
-      let avianCount = 0;
-      let wildlifeCount = 0;
-      let completedCount = 0;
-      let totalOrganisms = 0;
-      
-      const bmsGaugeCounts = {
-        "Submitted": 0,
-        "Open Assignment": 0,
-        "Pending Verification": 0,
-        "Pending Completion": 0,
-        "Completed / Denied": 0
-      };
-
-      const taxonomicMap = {
-        "Avian": { organisms: 0, logs: 0 },
-        "Mammal": { organisms: 0, logs: 0 },
-        "Reptile": { organisms: 0, logs: 0 },
-        "Amphibian": { organisms: 0, logs: 0 },
-        "Insect": { organisms: 0, logs: 0 },
-        "Other": { organisms: 0, logs: 0 }
-      };
-
-      const avianBehaviors = {
-        "Nesting": 0,
-        "Foraging": 0,
-        "Flying": 0,
-        "Perching": 0
-      };
-
-      items.forEach(item => {
-        const isAvian = item.subcategory === "Avian Tracking Form";
-        const isWildlife = item.subcategory === "Wildlife Observations Form";
-        
-        if (isAvian) avianCount++;
-        if (isWildlife) wildlifeCount++;
-        
-        const statusNorm = item.status?.toLowerCase();
-        if (["verified", "pending completion", "completed", "denied"].includes(statusNorm)) {
-          completedCount++;
-        }
-        
-        const grp = getStatusGroup(item.status);
-        if (bmsGaugeCounts[grp] !== undefined) {
-          bmsGaugeCounts[grp]++;
-        }
-
-        const count = Number(item.count || item.quantity || 0);
-        totalOrganisms += count;
-
-        let taxClass = "Other";
-        if (isAvian || item.classification === "Avian") taxClass = "Avian";
-        else if (item.classification && taxonomicMap[item.classification]) taxClass = item.classification;
-
-        taxonomicMap[taxClass].logs++;
-        taxonomicMap[taxClass].organisms += count;
-
-        if (isAvian && Array.isArray(item.activities)) {
-          item.activities.forEach(act => {
-            if (avianBehaviors[act] !== undefined) {
-              avianBehaviors[act]++;
-            }
-          });
-        }
-      });
-
-      const taxonomicData = Object.keys(taxonomicMap).map(key => ({
-        name: key,
-        Organisms: taxonomicMap[key].organisms,
-        Logs: taxonomicMap[key].logs
-      }));
-      
-      const maxTaxonomic = Math.max(...taxonomicData.map(d => Math.max(d.Organisms, d.Logs)), 5);
-
-      const behaviorData = Object.keys(avianBehaviors).map(key => ({
-        name: key,
-        Count: avianBehaviors[key]
-      }));
-
-      // Temporal Logging Trends
-      const now = new Date();
-      let numBuckets;
-      let timeLimitMs;
-
-      if (timeRange === "1D") {
-        numBuckets = 24;
-        timeLimitMs = 24 * 60 * 60 * 1000;
-      } else if (timeRange === "1W") {
-        numBuckets = 7;
-        timeLimitMs = 7 * 24 * 60 * 60 * 1000;
       } else {
-        numBuckets = 30;
-        timeLimitMs = 30 * 24 * 60 * 60 * 1000;
-      }
-
-      const startTimestamp = now.getTime() - timeLimitMs;
-      const bmsLogBuckets = [];
-      const logHalf = Math.floor(numBuckets / 2);
-
-      for (let i = logHalf; i > logHalf - numBuckets; i--) {
-        const d = new Date(now.getTime() - i * (timeRange === "1D" ? 3600000 : 86400000));
-        const label = timeRange === "1D"
-          ? d.toLocaleTimeString(undefined, { hour: "numeric", minute: "numeric", hour12: true })
-          : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-        bmsLogBuckets.push({ label, timestamp: d.getTime(), "Avian Census": 0, "Wildlife Sightings": 0 });
-      }
-
-      items.forEach((item) => {
-        const ts = item.createdAt?.seconds ? item.createdAt.seconds * 1000 : null;
-        if (!ts || ts < startTimestamp) return;
-
-        const seriesName = item.subcategory === "Avian Tracking Form" ? "Avian Census" : "Wildlife Sightings";
-        
-        let bestIdx = 0;
-        let minDiff = Infinity;
-        bmsLogBuckets.forEach((bucket, idx) => {
-          const diff = Math.abs(bucket.timestamp - ts);
-          if (diff < minDiff) {
-            minDiff = diff;
-            bestIdx = idx;
-          }
-        });
-
-        bmsLogBuckets[bestIdx][seriesName]++;
-      });
-      
-      const recentBMS = [...items]
-        .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
-        .slice(0, 5);
-        
-      const bmsGaugeData = [
-        { name: "Submitted", value: bmsGaugeCounts["Submitted"], color: "#3d8eff" },
-        { name: "Open Assignment", value: bmsGaugeCounts["Open Assignment"], color: "#fa6e39" },
-        { name: "Pending Verification", value: bmsGaugeCounts["Pending Verification"], color: "#00a35c" },
-        { name: "Pending Completion", value: bmsGaugeCounts["Pending Completion"], color: "#7b3ff2" },
-        { name: "Completed / Denied", value: bmsGaugeCounts["Completed / Denied"], color: "#00ed64" }
-      ];
-
-      return {
-        total,
-        avianCount,
-        wildlifeCount,
-        completedCount,
-        totalOrganisms,
-        bmsGaugeData,
-        taxonomicData,
-        maxTaxonomic,
-        behaviorData,
-        bmsLogBuckets,
-        recentBMS
-      };
-    } else {
         sevNumBuckets = 30;
         sevTimeLimitMs = 30 * 24 * 60 * 60 * 1000;
       }
@@ -729,7 +424,7 @@ function StaffDashboard() {
         severityTrendBuckets,
         categoriesList
       };
-        } else if (isBMS) {
+    } else if (isBMS) {
       // BMS KPI Calculations
       const total = items.length;
       let avianCount = 0;
@@ -881,6 +576,166 @@ function StaffDashboard() {
         behaviorData,
         bmsLogBuckets,
         recentBMS
+      };
+    } else if (isWater) {
+      // Water Resource KPI Calculations
+      const total = items.length;
+      let surveysCount = 0;
+      let conservationCount = 0;
+      let threatsAlerts = 0;
+
+      const waterGaugeCounts = {
+        "Submitted": 0,
+        "Open Assignment": 0,
+        "Pending Verification": 0,
+        "Pending Completion": 0,
+        "Completed / Denied": 0
+      };
+
+      const clarityFlowDataMap = {};
+      const pollutionRiskMap = {};
+      
+      let totalKits = 0;
+      let sumPH = 0;
+      let sumTemp = 0;
+      let sumDO = 0;
+
+      items.forEach(item => {
+        const isSurvey = item.subcategory === "Local Water Source Monitoring Form";
+        const isConservation = item.subcategory === "Ecosystem Conservation Log";
+        
+        if (isSurvey) surveysCount++;
+        if (isConservation) conservationCount++;
+        
+        // Threat alerts
+        const isSevereThreat = item.threatSeverity === "High" || item.threatSeverity === "Critical";
+        const hasPollutionIndicators = item.pollutionIndicators && item.pollutionIndicators.length > 0;
+        if (isSevereThreat || hasPollutionIndicators) {
+           threatsAlerts++;
+        }
+
+        // Status Gauge
+        const grp = getStatusGroup(item.status);
+        if (waterGaugeCounts[grp] !== undefined) {
+          waterGaugeCounts[grp]++;
+        }
+
+        // Clarity vs Flow Rate
+        if (isSurvey) {
+            const flow = item.flowRate || "Unknown Flow";
+            const clarity = item.waterClarity || "Unknown Clarity";
+            const key = flow;
+            if (!clarityFlowDataMap[key]) {
+               clarityFlowDataMap[key] = { flowRate: flow, "Clear": 0, "Slightly Turbid": 0, "Highly Turbid": 0, "Stagnant / Algal Bloom": 0, "Unknown Clarity": 0 };
+            }
+            if (clarityFlowDataMap[key][clarity] !== undefined) {
+               clarityFlowDataMap[key][clarity]++;
+            } else {
+               clarityFlowDataMap[key][clarity] = 1;
+            }
+        }
+
+        // Pollution Indicators
+        if (item.pollutionIndicators && Array.isArray(item.pollutionIndicators)) {
+           item.pollutionIndicators.forEach(ind => {
+              pollutionRiskMap[ind] = (pollutionRiskMap[ind] || 0) + 1;
+           });
+        }
+        
+        // Field-Kit Metrics
+        if (item.pHLevel || item.temperature || item.dissolvedOxygen) {
+           totalKits++;
+           if (item.pHLevel) sumPH += Number(item.pHLevel);
+           if (item.temperature) sumTemp += Number(item.temperature);
+           if (item.dissolvedOxygen) sumDO += Number(item.dissolvedOxygen);
+        }
+      });
+      
+      const clarityFlowData = Object.values(clarityFlowDataMap);
+
+      const pollutionRiskData = Object.keys(pollutionRiskMap).map(key => ({
+        name: key,
+        Frequency: pollutionRiskMap[key]
+      })).sort((a,b) => b.Frequency - a.Frequency);
+
+      const avgPH = totalKits > 0 ? (sumPH / totalKits).toFixed(1) : "N/A";
+      const avgTemp = totalKits > 0 ? (sumTemp / totalKits).toFixed(1) : "N/A";
+      const avgDO = totalKits > 0 ? (sumDO / totalKits).toFixed(1) : "N/A";
+
+      // Temporal Logging Trends
+      const now = new Date();
+      let numBuckets;
+      let timeLimitMs;
+
+      if (timeRange === "1D") {
+        numBuckets = 24;
+        timeLimitMs = 24 * 60 * 60 * 1000;
+      } else if (timeRange === "1W") {
+        numBuckets = 7;
+        timeLimitMs = 7 * 24 * 60 * 60 * 1000;
+      } else {
+        numBuckets = 30;
+        timeLimitMs = 30 * 24 * 60 * 60 * 1000;
+      }
+
+      const startTimestamp = now.getTime() - timeLimitMs;
+      const waterLogBuckets = [];
+      const logHalf = Math.floor(numBuckets / 2);
+
+      for (let i = logHalf; i > logHalf - numBuckets; i--) {
+        const d = new Date(now.getTime() - i * (timeRange === "1D" ? 3600000 : 86400000));
+        const label = timeRange === "1D"
+          ? d.toLocaleTimeString(undefined, { hour: "numeric", minute: "numeric", hour12: true })
+          : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+        waterLogBuckets.push({ label, timestamp: d.getTime(), "Water Source Surveys": 0, "Conservation Logs": 0 });
+      }
+
+      items.forEach((item) => {
+        const ts = item.createdAt?.seconds ? item.createdAt.seconds * 1000 : null;
+        if (!ts || ts < startTimestamp) return;
+
+        const seriesName = item.subcategory === "Ecosystem Conservation Log" ? "Conservation Logs" : "Water Source Surveys";
+        
+        let bestIdx = 0;
+        let minDiff = Infinity;
+        waterLogBuckets.forEach((bucket, idx) => {
+          const diff = Math.abs(bucket.timestamp - ts);
+          if (diff < minDiff) {
+            minDiff = diff;
+            bestIdx = idx;
+          }
+        });
+        waterLogBuckets[bestIdx][seriesName]++;
+      });
+      
+      const recentWater = [...items]
+        .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
+        .slice(0, 5);
+        
+      const waterGaugeData = [
+        { name: "Submitted", value: waterGaugeCounts["Submitted"], color: "#3d8eff" },
+        { name: "Open Assignment", value: waterGaugeCounts["Open Assignment"], color: "#fa6e39" },
+        { name: "Pending Verification", value: waterGaugeCounts["Pending Verification"], color: "#00a35c" },
+        { name: "Pending Completion", value: waterGaugeCounts["Pending Completion"], color: "#7b3ff2" },
+        { name: "Completed / Denied", value: waterGaugeCounts["Completed / Denied"], color: "#00ed64" }
+      ];
+
+      return {
+        total,
+        surveysCount,
+        conservationCount,
+        threatsAlerts,
+        waterGaugeData,
+        recentWater,
+        clarityFlowData,
+        waterLogBuckets,
+        pollutionRiskData,
+        fieldKit: {
+           totalKits,
+           avgPH,
+           avgTemp,
+           avgDO
+        }
       };
     } else {
       // 1. KPI Counts
@@ -974,7 +829,7 @@ function StaffDashboard() {
         subcatData
       };
     }
-  }, [items, isIncidents, isBMS, timeRange, severityTimeRange, categoryFilter]);
+  }, [items, isIncidents, isBMS, isWater, timeRange, severityTimeRange, categoryFilter]);
 
   if (isIncidents) {
     return (
@@ -1410,7 +1265,28 @@ function StaffDashboard() {
                   subtitle="Frequency of observed behaviors across field surveys"
                   variant="warm"
                   accentColor="#fa6e39"
-
+                  extraHeader={
+                    <div className="dash-chart-controls">
+                      <select
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                        className="dash-chart-select"
+                        style={{
+                          background: "var(--c-canvas)",
+                          border: "1px solid var(--c-hairline)",
+                          borderRadius: "var(--r-md)",
+                          padding: "4px 8px",
+                          fontSize: "12px",
+                          color: "var(--c-ink)",
+                          outline: "none"
+                        }}
+                      >
+                        <option value="All">All Biodiversity</option>
+                        <option value="Avian Tracking Form">Avian Census</option>
+                        <option value="Wildlife Observations Form">Wildlife Observations</option>
+                      </select>
+                    </div>
+                  }
                 >
                   <ResponsiveContainer width="100%" height={260}>
                     <BarChart
@@ -1425,6 +1301,250 @@ function StaffDashboard() {
                       <Bar dataKey="Count" name="Occurrences" fill="#fa6e39" radius={[0, 4, 4, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
+                </ChartCard>
+              </div>
+            </>
+          )}
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (isWater) {
+    return (
+      <DashboardLayout>
+        <div className="incidents-page">
+          {/* Hero Header */}
+          <div className="inc-hero">
+            <div className="inc-hero__left">
+              <span className="inc-hero__eyebrow">Water Resources Auditing & Intelligence</span>
+              <h1 className="inc-hero__title">Water Staff Dashboard</h1>
+              <p className="inc-hero__subtitle">
+                Hydrological quality tracking, threat assessment, temporal trends, and field-kit testing statistics.
+              </p>
+            </div>
+            <div className="inc-hero__stats">
+              <StatPill icon="water_drop" label="Sources" count={analytics.surveysCount} color="#3d8eff" />
+              <StatPill icon="warning" label="Alerts" count={analytics.threatsAlerts} color="#fa6e39" />
+            </div>
+          </div>
+
+          {/* Tier 1 KPIs */}
+          <div className="dash-kpi-grid dash-kpi-grid--four">
+            <KpiCard
+              variant="comply"
+              icon="waves"
+              value={analytics.total}
+              label="Total Logs"
+              sub="Water resource reports"
+            />
+            <KpiCard
+              variant="field"
+              icon="water"
+              value={analytics.surveysCount}
+              label="Water Source Surveys"
+              sub="Local source inspections"
+            />
+            <KpiCard
+              variant="water"
+              icon="eco"
+              value={analytics.conservationCount}
+              label="Conservation Logs"
+              sub="Ecosystem protection entries"
+            />
+            <KpiCard
+              variant="threat"
+              icon="policy"
+              value={analytics.threatsAlerts}
+              label="Threat Alerts"
+              sub="High/Critical threat or pollution risk"
+            />
+          </div>
+
+          {/* Tier 2: 70/30 Feed and Gauge */}
+          {loading ? (
+            <p className="loading-text" style={{ padding: "64px", textAlign: "center", color: "var(--c-steel)" }}>
+              Loading Water analytics...
+            </p>
+          ) : (
+            <>
+              <div className="dash-row-70-30">
+                <ChartCard icon="list_alt" title="Recent Water Logs" subtitle="Latest water resource surveys and logs submitted" accentColor="#3d8eff">
+                  <RecentLogsList
+                    items={analytics.recentWater}
+                    type="water"
+                    emptyMessage="No water logs reported yet"
+                  />
+                </ChartCard>
+
+                <ChartCard icon="query_stats" title="Monitoring Status" subtitle="Breakdown of Water logs" variant="dark">
+                  <StatusGauge
+                    data={analytics.waterGaugeData}
+                    total={analytics.total}
+                    label="Logs"
+                  />
+                </ChartCard>
+              </div>
+
+              {/* Tier 3: Chart 1 - Water Clarity vs Flow Condition */}
+              <div className="dash-full-width-row">
+                <ChartCard icon="bar_chart" title="Water Clarity vs Flow Condition" subtitle="Cross-tabulation of Clarity and Flow rate occurrences" variant="mint" accentColor="#00ed64">
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart
+                      data={analytics.clarityFlowData}
+                      margin={{ top: 10, right: 20, left: -20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" vertical={false} />
+                      <XAxis dataKey="flowRate" stroke="var(--c-stone)" fontSize={11} />
+                      <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
+                      <Tooltip contentStyle={TOOLTIP_STYLE} />
+                      <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
+                      <Bar dataKey="Clear" name="Clear" fill="#00ed64" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="Slightly Turbid" name="Slightly Turbid" fill="#3d8eff" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="Highly Turbid" name="Highly Turbid" fill="#fa6e39" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="Stagnant / Algal Bloom" name="Stagnant / Algal Bloom" fill="#7b3ff2" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+              </div>
+
+              {/* Tier 4: Chart 2 - Temporal Trends */}
+              <div className="dash-full-width-row">
+                <ChartCard
+                  icon="trending_up"
+                  title="Temporal Monitoring Trends"
+                  subtitle="Water Source Surveys vs Conservation Logs frequency over time"
+                  variant="blue"
+                  accentColor="#3d8eff"
+                  extraHeader={
+                    <div className="time-tabs">
+                      {["1D", "1W", "1M"].map((range) => (
+                        <button
+                          key={range}
+                          className={`time-tab ${timeRange === range ? "time-tab--active" : ""}`}
+                          onClick={() => setTimeRange(range)}
+                        >
+                          {range}
+                        </button>
+                      ))}
+                    </div>
+                  }
+                >
+                  <ResponsiveContainer width="100%" height={260}>
+                    <ComposedChart data={analytics.waterLogBuckets} margin={{ top: 15, right: 10, left: -20, bottom: 5 }}>
+                      <defs>
+                        <linearGradient id="surveyGlow" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3d8eff" stopOpacity={0.5} />
+                          <stop offset="95%" stopColor="#3d8eff" stopOpacity={0.1} />
+                        </linearGradient>
+                        <linearGradient id="conservGlow" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#00ed64" stopOpacity={0.5} />
+                          <stop offset="95%" stopColor="#00ed64" stopOpacity={0.1} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
+                      <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
+                      <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={false} />
+                      <Tooltip contentStyle={TOOLTIP_STYLE} />
+                      <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
+
+                      <Area type="monotone" dataKey="Water Source Surveys" stroke="none" fill="url(#surveyGlow)" legendType="none" />
+                      <Area type="monotone" dataKey="Conservation Logs" stroke="none" fill="url(#conservGlow)" legendType="none" />
+
+                      <Line type="monotone" dataKey="Water Source Surveys" stroke="#3d8eff" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="Conservation Logs" stroke="#00ed64" strokeWidth={2} dot={false} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+              </div>
+
+              {/* Tier 5: 50/50 Split - Pollution & Field-Kit Widget */}
+              <div className="dash-row-50-50">
+                <ChartCard
+                  icon="warning"
+                  title="Pollution Risk Indicators"
+                  subtitle="Frequency of observed risk factors"
+                  variant="warm"
+                  accentColor="#fa6e39"
+                >
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart
+                      data={analytics.pollutionRiskData}
+                      layout="vertical"
+                      margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" horizontal={false} vertical={true} />
+                      <XAxis type="number" stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
+                      <YAxis dataKey="name" type="category" stroke="var(--c-stone)" fontSize={11} width={100} />
+                      <Tooltip contentStyle={TOOLTIP_STYLE} />
+                      <Bar dataKey="Frequency" name="Occurrences" fill="#fa6e39" radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+
+                <ChartCard
+                  icon="science"
+                  title="Field-Kit Water Quality"
+                  subtitle={`Averages from ${analytics.fieldKit.totalKits} tests conducted`}
+                  variant="dark"
+                  accentColor="#00ed64"
+                >
+                  <div className="water-kit-panel">
+                    <div className="water-kit-row water-kit-row--ph">
+                      <div className="water-kit-row__left">
+                        <div className="water-kit-row__icon-wrap">
+                          <span className="material-symbols-outlined water-kit-row__icon" aria-hidden="true">
+                            water_drop
+                          </span>
+                        </div>
+                        <div className="water-kit-row__info">
+                          <span className="water-kit-row__label">Avg pH Level</span>
+                          <span className="water-kit-row__sub">Ecological Balance (6.5 – 8.5 target)</span>
+                        </div>
+                      </div>
+                      <div className="water-kit-row__value-wrap">
+                        <span className="water-kit-row__value">{analytics.fieldKit.avgPH}</span>
+                      </div>
+                    </div>
+
+                    <div className="water-kit-row water-kit-row--temp">
+                      <div className="water-kit-row__left">
+                        <div className="water-kit-row__icon-wrap">
+                          <span className="material-symbols-outlined water-kit-row__icon" aria-hidden="true">
+                            device_thermostat
+                          </span>
+                        </div>
+                        <div className="water-kit-row__info">
+                          <span className="water-kit-row__label">Avg Surface Temp</span>
+                          <span className="water-kit-row__sub">Thermal condition monitoring</span>
+                        </div>
+                      </div>
+                      <div className="water-kit-row__value-wrap">
+                        <span className="water-kit-row__value">
+                          {analytics.fieldKit.avgTemp !== "N/A" ? `${analytics.fieldKit.avgTemp}°C` : "N/A"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="water-kit-row water-kit-row--do">
+                      <div className="water-kit-row__left">
+                        <div className="water-kit-row__icon-wrap">
+                          <span className="material-symbols-outlined water-kit-row__icon" aria-hidden="true">
+                            bubble_chart
+                          </span>
+                        </div>
+                        <div className="water-kit-row__info">
+                          <span className="water-kit-row__label">Dissolved Oxygen</span>
+                          <span className="water-kit-row__sub">Oxygen Saturation (≥ 5.0 mg/L target)</span>
+                        </div>
+                      </div>
+                      <div className="water-kit-row__value-wrap">
+                        <span className="water-kit-row__value">
+                          {analytics.fieldKit.avgDO !== "N/A" ? `${analytics.fieldKit.avgDO} mg/L` : "N/A"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </ChartCard>
               </div>
             </>
@@ -1462,7 +1582,7 @@ function StaffDashboard() {
             icon="verified_user"
             value={`${analytics.complianceRate}%`}
             label="Compliance Rate"
-            sub={`${analytics.compliantCount} compliant · ${analytics.nonCompliantCount} violations`}
+            sub={`${analytics.compliantCount} compliant ┬╖ ${analytics.nonCompliantCount} violations`}
           />
           <LocalKpiCard
             variant="field"

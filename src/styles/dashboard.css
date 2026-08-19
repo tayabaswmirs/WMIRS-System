@@ -4611,6 +4611,14 @@ button:disabled,
   width: 100%;
 }
 
+.dash-row-50-50 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-xl);
+  margin-top: var(--sp-xl);
+  width: 100%;
+}
+
 .dash-full-width-row {
   width: 100%;
   margin-top: var(--sp-xl);
@@ -5118,3 +5126,99 @@ button:disabled,
 .dash-chart-card--blue .dash-chart-card__header-icon {
   color: #0284c7 !important;
 }
+
+/* ── Field-Kit Water Quality Diagnostic Widget ─────────────── */
+.water-kit-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+}
+
+.water-kit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--r-md, 8px);
+  transition: all 0.2s ease;
+}
+
+.water-kit-row:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(0, 237, 100, 0.3);
+  transform: translateX(2px);
+}
+
+.water-kit-row__left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.water-kit-row__icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--r-md, 8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.water-kit-row--ph .water-kit-row__icon-wrap {
+  background: rgba(0, 237, 100, 0.12);
+  color: #00ed64;
+}
+
+.water-kit-row--temp .water-kit-row__icon-wrap {
+  background: rgba(61, 142, 255, 0.12);
+  color: #3d8eff;
+}
+
+.water-kit-row--do .water-kit-row__icon-wrap {
+  background: rgba(250, 110, 57, 0.12);
+  color: #fa6e39;
+}
+
+.water-kit-row__icon {
+  font-size: 22px;
+}
+
+.water-kit-row__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.water-kit-row__label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.2px;
+}
+
+.water-kit-row__sub {
+  font-size: 11px;
+  color: var(--c-on-dark-muted, #8899a6);
+}
+
+.water-kit-row__value-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  text-align: right;
+}
+
+.water-kit-row__value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  font-family: var(--font-display, inherit);
+  letter-spacing: -0.5px;
+}
+

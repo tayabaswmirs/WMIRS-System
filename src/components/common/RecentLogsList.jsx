@@ -44,7 +44,7 @@ export default function RecentLogsList({ items = [], type, emptyMessage }) {
           <div className="recent-item__content">
             <div className="recent-item__header">
               <span className="recent-item__category">
-                {type === "incident" ? item.category : (type === "bms" ? (item.subcategory || "Biodiversity Monitoring") : (item.subcategory || "General Monitoring"))}
+                {type === "incident" ? item.category : (type === "bms" ? (item.subcategory || "Biodiversity Monitoring") : type === "water" ? (item.subcategory || "Water Monitoring") : (item.subcategory || "General Monitoring"))}
               </span>
               <span className="recent-item__time">
                 {formatRelativeTime(item.createdAt)}
@@ -55,7 +55,9 @@ export default function RecentLogsList({ items = [], type, emptyMessage }) {
                 ? (item.description || "No description provided.") 
                 : type === "bms"
                   ? `${item.avianSpecies || item.speciesName || "Fauna observation"} (${item.count || item.quantity || 1} sighted) • ${item.stationId || item.barangay || "Field Station"}`
-                  : `Reported by Ranger (Barangay: ${item.barangay || "N/A"})`}
+                  : type === "water"
+                    ? `${item.sourceType || "Water Source"} at ${item.barangay || "Field Station"} • ${item.waterClarity || item.flowRate || "Status logged"}`
+                    : `Reported by Ranger (Barangay: ${item.barangay || "N/A"})`}
             </p>
           </div>
         </div>
