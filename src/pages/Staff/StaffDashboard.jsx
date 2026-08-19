@@ -125,6 +125,7 @@ function StaffDashboard() {
   const [categoryFilter, setCategoryFilter] = useState("All");
 
   const isIncidents = staffScope === "incidents";
+  const isBMS = staffScope === "BMS";
 
   // Data fetching subscription based on scope
   useEffect(() => {
@@ -143,7 +144,7 @@ function StaffDashboard() {
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, [staffScope, isIncidents]);
+  }, [staffScope, isIncidents, isBMS]);
 
   // Scoped Analytics computations
   const analytics = useMemo(() => {
@@ -299,7 +300,160 @@ function StaffDashboard() {
       } else if (timeRange === "1W") {
         numBuckets = 7;
         timeLimitMs = 7 * 24 * 60 * 60 * 1000;
+          } else if (isBMS) {
+      // BMS KPI Calculations
+      const total = items.length;
+      let avianCount = 0;
+      let wildlifeCount = 0;
+      let completedCount = 0;
+      let totalOrganisms = 0;
+      
+      const bmsGaugeCounts = {
+        "Submitted": 0,
+        "Open Assignment": 0,
+        "Pending Verification": 0,
+        "Pending Completion": 0,
+        "Completed / Denied": 0
+      };
+
+      const taxonomicMap = {
+        "Avian": { organisms: 0, logs: 0 },
+        "Mammal": { organisms: 0, logs: 0 },
+        "Reptile": { organisms: 0, logs: 0 },
+        "Amphibian": { organisms: 0, logs: 0 },
+        "Insect": { organisms: 0, logs: 0 },
+        "Other": { organisms: 0, logs: 0 }
+      };
+
+      const avianBehaviors = {
+        "Nesting": 0,
+        "Foraging": 0,
+        "Flying": 0,
+        "Perching": 0
+      };
+
+      items.forEach(item => {
+        const isAvian = item.subcategory === "Avian Tracking Form";
+        const isWildlife = item.subcategory === "Wildlife Observations Form";
+        
+        if (isAvian) avianCount++;
+        if (isWildlife) wildlifeCount++;
+        
+        const statusNorm = item.status?.toLowerCase();
+        if (["verified", "pending completion", "completed", "denied"].includes(statusNorm)) {
+          completedCount++;
+        }
+        
+        const grp = getStatusGroup(item.status);
+        if (bmsGaugeCounts[grp] !== undefined) {
+          bmsGaugeCounts[grp]++;
+        }
+
+        const count = Number(item.count || item.quantity || 0);
+        totalOrganisms += count;
+
+        let taxClass = "Other";
+        if (isAvian || item.classification === "Avian") taxClass = "Avian";
+        else if (item.classification && taxonomicMap[item.classification]) taxClass = item.classification;
+
+        taxonomicMap[taxClass].logs++;
+        taxonomicMap[taxClass].organisms += count;
+
+        if (isAvian && Array.isArray(item.activities)) {
+          item.activities.forEach(act => {
+            if (avianBehaviors[act] !== undefined) {
+              avianBehaviors[act]++;
+            }
+          });
+        }
+      });
+
+      const taxonomicData = Object.keys(taxonomicMap).map(key => ({
+        name: key,
+        Organisms: taxonomicMap[key].organisms,
+        Logs: taxonomicMap[key].logs
+      }));
+      
+      const maxTaxonomic = Math.max(...taxonomicData.map(d => Math.max(d.Organisms, d.Logs)), 5);
+
+      const behaviorData = Object.keys(avianBehaviors).map(key => ({
+        name: key,
+        Count: avianBehaviors[key]
+      }));
+
+      // Temporal Logging Trends
+      const now = new Date();
+      let numBuckets;
+      let timeLimitMs;
+
+      if (timeRange === "1D") {
+        numBuckets = 24;
+        timeLimitMs = 24 * 60 * 60 * 1000;
+      } else if (timeRange === "1W") {
+        numBuckets = 7;
+        timeLimitMs = 7 * 24 * 60 * 60 * 1000;
       } else {
+        numBuckets = 30;
+        timeLimitMs = 30 * 24 * 60 * 60 * 1000;
+      }
+
+      const startTimestamp = now.getTime() - timeLimitMs;
+      const bmsLogBuckets = [];
+      const logHalf = Math.floor(numBuckets / 2);
+
+      for (let i = logHalf; i > logHalf - numBuckets; i--) {
+        const d = new Date(now.getTime() - i * (timeRange === "1D" ? 3600000 : 86400000));
+        const label = timeRange === "1D"
+          ? d.toLocaleTimeString(undefined, { hour: "numeric", minute: "numeric", hour12: true })
+          : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+        bmsLogBuckets.push({ label, timestamp: d.getTime(), "Avian Census": 0, "Wildlife Sightings": 0 });
+      }
+
+      items.forEach((item) => {
+        const ts = item.createdAt?.seconds ? item.createdAt.seconds * 1000 : null;
+        if (!ts || ts < startTimestamp) return;
+
+        const seriesName = item.subcategory === "Avian Tracking Form" ? "Avian Census" : "Wildlife Sightings";
+        
+        let bestIdx = 0;
+        let minDiff = Infinity;
+        bmsLogBuckets.forEach((bucket, idx) => {
+          const diff = Math.abs(bucket.timestamp - ts);
+          if (diff < minDiff) {
+            minDiff = diff;
+            bestIdx = idx;
+          }
+        });
+
+        bmsLogBuckets[bestIdx][seriesName]++;
+      });
+      
+      const recentBMS = [...items]
+        .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
+        .slice(0, 5);
+        
+      const bmsGaugeData = [
+        { name: "Submitted", value: bmsGaugeCounts["Submitted"], color: "#3d8eff" },
+        { name: "Open Assignment", value: bmsGaugeCounts["Open Assignment"], color: "#fa6e39" },
+        { name: "Pending Verification", value: bmsGaugeCounts["Pending Verification"], color: "#00a35c" },
+        { name: "Pending Completion", value: bmsGaugeCounts["Pending Completion"], color: "#7b3ff2" },
+        { name: "Completed / Denied", value: bmsGaugeCounts["Completed / Denied"], color: "#00ed64" }
+      ];
+
+      return {
+        total,
+        avianCount,
+        wildlifeCount,
+        completedCount,
+        totalOrganisms,
+        bmsGaugeData,
+        taxonomicData,
+        maxTaxonomic,
+        behaviorData,
+        bmsLogBuckets,
+        recentBMS
+      };
+    } else {
         numBuckets = 30;
         timeLimitMs = 30 * 24 * 60 * 60 * 1000;
       }
@@ -353,7 +507,160 @@ function StaffDashboard() {
       } else if (severityTimeRange === "1W") {
         sevNumBuckets = 7;
         sevTimeLimitMs = 7 * 24 * 60 * 60 * 1000;
+          } else if (isBMS) {
+      // BMS KPI Calculations
+      const total = items.length;
+      let avianCount = 0;
+      let wildlifeCount = 0;
+      let completedCount = 0;
+      let totalOrganisms = 0;
+      
+      const bmsGaugeCounts = {
+        "Submitted": 0,
+        "Open Assignment": 0,
+        "Pending Verification": 0,
+        "Pending Completion": 0,
+        "Completed / Denied": 0
+      };
+
+      const taxonomicMap = {
+        "Avian": { organisms: 0, logs: 0 },
+        "Mammal": { organisms: 0, logs: 0 },
+        "Reptile": { organisms: 0, logs: 0 },
+        "Amphibian": { organisms: 0, logs: 0 },
+        "Insect": { organisms: 0, logs: 0 },
+        "Other": { organisms: 0, logs: 0 }
+      };
+
+      const avianBehaviors = {
+        "Nesting": 0,
+        "Foraging": 0,
+        "Flying": 0,
+        "Perching": 0
+      };
+
+      items.forEach(item => {
+        const isAvian = item.subcategory === "Avian Tracking Form";
+        const isWildlife = item.subcategory === "Wildlife Observations Form";
+        
+        if (isAvian) avianCount++;
+        if (isWildlife) wildlifeCount++;
+        
+        const statusNorm = item.status?.toLowerCase();
+        if (["verified", "pending completion", "completed", "denied"].includes(statusNorm)) {
+          completedCount++;
+        }
+        
+        const grp = getStatusGroup(item.status);
+        if (bmsGaugeCounts[grp] !== undefined) {
+          bmsGaugeCounts[grp]++;
+        }
+
+        const count = Number(item.count || item.quantity || 0);
+        totalOrganisms += count;
+
+        let taxClass = "Other";
+        if (isAvian || item.classification === "Avian") taxClass = "Avian";
+        else if (item.classification && taxonomicMap[item.classification]) taxClass = item.classification;
+
+        taxonomicMap[taxClass].logs++;
+        taxonomicMap[taxClass].organisms += count;
+
+        if (isAvian && Array.isArray(item.activities)) {
+          item.activities.forEach(act => {
+            if (avianBehaviors[act] !== undefined) {
+              avianBehaviors[act]++;
+            }
+          });
+        }
+      });
+
+      const taxonomicData = Object.keys(taxonomicMap).map(key => ({
+        name: key,
+        Organisms: taxonomicMap[key].organisms,
+        Logs: taxonomicMap[key].logs
+      }));
+      
+      const maxTaxonomic = Math.max(...taxonomicData.map(d => Math.max(d.Organisms, d.Logs)), 5);
+
+      const behaviorData = Object.keys(avianBehaviors).map(key => ({
+        name: key,
+        Count: avianBehaviors[key]
+      }));
+
+      // Temporal Logging Trends
+      const now = new Date();
+      let numBuckets;
+      let timeLimitMs;
+
+      if (timeRange === "1D") {
+        numBuckets = 24;
+        timeLimitMs = 24 * 60 * 60 * 1000;
+      } else if (timeRange === "1W") {
+        numBuckets = 7;
+        timeLimitMs = 7 * 24 * 60 * 60 * 1000;
       } else {
+        numBuckets = 30;
+        timeLimitMs = 30 * 24 * 60 * 60 * 1000;
+      }
+
+      const startTimestamp = now.getTime() - timeLimitMs;
+      const bmsLogBuckets = [];
+      const logHalf = Math.floor(numBuckets / 2);
+
+      for (let i = logHalf; i > logHalf - numBuckets; i--) {
+        const d = new Date(now.getTime() - i * (timeRange === "1D" ? 3600000 : 86400000));
+        const label = timeRange === "1D"
+          ? d.toLocaleTimeString(undefined, { hour: "numeric", minute: "numeric", hour12: true })
+          : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+        bmsLogBuckets.push({ label, timestamp: d.getTime(), "Avian Census": 0, "Wildlife Sightings": 0 });
+      }
+
+      items.forEach((item) => {
+        const ts = item.createdAt?.seconds ? item.createdAt.seconds * 1000 : null;
+        if (!ts || ts < startTimestamp) return;
+
+        const seriesName = item.subcategory === "Avian Tracking Form" ? "Avian Census" : "Wildlife Sightings";
+        
+        let bestIdx = 0;
+        let minDiff = Infinity;
+        bmsLogBuckets.forEach((bucket, idx) => {
+          const diff = Math.abs(bucket.timestamp - ts);
+          if (diff < minDiff) {
+            minDiff = diff;
+            bestIdx = idx;
+          }
+        });
+
+        bmsLogBuckets[bestIdx][seriesName]++;
+      });
+      
+      const recentBMS = [...items]
+        .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
+        .slice(0, 5);
+        
+      const bmsGaugeData = [
+        { name: "Submitted", value: bmsGaugeCounts["Submitted"], color: "#3d8eff" },
+        { name: "Open Assignment", value: bmsGaugeCounts["Open Assignment"], color: "#fa6e39" },
+        { name: "Pending Verification", value: bmsGaugeCounts["Pending Verification"], color: "#00a35c" },
+        { name: "Pending Completion", value: bmsGaugeCounts["Pending Completion"], color: "#7b3ff2" },
+        { name: "Completed / Denied", value: bmsGaugeCounts["Completed / Denied"], color: "#00ed64" }
+      ];
+
+      return {
+        total,
+        avianCount,
+        wildlifeCount,
+        completedCount,
+        totalOrganisms,
+        bmsGaugeData,
+        taxonomicData,
+        maxTaxonomic,
+        behaviorData,
+        bmsLogBuckets,
+        recentBMS
+      };
+    } else {
         sevNumBuckets = 30;
         sevTimeLimitMs = 30 * 24 * 60 * 60 * 1000;
       }
@@ -421,6 +728,159 @@ function StaffDashboard() {
         logBuckets,
         severityTrendBuckets,
         categoriesList
+      };
+        } else if (isBMS) {
+      // BMS KPI Calculations
+      const total = items.length;
+      let avianCount = 0;
+      let wildlifeCount = 0;
+      let completedCount = 0;
+      let totalOrganisms = 0;
+      
+      const bmsGaugeCounts = {
+        "Submitted": 0,
+        "Open Assignment": 0,
+        "Pending Verification": 0,
+        "Pending Completion": 0,
+        "Completed / Denied": 0
+      };
+
+      const taxonomicMap = {
+        "Avian": { organisms: 0, logs: 0 },
+        "Mammal": { organisms: 0, logs: 0 },
+        "Reptile": { organisms: 0, logs: 0 },
+        "Amphibian": { organisms: 0, logs: 0 },
+        "Insect": { organisms: 0, logs: 0 },
+        "Other": { organisms: 0, logs: 0 }
+      };
+
+      const avianBehaviors = {
+        "Nesting": 0,
+        "Foraging": 0,
+        "Flying": 0,
+        "Perching": 0
+      };
+
+      items.forEach(item => {
+        const isAvian = item.subcategory === "Avian Tracking Form";
+        const isWildlife = item.subcategory === "Wildlife Observations Form";
+        
+        if (isAvian) avianCount++;
+        if (isWildlife) wildlifeCount++;
+        
+        const statusNorm = item.status?.toLowerCase();
+        if (["verified", "pending completion", "completed", "denied"].includes(statusNorm)) {
+          completedCount++;
+        }
+        
+        const grp = getStatusGroup(item.status);
+        if (bmsGaugeCounts[grp] !== undefined) {
+          bmsGaugeCounts[grp]++;
+        }
+
+        const count = Number(item.count || item.quantity || 0);
+        totalOrganisms += count;
+
+        let taxClass = "Other";
+        if (isAvian || item.classification === "Avian") taxClass = "Avian";
+        else if (item.classification && taxonomicMap[item.classification]) taxClass = item.classification;
+
+        taxonomicMap[taxClass].logs++;
+        taxonomicMap[taxClass].organisms += count;
+
+        if (isAvian && Array.isArray(item.activities)) {
+          item.activities.forEach(act => {
+            if (avianBehaviors[act] !== undefined) {
+              avianBehaviors[act]++;
+            }
+          });
+        }
+      });
+
+      const taxonomicData = Object.keys(taxonomicMap).map(key => ({
+        name: key,
+        Organisms: taxonomicMap[key].organisms,
+        Logs: taxonomicMap[key].logs
+      }));
+      
+      const maxTaxonomic = Math.max(...taxonomicData.map(d => Math.max(d.Organisms, d.Logs)), 5);
+
+      const behaviorData = Object.keys(avianBehaviors).map(key => ({
+        name: key,
+        Count: avianBehaviors[key]
+      }));
+
+      // Temporal Logging Trends
+      const now = new Date();
+      let numBuckets;
+      let timeLimitMs;
+
+      if (timeRange === "1D") {
+        numBuckets = 24;
+        timeLimitMs = 24 * 60 * 60 * 1000;
+      } else if (timeRange === "1W") {
+        numBuckets = 7;
+        timeLimitMs = 7 * 24 * 60 * 60 * 1000;
+      } else {
+        numBuckets = 30;
+        timeLimitMs = 30 * 24 * 60 * 60 * 1000;
+      }
+
+      const startTimestamp = now.getTime() - timeLimitMs;
+      const bmsLogBuckets = [];
+      const logHalf = Math.floor(numBuckets / 2);
+
+      for (let i = logHalf; i > logHalf - numBuckets; i--) {
+        const d = new Date(now.getTime() - i * (timeRange === "1D" ? 3600000 : 86400000));
+        const label = timeRange === "1D"
+          ? d.toLocaleTimeString(undefined, { hour: "numeric", minute: "numeric", hour12: true })
+          : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+        bmsLogBuckets.push({ label, timestamp: d.getTime(), "Avian Census": 0, "Wildlife Sightings": 0 });
+      }
+
+      items.forEach((item) => {
+        const ts = item.createdAt?.seconds ? item.createdAt.seconds * 1000 : null;
+        if (!ts || ts < startTimestamp) return;
+
+        const seriesName = item.subcategory === "Avian Tracking Form" ? "Avian Census" : "Wildlife Sightings";
+        
+        let bestIdx = 0;
+        let minDiff = Infinity;
+        bmsLogBuckets.forEach((bucket, idx) => {
+          const diff = Math.abs(bucket.timestamp - ts);
+          if (diff < minDiff) {
+            minDiff = diff;
+            bestIdx = idx;
+          }
+        });
+
+        bmsLogBuckets[bestIdx][seriesName]++;
+      });
+      
+      const recentBMS = [...items]
+        .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
+        .slice(0, 5);
+        
+      const bmsGaugeData = [
+        { name: "Submitted", value: bmsGaugeCounts["Submitted"], color: "#3d8eff" },
+        { name: "Open Assignment", value: bmsGaugeCounts["Open Assignment"], color: "#fa6e39" },
+        { name: "Pending Verification", value: bmsGaugeCounts["Pending Verification"], color: "#00a35c" },
+        { name: "Pending Completion", value: bmsGaugeCounts["Pending Completion"], color: "#7b3ff2" },
+        { name: "Completed / Denied", value: bmsGaugeCounts["Completed / Denied"], color: "#00ed64" }
+      ];
+
+      return {
+        total,
+        avianCount,
+        wildlifeCount,
+        completedCount,
+        totalOrganisms,
+        bmsGaugeData,
+        taxonomicData,
+        maxTaxonomic,
+        behaviorData,
+        bmsLogBuckets,
+        recentBMS
       };
     } else {
       // 1. KPI Counts
@@ -514,7 +974,7 @@ function StaffDashboard() {
         subcatData
       };
     }
-  }, [items, isIncidents, timeRange, severityTimeRange, categoryFilter]);
+  }, [items, isIncidents, isBMS, timeRange, severityTimeRange, categoryFilter]);
 
   if (isIncidents) {
     return (
@@ -786,6 +1246,184 @@ function StaffDashboard() {
                       <Line type="monotone" dataKey="High" name="High" stroke="#f5a524" strokeWidth={2} dot={false} />
                       <Line type="monotone" dataKey="Critical" name="Critical" stroke="#ff5722" strokeWidth={2} dot={false} />
                     </ComposedChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+              </div>
+            </>
+          )}
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (isBMS) {
+    return (
+      <DashboardLayout>
+        <div className="incidents-page">
+          {/* Hero Header */}
+          <div className="inc-hero">
+            <div className="inc-hero__left">
+              <span className="inc-hero__eyebrow">Biodiversity Auditing & Intelligence</span>
+              <h1 className="inc-hero__title">BMS Staff Dashboard</h1>
+              <p className="inc-hero__subtitle">
+                Ecological field intelligence, taxonomic distributions, and sighting trends for your domain.
+              </p>
+            </div>
+            <div className="inc-hero__stats">
+              <StatPill icon="task_alt" label="Actioned" count={analytics.completedCount} color="#00ed64" />
+              <StatPill icon="pending_actions" label="Active" count={analytics.total - analytics.completedCount} color="#3d8eff" />
+            </div>
+          </div>
+
+          {/* Tier 1 KPIs */}
+          <div className="dash-kpi-grid dash-kpi-grid--four">
+            <KpiCard
+              variant="comply"
+              icon="forest"
+              value={analytics.total}
+              label="Total Submissions"
+              sub="Total monitoring logs reported"
+            />
+            <KpiCard
+              variant="field"
+              icon="flutter"
+              value={analytics.avianCount}
+              label="Avian Census Logs"
+              sub="Bird tracking surveys"
+            />
+            <KpiCard
+              variant="water"
+              icon="cruelty_free"
+              value={analytics.wildlifeCount}
+              label="Wildlife Sightings"
+              sub="Other fauna observations"
+            />
+            <KpiCard
+              variant="threat"
+              icon="pets"
+              value={analytics.totalOrganisms}
+              label="Organisms Observed"
+              sub="Total individual fauna tallied"
+            />
+          </div>
+
+          {/* Tier 2: 70/30 Feed and Gauge */}
+          {loading ? (
+            <p className="loading-text" style={{ padding: "64px", textAlign: "center", color: "var(--c-steel)" }}>
+              Loading BMS analytics...
+            </p>
+          ) : (
+            <>
+              <div className="dash-row-70-30">
+                <ChartCard icon="list_alt" title="Recent Field Observations" subtitle="Latest biodiversity logs submitted" accentColor="#3d8eff">
+                  <RecentLogsList
+                    items={analytics.recentBMS}
+                    type="bms"
+                    emptyMessage="No biodiversity logs reported yet"
+                  />
+                </ChartCard>
+
+                <ChartCard icon="query_stats" title="Monitoring Status" subtitle="Breakdown of BMS logs" variant="dark">
+                  <StatusGauge
+                    data={analytics.bmsGaugeData}
+                    total={analytics.total}
+                    label="Logs"
+                  />
+                </ChartCard>
+              </div>
+
+              {/* Tier 3: Chart 1 - Taxonomic Breakdown */}
+              <div className="dash-full-width-row">
+                <ChartCard icon="bar_chart" title="Taxonomic Classification Breakdown" subtitle="Organism abundance and log frequency per class" variant="mint" accentColor="#00ed64">
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart
+                      data={analytics.taxonomicData}
+                      margin={{ top: 10, right: 20, left: -20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" vertical={false} />
+                      <XAxis dataKey="name" stroke="var(--c-stone)" fontSize={11} />
+                      <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} domain={[0, analytics.maxTaxonomic + 2]} />
+                      <Tooltip contentStyle={TOOLTIP_STYLE} />
+                      <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
+                      <Bar dataKey="Organisms" name="Organisms Sighted" fill="#00ed64" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="Logs" name="Observation Logs" fill="#3d8eff" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+              </div>
+
+              {/* Tier 4: Chart 2 - Temporal Sighting Trends */}
+              <div className="dash-full-width-row">
+                <ChartCard
+                  icon="trending_up"
+                  title="Temporal Sighting Trends"
+                  subtitle="Avian vs. Wildlife logging frequency over time"
+                  variant="blue"
+                  accentColor="#3d8eff"
+                  extraHeader={
+                    <div className="time-tabs">
+                      {["1D", "1W", "1M"].map((range) => (
+                        <button
+                          key={range}
+                          className={`time-tab ${timeRange === range ? "time-tab--active" : ""}`}
+                          onClick={() => setTimeRange(range)}
+                        >
+                          {range}
+                        </button>
+                      ))}
+                    </div>
+                  }
+                >
+                  <ResponsiveContainer width="100%" height={260}>
+                    <ComposedChart data={analytics.bmsLogBuckets} margin={{ top: 15, right: 10, left: -20, bottom: 5 }}>
+                      <defs>
+                        <linearGradient id="avianGlow" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#00a35c" stopOpacity={0.5} />
+                          <stop offset="95%" stopColor="#00a35c" stopOpacity={0.1} />
+                        </linearGradient>
+                        <linearGradient id="wildlifeGlow" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#7b3ff2" stopOpacity={0.5} />
+                          <stop offset="95%" stopColor="#7b3ff2" stopOpacity={0.1} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
+                      <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
+                      <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={false} />
+                      <Tooltip contentStyle={TOOLTIP_STYLE} />
+                      <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
+
+                      <Area type="monotone" dataKey="Avian Census" stroke="none" fill="url(#avianGlow)" legendType="none" />
+                      <Area type="monotone" dataKey="Wildlife Sightings" stroke="none" fill="url(#wildlifeGlow)" legendType="none" />
+
+                      <Line type="monotone" dataKey="Avian Census" stroke="#00a35c" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="Wildlife Sightings" stroke="#7b3ff2" strokeWidth={2} dot={false} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </ChartCard>
+              </div>
+
+              {/* Tier 5: Chart 3 - Ecological Activity */}
+              <div className="dash-full-width-row">
+                <ChartCard
+                  icon="radar"
+                  title="Ecological Activity & Avian Behavior"
+                  subtitle="Frequency of observed behaviors across field surveys"
+                  variant="warm"
+                  accentColor="#fa6e39"
+
+                >
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart
+                      data={analytics.behaviorData}
+                      layout="vertical"
+                      margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" horizontal={false} vertical={true} />
+                      <XAxis type="number" stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
+                      <YAxis dataKey="name" type="category" stroke="var(--c-stone)" fontSize={11} width={80} />
+                      <Tooltip contentStyle={TOOLTIP_STYLE} />
+                      <Bar dataKey="Count" name="Occurrences" fill="#fa6e39" radius={[0, 4, 4, 0]} />
+                    </BarChart>
                   </ResponsiveContainer>
                 </ChartCard>
               </div>

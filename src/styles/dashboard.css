@@ -4591,6 +4591,10 @@ button:disabled,
   grid-template-columns: repeat(3, 1fr) !important;
 }
 
+.dash-kpi-grid--four {
+  grid-template-columns: repeat(4, 1fr) !important;
+}
+
 .dash-row-70-30 {
   display: grid;
   grid-template-columns: 7fr 3fr;

@@ -358,14 +358,39 @@ function LogSpecificDetails({ log }) {
     case "Local Water Source Monitoring Form":
       return (
         <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "8px" }}>
+          {log.dateTime && <DetailRow label="Observation Date & Time" value={formatLogDate(log.dateTime)} />}
           <DetailRow label="Water Body Identifier" value={log.waterBody} />
           <DetailRow label="Specific Location Marker" value={log.locationMarker} />
+          {log.sourceType && <DetailRow label="Source Type" value={log.sourceType} />}
+          {log.waterClarity && <DetailRow label="Water Clarity" value={log.waterClarity} />}
+          {log.flowLevel && <DetailRow label="Flow Level" value={log.flowLevel} />}
+          {log.primaryUsage && <DetailRow label="Primary Usage" value={log.primaryUsage} />}
+          {(log.phLevel || log.temperature || log.dissolvedOxygen) && (
+            <div style={{ display: "flex", gap: "24px", marginTop: "4px", backgroundColor: "#f8f9fa", padding: "12px", borderRadius: "8px", border: "1px solid var(--c-hairline)" }}>
+              {log.phLevel && <DetailRow label="pH Level" value={log.phLevel} />}
+              {log.temperature && <DetailRow label="Temperature (°C)" value={log.temperature} />}
+              {log.dissolvedOxygen && <DetailRow label="Dissolved Oxygen (mg/L)" value={log.dissolvedOxygen} />}
+            </div>
+          )}
           <DetailRow label="Physical Condition Log" value={log.physicalCondition} isParagraph />
         </div>
       );
     case "Ecosystem Conservation Log":
       return (
         <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "8px" }}>
+          {log.dateTime && <DetailRow label="Observation Date & Time" value={formatLogDate(log.dateTime)} />}
+          {log.waterBody && <DetailRow label="Water Body Identifier" value={log.waterBody} />}
+          {log.locationMarker && <DetailRow label="Specific Location Marker" value={log.locationMarker} />}
+          {log.threatLevel && (
+            <DetailRow 
+              label="Ecological Threat Level" 
+              value={
+                <span className={`inc-severity-pill inc-severity-pill--${log.threatLevel.toLowerCase()} inc-severity-pill--active`} style={{ display: 'inline-block', marginTop: '4px' }}>
+                  {log.threatLevel}
+                </span>
+              } 
+            />
+          )}
           <DetailRow label="Pollution Risk Indicators" value={log.pollutionIndicators?.join(", ") || "None"} />
           <DetailRow label="Observed Aquatic Wildlife Activity" value={log.aquaticWildlifeNotes} isParagraph />
         </div>
