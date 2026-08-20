@@ -4,8 +4,8 @@ import useLoadingLock from "../../hooks/useLoadingLock";
 export default function RoleEditModal({ isOpen, user, onClose, onSave, isSaving }) {
   const modalRef = useRef(null);
   
-  // Normalize legacy "user" role to "ranger" for initial state
-  const initialRole = user?.role === "user" ? "ranger" : (user?.role || "ranger");
+  // Normalize legacy "user" role and new "pending" role to "ranger" for initial state
+  const initialRole = (user?.role === "user" || user?.role === "pending") ? "ranger" : (user?.role || "ranger");
   const [role, setRole] = useState(initialRole);
   const [staffScope, setStaffScope] = useState(user?.staffScope || "incidents");
   const [error, setError] = useState("");

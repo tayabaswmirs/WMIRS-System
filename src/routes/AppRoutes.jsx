@@ -17,8 +17,10 @@ const AdminMonitoring = lazy(() => import("../pages/AdminMonitoring"));
 const AdminMonitoringCategoryLogs = lazy(() => import("../pages/AdminMonitoringCategoryLogs"));
 const AdminMonitoringCategoryAnalytics = lazy(() => import("../pages/AdminMonitoringCategoryAnalytics"));
 const UserManagement = lazy(() => import("../pages/UserManagement"));
+const AdminVetting = lazy(() => import("../pages/AdminVetting"));
 const StaffDashboard = lazy(() => import("../pages/Staff/StaffDashboard"));
 const StaffStageWorkspace = lazy(() => import("../pages/Staff/StaffStageWorkspace"));
+const PendingApproval = lazy(() => import("../pages/PendingApproval"));
 
 export default function AppRoutes() {
   return (
@@ -29,6 +31,15 @@ export default function AppRoutes() {
       <Route path="/login" element={<Login />} />
       
       {/* ── Shared Routes ──────────────────────────────── */}
+      <Route 
+        path="/pending-approval" 
+        element={
+          <ProtectedRoute allowedRoles={["pending"]}>
+            <PendingApproval />
+          </ProtectedRoute>
+        } 
+      />
+      
       <Route 
         path="/assignments" 
         element={
@@ -112,6 +123,15 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["admin"]}>
             <UserManagement />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/admin/vetting" 
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminVetting />
           </ProtectedRoute>
         } 
       />

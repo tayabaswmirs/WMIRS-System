@@ -1,4 +1,4 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 /**
@@ -11,6 +11,7 @@ import { useAuth } from "../hooks/useAuth";
  */
 export function ProtectedRoute({ children, allowedRoles, requiredScope }) {
   const { currentUser, userRole, staffScope, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -24,13 +25,20 @@ export function ProtectedRoute({ children, allowedRoles, requiredScope }) {
     return <Navigate to="/login" replace />;
   }
 
+  // Force pending users to the pending-approval screen
+  if (userRole === "pending" && location.pathname !== "/pending-approval") {
+    return <Navigate to="/pending-approval" replace />;
+  }
+
   // Enforce role authorization boundaries if allowedRoles are specified
   if (allowedRoles && !allowedRoles.includes(userRole)) {
     const fallbackPath = userRole === "admin"
       ? "/admin/dashboard"
       : userRole === "staff"
         ? "/staff/dashboard"
-        : "/dashboard";
+        : userRole === "pending"
+          ? "/pending-approval"
+          : "/dashboard";
     return <Navigate to={fallbackPath} replace />;
   }
 

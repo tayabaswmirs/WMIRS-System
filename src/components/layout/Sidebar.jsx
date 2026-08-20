@@ -281,6 +281,20 @@ export default function Sidebar({ isOpen, onClose }) {
               <span className="sidebar-nav__label">User Management</span>
             </button>
 
+            {/* 4b. User Vetting */}
+            <button
+              id="admin-nav-vetting"
+              role="listitem"
+              className={`sidebar-nav__item${isActive("/admin/vetting") ? " sidebar-nav__item--active" : ""}`}
+              onClick={() => handleNav("/admin/vetting")}
+              aria-current={isActive("/admin/vetting") ? "page" : undefined}
+            >
+              <span className="sidebar-nav__icon" aria-hidden="true">
+                <span className="material-symbols-outlined">how_to_reg</span>
+              </span>
+              <span className="sidebar-nav__label">User Vetting</span>
+            </button>
+
             {/* 5. Open Assignments */}
             <button
               id="admin-nav-assignments"

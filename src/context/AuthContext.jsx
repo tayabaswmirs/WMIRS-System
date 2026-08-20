@@ -51,7 +51,7 @@ export function AuthProvider({ children }) {
             // Force refresh the token if custom claims are stale (e.g. role changed by admin)
             try {
               const tokenResult = await user.getIdTokenResult();
-              const currentRole = tokenResult.claims.role || "ranger";
+              const currentRole = tokenResult.claims.role || "pending";
               const currentScope = tokenResult.claims.scope || null;
               
               if (currentRole !== profile.role || currentScope !== (profile.staffScope || null)) {
@@ -66,13 +66,13 @@ export function AuthProvider({ children }) {
             setProfileData(profile);
           } else {
             // Fallback default state if self-healing could not persist profile
-            setUserRole("ranger");
+            setUserRole("pending");
             setStaffScope(null);
             setProfileData(null);
           }
         } catch (err) {
           console.error("Error loading user profile:", err);
-          setUserRole("ranger");
+          setUserRole("pending");
           setStaffScope(null);
           setProfileData(null);
         }

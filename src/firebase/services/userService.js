@@ -1,4 +1,4 @@
-import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, getDocs, query, orderBy, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, getDocs, query, orderBy, where, serverTimestamp } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import { db, functions } from "../firebase";
 
@@ -18,7 +18,7 @@ export const createUserProfile = async (uid, name, email) => {
     uid,
     name: name || "",
     email: email || "",
-    role: "ranger",
+    role: "pending",
     staffScope: null,
     createdAt: serverTimestamp()
   });
@@ -52,6 +52,26 @@ export const getAllUsers = async () => {
   const q = query(usersRef, orderBy("createdAt", "desc"));
   const snap = await getDocs(q);
   return snap.docs.map((docSnap) => docSnap.data());
+};
+
+/**
+ * Fetches all pending user registrations from Firestore.
+ * Restricted to administrators by security rules.
+ * 
+ * @returns {Promise<Array<object>>}
+ */
+export const getPendingUsers = async () => {
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, where("role", "==", "pending"));
+  const snap = await getDocs(q);
+  // Sort in memory to avoid requiring a composite index
+  return snap.docs
+    .map((docSnap) => docSnap.data())
+    .sort((a, b) => {
+      const aTime = a.createdAt?.toMillis() || 0;
+      const bTime = b.createdAt?.toMillis() || 0;
+      return bTime - aTime;
+    });
 };
 
 /**
