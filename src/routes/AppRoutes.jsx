@@ -4,12 +4,15 @@ import Landing from "../pages/Landing";
 import Dashboard from "../pages/Dashboard";
 import AdminDashboard from "../pages/AdminDashboard";
 import AdminIncidents from "../pages/AdminIncidents";
+import AdminIncidentsAnalytics from "../pages/AdminIncidentsAnalytics";
+import AdminMonitoring from "../pages/AdminMonitoring";
+import AdminMonitoringCategoryLogs from "../pages/AdminMonitoringCategoryLogs";
+import AdminMonitoringCategoryAnalytics from "../pages/AdminMonitoringCategoryAnalytics";
 import UserManagement from "../pages/UserManagement";
 import Profile from "../pages/Profile";
 import SubmitDashboard from "../pages/SubmitDashboard";
 import IncidentHistory from "../pages/IncidentHistory";
 import MonitoringHistory from "../pages/MonitoringHistory";
-import AdminMonitoring from "../pages/AdminMonitoring";
 import StaffDashboard from "../pages/Staff/StaffDashboard";
 import StaffStageWorkspace from "../pages/Staff/StaffStageWorkspace";
 import OpenAssignments from "../pages/OpenAssignments";
@@ -110,6 +113,7 @@ export default function AppRoutes() {
         } 
       />
 
+      {/* Admin Incidents Subroutes */}
       <Route 
         path="/admin/incidents" 
         element={
@@ -118,12 +122,79 @@ export default function AppRoutes() {
           </ProtectedRoute>
         } 
       />
+      <Route 
+        path="/admin/incidents/logs" 
+        element={<Navigate to="/admin/incidents" replace />} 
+      />
+      <Route 
+        path="/admin/incidents/analytics" 
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminIncidentsAnalytics />
+          </ProtectedRoute>
+        } 
+      />
 
+      {/* Admin Monitoring Subroutes */}
       <Route 
         path="/admin/monitoring" 
         element={
           <ProtectedRoute allowedRoles={["admin"]}>
             <AdminMonitoring />
+          </ProtectedRoute>
+        } 
+      />
+
+      {/* BMS */}
+      <Route 
+        path="/admin/monitoring/bms/logs" 
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminMonitoringCategoryLogs category="BMS" />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/admin/monitoring/bms/analytics" 
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminMonitoringCategoryAnalytics category="BMS" />
+          </ProtectedRoute>
+        } 
+      />
+
+      {/* Water */}
+      <Route 
+        path="/admin/monitoring/water/logs" 
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminMonitoringCategoryLogs category="Water" />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/admin/monitoring/water/analytics" 
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminMonitoringCategoryAnalytics category="Water" />
+          </ProtectedRoute>
+        } 
+      />
+
+      {/* Compliance */}
+      <Route 
+        path="/admin/monitoring/compliance/logs" 
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminMonitoringCategoryLogs category="Compliance" />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/admin/monitoring/compliance/analytics" 
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminMonitoringCategoryAnalytics category="Compliance" />
           </ProtectedRoute>
         } 
       />
@@ -143,5 +214,3 @@ export default function AppRoutes() {
     </Routes>
   );
 }
-
-
