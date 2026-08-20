@@ -3,6 +3,7 @@ import { useAuth } from "../hooks/useAuth";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import RangerResolutionModal from "../components/common/RangerResolutionModal";
 import IncidentDetailsModal from "../components/common/IncidentDetailsModal";
+import MonitoringDetailsModal from "../components/common/monitoring/MonitoringDetailsModal";
 import { getSeverityClass } from "../utils/incidentConstants";
 import { subscribeToOpenAssignments, resolveAssignmentByRanger } from "../firebase/services/incidentService"; // Will implement next
 import StatPill from "../components/common/StatPill";
@@ -207,7 +208,12 @@ function OpenAssignments() {
         />
       )}
       
-      {/* If it's a monitoring log, we'd show MonitoringDetailsModal, but for brevity using Incident details for now if not built */}
+      {selectedAssignment && !resolutionModalOpen && selectedAssignment.logType === "Monitoring" && (
+        <MonitoringDetailsModal 
+          log={selectedAssignment}
+          onClose={() => setSelectedAssignment(null)}
+        />
+      )}
         </div>
       </div>
     </DashboardLayout>

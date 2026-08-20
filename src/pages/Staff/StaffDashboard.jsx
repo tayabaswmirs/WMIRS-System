@@ -108,7 +108,7 @@ const getStatusGroup = (status) => {
     return "Pending Completion";
   }
   if (norm === "completed" || norm === "denied") {
-    return "Completed / Denied";
+    return "Completed";
   }
   return "Submitted";
 };
@@ -151,29 +151,31 @@ function StaffDashboard() {
 
   // Scoped Analytics computations
   const analytics = useMemo(() => {
+    const filteredItems = items.filter(item => item.status?.toLowerCase() !== "denied");
+    const completedItems = filteredItems.filter(
+      (item) => item.status?.toLowerCase() === "completed"
+    );
+
     if (isIncidents) {
       console.log("=== STAFF DASHBOARD DIAGNOSTICS ===");
-      console.log("Items count:", items.length);
-      console.log("Items details:", JSON.stringify(items.map(item => ({
+      console.log("Items count:", filteredItems.length);
+      console.log("Items details:", JSON.stringify(filteredItems.map(item => ({
         id: item.id,
         category: item.category,
         severity: item.severity,
         status: item.status
       }))));
       // 1. KPI Counts
-      const totalIncidents = items.length;
+      const totalIncidents = filteredItems.length;
       let openCount = 0;
       let completedCount = 0;
 
-      items.forEach((item) => {
+      filteredItems.forEach((item) => {
         const status = item.status?.toLowerCase();
         if (status === "assigned" || status === "unresolved") {
           openCount++;
         } else if (
-          status === "verified" ||
-          status === "pending completion" ||
-          status === "completed" ||
-          status === "denied"
+          status === "completed"
         ) {
           completedCount++;
         }
@@ -185,9 +187,9 @@ function StaffDashboard() {
         "Open Assignment": 0,
         "Pending Verification": 0,
         "Pending Completion": 0,
-        "Completed / Denied": 0
+        "Completed": 0
       };
-      items.forEach((item) => {
+      filteredItems.forEach((item) => {
         const grp = getStatusGroup(item.status);
         if (incidentGaugeCounts[grp] !== undefined) {
           incidentGaugeCounts[grp]++;
@@ -198,13 +200,13 @@ function StaffDashboard() {
         { name: "Open Assignment", value: incidentGaugeCounts["Open Assignment"], color: "#fa6e39" },
         { name: "Pending Verification", value: incidentGaugeCounts["Pending Verification"], color: "#00a35c" },
         { name: "Pending Completion", value: incidentGaugeCounts["Pending Completion"], color: "#7b3ff2" },
-        { name: "Completed / Denied", value: incidentGaugeCounts["Completed / Denied"], color: "#00ed64" }
+        { name: "Completed", value: incidentGaugeCounts["Completed"], color: "#00ed64" }
       ];
 
       // 3. Active Assignments Gauge Data (Second Gauge)
       let activeQueueCount = 0;
       let pendingVerificationCount = 0;
-      items.forEach((item) => {
+      filteredItems.forEach((item) => {
         const status = item.status?.toLowerCase();
         if (status === "assigned" || status === "unresolved") {
           activeQueueCount++;
@@ -219,11 +221,11 @@ function StaffDashboard() {
       const totalActive = activeQueueCount + pendingVerificationCount;
 
       // 4. Recent Collections
-      const recentIncidents = [...items]
+      const recentIncidents = [...filteredItems]
         .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
         .slice(0, 5);
 
-      const openRecentAssignments = items
+      const openRecentAssignments = filteredItems
         .filter(item => ["assigned", "unresolved", "resolved"].includes(item.status?.toLowerCase()))
         .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
         .slice(0, 5);
@@ -261,7 +263,7 @@ function StaffDashboard() {
 
       const categorySeverityData = categoriesList.map((cat) => {
         const counts = { Low: 0, Medium: 0, High: 0, Critical: 0 };
-        items.forEach((item) => {
+        completedItems.forEach((item) => {
           const itemCat = normalizeCategory(item.category);
           const isMatch = itemCat === cat || itemCat.toLowerCase() === cat.toLowerCase();
 
@@ -325,7 +327,7 @@ function StaffDashboard() {
         logBuckets.push(bucketObj);
       }
 
-      items.forEach((item) => {
+      filteredItems.forEach((item) => {
         const ts = item.createdAt?.seconds ? item.createdAt.seconds * 1000 : null;
         if (!ts || ts < startTimestamp) return;
 
@@ -380,7 +382,7 @@ function StaffDashboard() {
         severityTrendBuckets.push(bucketObj);
       }
 
-      items.forEach((item) => {
+      completedItems.forEach((item) => {
         if (categoryFilter !== "All") {
           const itemCat = normalizeCategory(item.category);
           const filterCat = categoryFilter.trim();
@@ -428,7 +430,7 @@ function StaffDashboard() {
       };
     } else if (isBMS) {
       // BMS KPI Calculations
-      const total = items.length;
+      const total = filteredItems.length;
       let avianCount = 0;
       let wildlifeCount = 0;
       let completedCount = 0;
@@ -439,7 +441,7 @@ function StaffDashboard() {
         "Open Assignment": 0,
         "Pending Verification": 0,
         "Pending Completion": 0,
-        "Completed / Denied": 0
+        "Completed": 0
       };
 
       const taxonomicMap = {
@@ -458,7 +460,7 @@ function StaffDashboard() {
         "Perching": 0
       };
 
-      items.forEach(item => {
+      filteredItems.forEach(item => {
         const isAvian = item.subcategory === "Avian Tracking Form";
         const isWildlife = item.subcategory === "Wildlife Observations Form";
         
@@ -466,7 +468,7 @@ function StaffDashboard() {
         if (isWildlife) wildlifeCount++;
         
         const statusNorm = item.status?.toLowerCase();
-        if (["verified", "pending completion", "completed", "denied"].includes(statusNorm)) {
+        if (statusNorm === "completed") {
           completedCount++;
         }
         
@@ -474,7 +476,10 @@ function StaffDashboard() {
         if (bmsGaugeCounts[grp] !== undefined) {
           bmsGaugeCounts[grp]++;
         }
+      });
 
+      filteredItems.forEach(item => {
+        const isAvian = item.subcategory === "Avian Tracking Form";
         const count = Number(item.count || item.quantity || 0);
         totalOrganisms += count;
 
@@ -535,11 +540,15 @@ function StaffDashboard() {
         bmsLogBuckets.push({ label, timestamp: d.getTime(), "Avian Census": 0, "Wildlife Sightings": 0 });
       }
 
-      items.forEach((item) => {
+      filteredItems.forEach((item) => {
         const ts = item.createdAt?.seconds ? item.createdAt.seconds * 1000 : null;
         if (!ts || ts < startTimestamp) return;
 
-        const seriesName = item.subcategory === "Avian Tracking Form" ? "Avian Census" : "Wildlife Sightings";
+        let seriesName = null;
+        if (item.subcategory === "Avian Tracking Form") seriesName = "Avian Census";
+        else if (item.subcategory === "Wildlife Observations Form") seriesName = "Wildlife Sightings";
+        
+        if (!seriesName) return;
         
         let bestIdx = 0;
         let minDiff = Infinity;
@@ -553,8 +562,15 @@ function StaffDashboard() {
 
         bmsLogBuckets[bestIdx][seriesName]++;
       });
+
+      // Visual offset so overlapping lines are both visible in the chart
+      bmsLogBuckets.forEach(bucket => {
+        if (bucket["Avian Census"] > 0 && bucket["Avian Census"] === bucket["Wildlife Sightings"]) {
+          bucket["Wildlife Sightings"] += 0.05;
+        }
+      });
       
-      const recentBMS = [...items]
+      const recentBMS = [...filteredItems]
         .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
         .slice(0, 5);
         
@@ -563,7 +579,7 @@ function StaffDashboard() {
         { name: "Open Assignment", value: bmsGaugeCounts["Open Assignment"], color: "#fa6e39" },
         { name: "Pending Verification", value: bmsGaugeCounts["Pending Verification"], color: "#00a35c" },
         { name: "Pending Completion", value: bmsGaugeCounts["Pending Completion"], color: "#7b3ff2" },
-        { name: "Completed / Denied", value: bmsGaugeCounts["Completed / Denied"], color: "#00ed64" }
+        { name: "Completed", value: bmsGaugeCounts["Completed"], color: "#00ed64" }
       ];
 
       return {
@@ -582,12 +598,13 @@ function StaffDashboard() {
     } else if (isWater) {
       // Water Resource KPI Calculations
       const uniqueWaterBodies = new Set();
-      items.forEach(item => {
+      filteredItems.forEach(item => {
          if (item.waterBody) uniqueWaterBodies.add(item.waterBody);
       });
       const waterBodiesList = Array.from(uniqueWaterBodies).sort();
 
-      const filteredItems = selectedWaterBody === "All" ? items : items.filter(item => item.waterBody === selectedWaterBody);
+      const filteredItems = selectedWaterBody === "All" ? filteredItems : filteredItems.filter(item => item.waterBody === selectedWaterBody);
+      const completedFilteredItems = selectedWaterBody === "All" ? completedItems : completedItems.filter(item => item.waterBody === selectedWaterBody);
 
       const total = filteredItems.length;
       let surveysCount = 0;
@@ -599,7 +616,7 @@ function StaffDashboard() {
         "Open Assignment": 0,
         "Pending Verification": 0,
         "Pending Completion": 0,
-        "Completed / Denied": 0
+        "Completed": 0
       };
 
       const clarityFlowDataMap = {};
@@ -629,6 +646,10 @@ function StaffDashboard() {
         if (waterGaugeCounts[grp] !== undefined) {
           waterGaugeCounts[grp]++;
         }
+      });
+
+      completedFilteredItems.forEach(item => {
+        const isSurvey = item.subcategory === "Local Water Source Monitoring Form";
 
         // Clarity vs Flow Rate
         if (isSurvey) {
@@ -724,6 +745,21 @@ function StaffDashboard() {
           }
         });
         waterLogBuckets[bestIdx][seriesName]++;
+      });
+
+      completedFilteredItems.forEach((item) => {
+        const ts = item.createdAt?.seconds ? item.createdAt.seconds * 1000 : null;
+        if (!ts || ts < startTimestamp) return;
+        
+        let bestIdx = 0;
+        let minDiff = Infinity;
+        waterLogBuckets.forEach((bucket, idx) => {
+          const diff = Math.abs(bucket.timestamp - ts);
+          if (diff < minDiff) {
+            minDiff = diff;
+            bestIdx = idx;
+          }
+        });
 
         if (item.phLevel) {
           fieldKitTrendBuckets[bestIdx].sumPH += Number(item.phLevel);
@@ -746,7 +782,7 @@ function StaffDashboard() {
         "Dissolved Oxygen (mg/L)": b.countDO > 0 ? Number((b.sumDO / b.countDO).toFixed(1)) : 0,
       }));
       
-      const recentWater = [...items]
+      const recentWater = [...filteredItems]
         .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
         .slice(0, 5);
         
@@ -755,7 +791,7 @@ function StaffDashboard() {
         { name: "Open Assignment", value: waterGaugeCounts["Open Assignment"], color: "#fa6e39" },
         { name: "Pending Verification", value: waterGaugeCounts["Pending Verification"], color: "#00a35c" },
         { name: "Pending Completion", value: waterGaugeCounts["Pending Completion"], color: "#7b3ff2" },
-        { name: "Completed / Denied", value: waterGaugeCounts["Completed / Denied"], color: "#00ed64" }
+        { name: "Completed", value: waterGaugeCounts["Completed"], color: "#00ed64" }
       ];
 
       return {
@@ -778,7 +814,7 @@ function StaffDashboard() {
         waterBodiesList
       };
     } else if (isCompliance) {
-      const totalAudits = items.length;
+      const totalAudits = filteredItems.length;
       let compliantCount = 0;
       let nonCompliantCount = 0;
       let totalWasteKg = 0;
@@ -791,7 +827,7 @@ function StaffDashboard() {
         "Open Assignment": 0,
         "Pending Verification": 0,
         "Pending Completion": 0,
-        "Completed / Denied": 0
+        "Completed": 0
       };
 
       // Tier 3: Business Matrix
@@ -837,18 +873,51 @@ function StaffDashboard() {
         temporalBuckets.push({ label, timestamp: d.getTime(), wasteLogs: 0, inspections: 0 });
       }
 
-      items.forEach((item) => {
+      filteredItems.forEach((item) => {
         // Status Gauge
         const grp = getStatusGroup(item.status);
         if (statusCounts[grp] !== undefined) statusCounts[grp]++;
 
+        if (item.subcategory === "Waste Collection Tracking Form") {
+          wasteRunsCount++;
+        } else if (item.subcategory === "Operational Issue" || (item.type === "incident" && item.category === "Compliance Incidents")) {
+           recentOperationalIssues.push(item);
+        }
+
+        // Temporal Processing
+        const ts = item.createdAt?.seconds ? item.createdAt.seconds * 1000 : null;
+        if (ts && ts >= startTimestamp) {
+          let bestIdx = 0;
+          let minDiff = Infinity;
+          temporalBuckets.forEach((bucket, idx) => {
+            const diff = Math.abs(bucket.timestamp - ts);
+            if (diff < minDiff) {
+              minDiff = diff;
+              bestIdx = idx;
+            }
+          });
+          if (item.subcategory === "Waste Collection Tracking Form") {
+            temporalBuckets[bestIdx].wasteLogs++;
+          } else if (item.subcategory === "Plastic Bag Ban Inspection Form") {
+            temporalBuckets[bestIdx].inspections++;
+          }
+        }
+      });
+      
+      // Visual offset so overlapping lines are both visible in the chart
+      temporalBuckets.forEach(bucket => {
+        if (bucket.wasteLogs > 0 && bucket.wasteLogs === bucket.inspections) {
+          bucket.inspections += 0.05;
+        }
+      });
+
+      completedItems.forEach((item) => {
         // Compliance Tracking
         if (item.compliant === true) compliantCount++;
         else if (item.compliant === false) nonCompliantCount++;
 
         // Subcategory Parsing
         if (item.subcategory === "Waste Collection Tracking Form") {
-          wasteRunsCount++;
           let amt = Number(item.volumeValue || 0);
           if (item.volumeUnit === "tons") amt = amt * 1000; // convert to kg
           totalWasteKg += amt;
@@ -874,27 +943,6 @@ function StaffDashboard() {
             else if (item.actionToken === "Written Notice" || item.actionToken === "Written Non-Compliance Notice") enforcementTypes["Written Notice"]++;
             else if (item.actionToken === "Citation" || item.actionToken === "Citation Ticket") enforcementTypes["Citation"]++;
           }
-        } else if (item.subcategory === "Operational Issue" || (item.type === "incident" && item.category === "Compliance Incidents")) {
-           recentOperationalIssues.push(item);
-        }
-
-        // Temporal Processing
-        const ts = item.createdAt?.seconds ? item.createdAt.seconds * 1000 : null;
-        if (ts && ts >= startTimestamp) {
-          let bestIdx = 0;
-          let minDiff = Infinity;
-          temporalBuckets.forEach((bucket, idx) => {
-            const diff = Math.abs(bucket.timestamp - ts);
-            if (diff < minDiff) {
-              minDiff = diff;
-              bestIdx = idx;
-            }
-          });
-          if (item.subcategory === "Waste Collection Tracking Form") {
-            temporalBuckets[bestIdx].wasteLogs++;
-          } else if (item.subcategory === "Plastic Bag Ban Inspection Form") {
-            temporalBuckets[bestIdx].inspections++;
-          }
         }
       });
 
@@ -909,7 +957,7 @@ function StaffDashboard() {
         { name: "Open Assignment", value: statusCounts["Open Assignment"], color: "#fa6e39" },
         { name: "Pending Verification", value: statusCounts["Pending Verification"], color: "#00a35c" },
         { name: "Pending Completion", value: statusCounts["Pending Completion"], color: "#7b3ff2" },
-        { name: "Completed / Denied", value: statusCounts["Completed / Denied"], color: "#00ed64" }
+        { name: "Completed", value: statusCounts["Completed"], color: "#00ed64" }
       ];
 
       const businessMatrixData = Object.entries(businessMap).map(([name, data]) => ({
@@ -923,7 +971,7 @@ function StaffDashboard() {
         kg: Number(kg.toFixed(2))
       })).sort((a, b) => b.kg - a.kg);
 
-      const recentLogs = [...items]
+      const recentLogs = [...filteredItems]
         .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
         .slice(0, 5);
 
@@ -945,7 +993,7 @@ function StaffDashboard() {
       };
     } else {
       // 1. KPI Counts
-      let total = items.length;
+      let total = filteredItems.length;
       let awaitingReview = 0;
       let activeTasks = 0;
       let resolvedCount = 0;
@@ -963,7 +1011,7 @@ function StaffDashboard() {
       let nonCompliantCount = 0;
       const subcategoryCount = {};
 
-      items.forEach((item) => {
+      filteredItems.forEach((item) => {
         const status = item.status?.toLowerCase();
         const ts = item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000) : null;
 
@@ -975,10 +1023,7 @@ function StaffDashboard() {
         } else if (status === "resolved") {
           resolvedCount++;
         } else if (
-          status === "verified" ||
-          status === "pending completion" ||
-          status === "completed" ||
-          status === "denied"
+          status === "completed"
         ) {
           completedCount++;
         }
@@ -1129,14 +1174,11 @@ function StaffDashboard() {
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
                     <XAxis dataKey="label" stroke="var(--c-stone)" fontSize={11} />
                     <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
-                    <Tooltip contentStyle={TOOLTIP_STYLE} />
+                    <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => Math.round(value)} />
                     <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
                     
-                    <Area type="monotone" dataKey="wasteLogs" name="Waste Tracking Logs" stroke="none" fill="url(#wasteLogGlow)" legendType="none" />
-                    <Area type="monotone" dataKey="inspections" name="Inspections Conducted" stroke="none" fill="url(#inspGlow)" legendType="none" />
-                    
-                    <Line type="monotone" dataKey="wasteLogs" name="Waste Tracking Logs" stroke="#3d8eff" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="inspections" name="Inspections Conducted" stroke="#00ed64" strokeWidth={2} dot={false} />
+                    <Area type="monotone" dataKey="wasteLogs" name="Waste Tracking Logs" stroke="#3d8eff" strokeWidth={5} fill="url(#wasteLogGlow)" activeDot={{ r: 6 }} />
+                    <Area type="monotone" dataKey="inspections" name="Inspections Conducted" stroke="#00ed64" strokeWidth={2} fill="url(#inspGlow)" activeDot={{ r: 4 }} />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
@@ -1238,7 +1280,7 @@ function StaffDashboard() {
               icon="verified_user"
               value={analytics.completedCount}
               label="Completed Incidents"
-              sub="Resolved, completed, or denied reports"
+              sub="Fully completed incidents"
             />
           </div>
 
@@ -1615,14 +1657,11 @@ function StaffDashboard() {
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
                       <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
                       <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={false} />
-                      <Tooltip contentStyle={TOOLTIP_STYLE} />
+                      <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => Math.round(value)} />
                       <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
 
-                      <Area type="monotone" dataKey="Avian Census" stroke="none" fill="url(#avianGlow)" legendType="none" />
-                      <Area type="monotone" dataKey="Wildlife Sightings" stroke="none" fill="url(#wildlifeGlow)" legendType="none" />
-
-                      <Line type="monotone" dataKey="Avian Census" stroke="#00a35c" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="Wildlife Sightings" stroke="#7b3ff2" strokeWidth={2} dot={false} />
+                      <Area type="monotone" dataKey="Avian Census" stroke="#00a35c" strokeWidth={5} fill="url(#avianGlow)" activeDot={{ r: 6 }} />
+                      <Area type="monotone" dataKey="Wildlife Sightings" stroke="#7b3ff2" strokeWidth={2} fill="url(#wildlifeGlow)" activeDot={{ r: 4 }} />
                     </ComposedChart>
                   </ResponsiveContainer>
                 </ChartCard>

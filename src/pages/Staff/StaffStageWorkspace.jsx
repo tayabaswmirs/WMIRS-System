@@ -37,7 +37,7 @@ const STAGE_CONFIGS = {
   "completed-archive": {
     title: "Completed Archive",
     icon: "task_alt",
-    statuses: ["verified", "pending completion", "completed", "denied"],
+    statuses: ["verified", "pending completion", "completed"],
     emptyText: "No archived records.",
     editable: false
   }
@@ -86,7 +86,7 @@ function StaffStageWorkspace() {
         acc.active += 1;
       } else if (status === "resolved") {
         acc.resolved += 1;
-      } else if (status === "verified" || status === "pending completion" || status === "completed" || status === "denied") {
+      } else if (status === "verified" || status === "pending completion" || status === "completed") {
         acc.approved += 1;
       }
       return acc;
