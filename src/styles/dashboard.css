@@ -24,7 +24,13 @@
   z-index: 100;
   overflow-y: auto;
   overflow-x: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
   transition: transform var(--transition);
+}
+
+.sidebar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge, Opera */
 }
 
 /* Sidebar top gradient accent */
@@ -176,6 +182,159 @@
   border-radius: var(--r-full);
   padding: 2px 6px;
   border: 1px solid rgba(0, 237, 100, 0.25);
+}
+
+/* ── Sidebar Accordion & Nested Submenus (Admin Multi-Tier) ──── */
+.sidebar-accordion {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.sidebar-accordion__header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: 10px var(--sp-md);
+  border-radius: var(--r-md);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--c-on-dark-muted);
+  text-decoration: none;
+  transition: background var(--transition), color var(--transition);
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-display);
+  position: relative;
+}
+
+.sidebar-accordion__header:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--c-on-dark);
+}
+
+.sidebar-accordion__header--active {
+  color: var(--c-green);
+  font-weight: 600;
+}
+
+.sidebar-accordion__chevron {
+  font-size: 18px;
+  color: var(--c-on-dark-muted);
+  transition: transform 0.2s ease, color 0.2s ease;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-accordion__chevron--open {
+  transform: rotate(180deg);
+  color: var(--c-green);
+}
+
+.sidebar-submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 28px;
+  margin-top: 2px;
+  margin-bottom: 4px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  margin-left: 18px;
+}
+
+.sidebar-submenu__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--c-on-dark-muted);
+  text-decoration: none;
+  transition: background var(--transition), color var(--transition);
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-display);
+}
+
+.sidebar-submenu__item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--c-on-dark);
+}
+
+.sidebar-submenu__item--active {
+  background: rgba(0, 237, 100, 0.12);
+  color: var(--c-green);
+  font-weight: 600;
+}
+
+.sidebar-submenu__item--active:hover {
+  background: rgba(0, 237, 100, 0.18);
+  color: var(--c-green);
+}
+
+.sidebar-nested-group {
+  display: flex;
+  flex-direction: column;
+  margin-top: 2px;
+}
+
+.sidebar-nested-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: rgba(255, 255, 255, 0.7);
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: color var(--transition), background var(--transition);
+}
+
+.sidebar-nested-header:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.sidebar-nested-header--active {
+  color: var(--c-green);
+}
+
+.sidebar-nested-chevron {
+  font-size: 16px;
+  transition: transform 0.2s ease;
+  opacity: 0.6;
+}
+
+.sidebar-nested-chevron--open {
+  transform: rotate(180deg);
+  opacity: 1;
+  color: var(--c-green);
+}
+
+.sidebar-nested-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 10px;
+  margin-top: 2px;
+  margin-bottom: 4px;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  margin-left: 6px;
 }
 
 /* ── Sidebar Bottom (logout) ────────────────────────────────── */
@@ -4591,6 +4750,10 @@ button:disabled,
   grid-template-columns: repeat(3, 1fr) !important;
 }
 
+.dash-kpi-grid--four {
+  grid-template-columns: repeat(4, 1fr) !important;
+}
+
 .dash-row-70-30 {
   display: grid;
   grid-template-columns: 7fr 3fr;
@@ -4602,6 +4765,14 @@ button:disabled,
 .dash-row-30-70 {
   display: grid;
   grid-template-columns: 3fr 7fr;
+  gap: var(--sp-xl);
+  margin-top: var(--sp-xl);
+  width: 100%;
+}
+
+.dash-row-50-50 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: var(--sp-xl);
   margin-top: var(--sp-xl);
   width: 100%;
@@ -5114,3 +5285,172 @@ button:disabled,
 .dash-chart-card--blue .dash-chart-card__header-icon {
   color: #0284c7 !important;
 }
+
+/* ── Field-Kit Water Quality Diagnostic Widget ─────────────── */
+.water-kit-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+}
+
+.water-kit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--r-md, 8px);
+  transition: all 0.2s ease;
+}
+
+.water-kit-row:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(0, 237, 100, 0.3);
+  transform: translateX(2px);
+}
+
+.water-kit-row__left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.water-kit-row__icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--r-md, 8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.water-kit-row--ph .water-kit-row__icon-wrap {
+  background: rgba(0, 237, 100, 0.12);
+  color: #00ed64;
+}
+
+.water-kit-row--temp .water-kit-row__icon-wrap {
+  background: rgba(61, 142, 255, 0.12);
+  color: #3d8eff;
+}
+
+.water-kit-row--do .water-kit-row__icon-wrap {
+  background: rgba(250, 110, 57, 0.12);
+  color: #fa6e39;
+}
+
+.water-kit-row__icon {
+  font-size: 22px;
+}
+
+.water-kit-row__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.water-kit-row__label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.2px;
+}
+
+.water-kit-row__sub {
+  font-size: 11px;
+  color: var(--c-on-dark-muted, #8899a6);
+}
+
+.water-kit-row__value-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  text-align: right;
+}
+
+.water-kit-row__value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  font-family: var(--font-display, inherit);
+  letter-spacing: -0.5px;
+}
+
+/* Water Trend Filter Controls & Dark Time Tabs */
+.water-trend-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.water-trend-select-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.water-trend-select-icon {
+  position: absolute;
+  left: 8px;
+  font-size: 16px;
+  color: var(--c-green, #00ed64);
+  pointer-events: none;
+}
+
+.water-filter-select {
+  height: 32px;
+  padding: 0 12px 0 28px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--r-full, 9999px);
+  background-color: #002838 !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  outline: none;
+  cursor: pointer;
+  transition: all var(--transition, 0.2s ease);
+}
+
+.water-filter-select:hover,
+.water-filter-select:focus {
+  border-color: #00ed64 !important;
+  box-shadow: 0 0 0 2px rgba(0, 237, 100, 0.2);
+}
+
+.water-filter-select option {
+  background-color: #001e2b !important;
+  color: #ffffff !important;
+  padding: 6px;
+}
+
+/* Dark Card Time Tabs Overrides */
+.dash-chart-card--dark .time-tab,
+.time-tab--dark {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #cbd5e1 !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  font-weight: 600;
+}
+
+.dash-chart-card--dark .time-tab:hover,
+.time-tab--dark:hover {
+  border-color: #00ed64 !important;
+  color: #ffffff !important;
+  background: rgba(0, 237, 100, 0.15) !important;
+}
+
+.dash-chart-card--dark .time-tab--active,
+.time-tab--dark.time-tab--active {
+  background: #00ed64 !important;
+  border-color: #00ed64 !important;
+  color: #001e2b !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 8px rgba(0, 237, 100, 0.3) !important;
+}
+

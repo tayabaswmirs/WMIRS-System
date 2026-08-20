@@ -1,17 +1,6 @@
 
 function WasteTrackingForm({ formData, onChange, setFormData }) {
-  const barangays = [
-    "Barangay San Isidro",
-    "Barangay Alitao",
-    "Barangay Lalo",
-    "Barangay Wakas",
-    "Barangay Camaysa",
-    "Barangay Opias",
-    "Barangay Calumpang",
-    "Barangay Ipilan",
-    "Barangay Malaoa",
-    "Barangay Silangang Palale"
-  ];
+
 
   const collectionTypes = ["Residential", "Commercial", "Institutional"];
 
@@ -39,21 +28,16 @@ function WasteTrackingForm({ formData, onChange, setFormData }) {
           <span className="material-symbols-outlined inc-form__label-icon">map</span>
           Collection Route / Barangay <span className="inc-form__required">*</span>
         </label>
-        <div className="inc-form__select-wrap">
-          <select
+        <div className="inc-form__input-wrap">
+          <input
             id="mon-barangay"
+            type="text"
             value={formData.barangay || ""}
             onChange={(e) => onChange("barangay", e.target.value)}
-            className="inc-form__select"
+            className="inc-form__input"
+            placeholder="e.g. Barangay San Isidro"
             required
-          >
-            <option value="">— Select Barangay —</option>
-            {barangays.map((brgy) => (
-              <option key={brgy} value={brgy}>
-                {brgy}
-              </option>
-            ))}
-          </select>
+          />
         </div>
       </div>
 

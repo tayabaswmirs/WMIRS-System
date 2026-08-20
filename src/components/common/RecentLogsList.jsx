@@ -44,7 +44,7 @@ export default function RecentLogsList({ items = [], type, emptyMessage }) {
           <div className="recent-item__content">
             <div className="recent-item__header">
               <span className="recent-item__category">
-                {type === "incident" ? item.category : (item.subcategory || "General Monitoring")}
+                {type === "incident" ? item.category : (type === "bms" ? (item.subcategory || "Biodiversity Monitoring") : type === "water" ? (item.subcategory || "Water Monitoring") : type === "compliance" ? (item.subcategory || "Compliance Monitoring") : (item.subcategory || "General Monitoring"))}
               </span>
               <span className="recent-item__time">
                 {formatRelativeTime(item.createdAt)}
@@ -53,7 +53,17 @@ export default function RecentLogsList({ items = [], type, emptyMessage }) {
             <p className="recent-item__snippet">
               {type === "incident" 
                 ? (item.description || "No description provided.") 
-                : `Reported by Ranger (Barangay: ${item.barangay || "N/A"})`}
+                : type === "bms"
+                  ? `${item.avianSpecies || item.speciesName || "Fauna observation"} (${item.count || item.quantity || 1} sighted) • ${item.stationId || item.barangay || "Field Station"}`
+                  : type === "water"
+                    ? `${item.sourceType || "Water Source"} at ${item.barangay || "Field Station"} • ${item.waterClarity || item.flowRate || "Status logged"}`
+                    : type === "compliance"
+                      ? (item.subcategory === "Plastic Bag Ban Inspection Form" 
+                          ? `${item.establishmentName || "Establishment"} (${item.businessType || "Retail"}) • ${item.compliant !== false ? "Compliant" : (item.actionToken || "Non-Compliant")}`
+                          : item.subcategory === "Waste Collection Tracking Form"
+                            ? `${item.barangay || "Route"} (${item.collectionType || "Collection"}) • ${item.volumeValue || 0} ${item.volumeUnit || "kg"} logged`
+                            : `Reported by Ranger (Barangay: ${item.barangay || "N/A"})`)
+                      : `Reported by Ranger (Barangay: ${item.barangay || "N/A"})`}
             </p>
           </div>
         </div>
