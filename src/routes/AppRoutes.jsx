@@ -1,27 +1,30 @@
+import { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "../pages/Login";
 import Landing from "../pages/Landing";
 import Dashboard from "../pages/Dashboard";
-import AdminDashboard from "../pages/AdminDashboard";
-import AdminIncidents from "../pages/AdminIncidents";
-import AdminIncidentsAnalytics from "../pages/AdminIncidentsAnalytics";
-import AdminMonitoring from "../pages/AdminMonitoring";
-import AdminMonitoringCategoryLogs from "../pages/AdminMonitoringCategoryLogs";
-import AdminMonitoringCategoryAnalytics from "../pages/AdminMonitoringCategoryAnalytics";
-import UserManagement from "../pages/UserManagement";
 import Profile from "../pages/Profile";
 import SubmitDashboard from "../pages/SubmitDashboard";
 import IncidentHistory from "../pages/IncidentHistory";
 import MonitoringHistory from "../pages/MonitoringHistory";
-import StaffDashboard from "../pages/Staff/StaffDashboard";
-import StaffStageWorkspace from "../pages/Staff/StaffStageWorkspace";
 import OpenAssignments from "../pages/OpenAssignments";
 import { ProtectedRoute } from "./ProtectedRoute";
 
+const AdminDashboard = lazy(() => import("../pages/AdminDashboard"));
+const AdminIncidents = lazy(() => import("../pages/AdminIncidents"));
+const AdminIncidentsAnalytics = lazy(() => import("../pages/AdminIncidentsAnalytics"));
+const AdminMonitoring = lazy(() => import("../pages/AdminMonitoring"));
+const AdminMonitoringCategoryLogs = lazy(() => import("../pages/AdminMonitoringCategoryLogs"));
+const AdminMonitoringCategoryAnalytics = lazy(() => import("../pages/AdminMonitoringCategoryAnalytics"));
+const UserManagement = lazy(() => import("../pages/UserManagement"));
+const StaffDashboard = lazy(() => import("../pages/Staff/StaffDashboard"));
+const StaffStageWorkspace = lazy(() => import("../pages/Staff/StaffStageWorkspace"));
+
 export default function AppRoutes() {
   return (
-    <Routes>
-      <Route path="/" element={<Landing />} />
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-[#001e2b] text-[#00ed64] font-medium">Loading interface...</div>}>
+      <Routes>
+        <Route path="/" element={<Landing />} />
       <Route path="/landing" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       
@@ -212,5 +215,6 @@ export default function AppRoutes() {
       {/* Catch all route - redirect to home */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </Suspense>
   );
 }
