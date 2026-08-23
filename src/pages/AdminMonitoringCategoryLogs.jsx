@@ -12,7 +12,6 @@ import StatPill from "../components/common/StatPill";
 import StatusFilterBar from "../components/common/StatusFilterBar";
 import ConfirmModal from "../components/common/ConfirmModal";
 import ExportModal from "../components/common/ExportModal";
-import { exportToCSV, exportToPDF } from "../utils/exportService";
 import { getStatusesByLabel } from "../utils/incidentConstants";
 import "../styles/dashboard.css";
 
@@ -134,37 +133,6 @@ export default function AdminMonitoringCategoryLogs({ category = "BMS" }) {
     }
   };
 
-  const handleExport = ({ format, dateRange }) => {
-    let dataToExport = logs;
-    if (dateRange !== "all") {
-      const now = new Date();
-      let days = dateRange === "30days" ? 30 : dateRange === "7days" ? 7 : 1;
-      const cutoff = new Date(now.setDate(now.getDate() - days));
-      dataToExport = dataToExport.filter(i => {
-        const d = i.createdAt?.seconds ? new Date(i.createdAt.seconds * 1000) : null;
-        return d && d >= cutoff;
-      });
-    }
-    if (format === "csv") {
-      exportToCSV(dataToExport, `WMIRS_${category}_Monitoring_Logs_${new Date().toISOString().split("T")[0]}`);
-    } else {
-      exportToPDF(
-        dataToExport,
-        [
-          { header: "ID", dataKey: "id" },
-          { header: "Category", dataKey: "category" },
-          { header: "Subcategory", dataKey: "subcategory" },
-          { header: "Reporter", dataKey: "reporter" },
-          { header: "Location", dataKey: "location" },
-          { header: "Status", dataKey: "status" },
-          { header: "Date", dataKey: "date" }
-        ],
-        `WMIRS_${category}_Monitoring_Logs_${new Date().toISOString().split("T")[0]}`,
-        `WMIRS ${category} Monitoring Logs Report`
-      );
-    }
-  };
-
   const logsWithDelete = filteredLogs.map(log => ({
     ...log,
     onDelete: handleDeleteRequest
@@ -266,8 +234,8 @@ export default function AdminMonitoringCategoryLogs({ category = "BMS" }) {
         <ExportModal
           isOpen={isExportOpen}
           onClose={() => setIsExportOpen(false)}
-          onExport={handleExport}
-          type={`${category} Monitoring Logs`}
+          scope={category}
+          data={logs}
         />
       </div>
     </DashboardLayout>

@@ -1,78 +1,457 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { exportToCSV, exportToPDF } from "../../utils/exportService";
 
-export default function ExportModal({ isOpen, onClose, onExport, type = "Incidents" }) {
-  const [format, setFormat] = useState('csv');
-  const [dateRange, setDateRange] = useState('all');
-  const [category, setCategory] = useState('all');
+const SUBCATEGORY_MAP = {
+  BMS: [
+    { label: "All BMS Subcategories", value: "all" },
+    { label: "Avian Tracking Form", value: "Avian Tracking Form" },
+    { label: "Wildlife Observations Form", value: "Wildlife Observations Form" }
+  ],
+  Water: [
+    { label: "All Water Subcategories", value: "all" },
+    { label: "Water Source Monitoring", value: "Local Water Source Monitoring Form" },
+    { label: "Ecosystem Conservation", value: "Ecosystem Conservation Log" }
+  ],
+  Compliance: [
+    { label: "All Compliance Subcategories", value: "all" },
+    { label: "Plastic Bag Ban Inspection", value: "Plastic Bag Ban Inspection Form" },
+    { label: "Waste Collection Tracking", value: "Waste Collection Tracking Form" }
+  ],
+  Incidents: [
+    { label: "All Incident Categories", value: "all" },
+    { label: "Forest Incidents", value: "Forest Incidents" },
+    { label: "Wildlife Incidents", value: "Wildlife Incidents" },
+    { label: "Water Resource Incidents", value: "Water Resource Incidents" },
+    { label: "Waste Incidents", value: "Waste Incidents" },
+    { label: "Compliance Incidents", value: "Compliance Incidents" },
+    { label: "Ecosystem Protection", value: "Ecosystem Protection Incidents" }
+  ]
+};
 
-  if (!isOpen) return null;
+const DATE_PRESETS = [
+  { id: "all", label: "All Time" },
+  { id: "today", label: "Today" },
+  { id: "7days", label: "Last 7 Days" },
+  { id: "30days", label: "Last 30 Days" },
+  { id: "custom", label: "Custom Range" }
+];
 
-  const handleExport = () => {
-    onExport({ format, dateRange, category });
+const STATUS_PRESETS = [
+  { id: "all", label: "All Statuses" },
+  { id: "completed", label: "Completed / Archived" },
+  { id: "active", label: "Active / In-Progress" }
+];
+
+/**
+ * Inner dialog component holding state lifecycle while modal is active.
+ * @param {Object} props
+ * @param {() => void} props.onClose
+ * @param {string} [props.scope]
+ * @param {Array<Object>} [props.data]
+ * @param {Function} [props.onExport]
+ */
+function ExportModalDialog({
+  onClose,
+  scope = "Incidents",
+  data = [],
+  onExport = null
+}) {
+  const [format, setFormat] = useState("csv");
+  const [selectedSubcategory, setSelectedSubcategory] = useState("all");
+  const [selectedGlobalCategory, setSelectedGlobalCategory] = useState("all");
+  const [dateRange, setDateRange] = useState("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  const isGlobalMonitoring = scope === "All Monitoring" || scope === "Monitoring Logs";
+  const isIncidents = scope === "Incidents" || scope.toLowerCase().includes("incident");
+
+  // Handle escape key listener
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    },
+    [onClose]
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
+
+  // Available subcategories list based on current scope
+  const availableSubcategories = useMemo(() => {
+    if (isGlobalMonitoring) {
+      if (selectedGlobalCategory === "BMS") return SUBCATEGORY_MAP.BMS;
+      if (selectedGlobalCategory === "Water") return SUBCATEGORY_MAP.Water;
+      if (selectedGlobalCategory === "Compliance") return SUBCATEGORY_MAP.Compliance;
+      return [{ label: "All Monitoring Subcategories", value: "all" }];
+    }
+    if (scope === "BMS") return SUBCATEGORY_MAP.BMS;
+    if (scope === "Water") return SUBCATEGORY_MAP.Water;
+    if (scope === "Compliance") return SUBCATEGORY_MAP.Compliance;
+    if (isIncidents) return SUBCATEGORY_MAP.Incidents;
+    return [{ label: "All Items", value: "all" }];
+  }, [scope, isGlobalMonitoring, selectedGlobalCategory, isIncidents]);
+
+  // Live filtered records calculation
+  const filteredData = useMemo(() => {
+    if (!Array.isArray(data) || data.length === 0) return [];
+
+    return data.filter((item) => {
+      // 1. Global Category Filter
+      if (isGlobalMonitoring && selectedGlobalCategory !== "all") {
+        if ((item.category || "").toLowerCase() !== selectedGlobalCategory.toLowerCase()) {
+          return false;
+        }
+      }
+
+      // 2. Subcategory / Incident Category Filter
+      if (selectedSubcategory !== "all") {
+        if (isIncidents) {
+          const itemCat = (item.category || "").toLowerCase();
+          const targetCat = selectedSubcategory.toLowerCase();
+          if (itemCat !== targetCat && !itemCat.includes(targetCat.replace(" incidents", ""))) {
+            return false;
+          }
+        } else {
+          if (item.subcategory !== selectedSubcategory) {
+            return false;
+          }
+        }
+      }
+
+      // 3. Status Filter
+      if (statusFilter !== "all") {
+        const s = (item.status || "").toLowerCase();
+        if (statusFilter === "completed" && s !== "completed" && s !== "verified") {
+          return false;
+        }
+        if (statusFilter === "active" && (s === "completed" || s === "denied")) {
+          return false;
+        }
+      }
+
+      // 4. Date Range Filter
+      const itemTimestamp = item.createdAt?.seconds
+        ? item.createdAt.seconds * 1000
+        : item.createdAt
+        ? new Date(item.createdAt).getTime()
+        : null;
+
+      if (!itemTimestamp || isNaN(itemTimestamp)) return true;
+
+      const now = new Date();
+
+      if (dateRange === "today") {
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        return itemTimestamp >= startOfToday;
+      }
+      if (dateRange === "7days") {
+        const cutoff7 = now.getTime() - 7 * 24 * 60 * 60 * 1000;
+        return itemTimestamp >= cutoff7;
+      }
+      if (dateRange === "30days") {
+        const cutoff30 = now.getTime() - 30 * 24 * 60 * 60 * 1000;
+        return itemTimestamp >= cutoff30;
+      }
+      if (dateRange === "custom") {
+        if (startDate) {
+          const startMs = new Date(startDate).getTime();
+          if (itemTimestamp < startMs) return false;
+        }
+        if (endDate) {
+          const endMs = new Date(endDate).getTime() + 24 * 60 * 60 * 1000 - 1; // End of selected day
+          if (itemTimestamp > endMs) return false;
+        }
+      }
+
+      return true;
+    });
+  }, [
+    data,
+    isGlobalMonitoring,
+    selectedGlobalCategory,
+    selectedSubcategory,
+    isIncidents,
+    statusFilter,
+    dateRange,
+    startDate,
+    endDate
+  ]);
+
+  const handleDownload = () => {
+    if (filteredData.length === 0) return;
+
+    const dateStamp = new Date().toISOString().split("T")[0];
+    const safeScope = scope.replace(/\s+/g, "_");
+    const subScope = selectedSubcategory !== "all" ? `_${selectedSubcategory.replace(/\s+/g, "_")}` : "";
+    const filename = `WMIRS_${safeScope}${subScope}_${dateStamp}`;
+    const docTitle = `WMIRS ${scope} Export Report`;
+
+    if (onExport) {
+      onExport({
+        format,
+        dateRange,
+        category: selectedGlobalCategory,
+        subcategory: selectedSubcategory,
+        statusFilter,
+        filteredData
+      });
+      onClose();
+      return;
+    }
+
+    if (format === "csv") {
+      exportToCSV(filteredData, scope, filename);
+    } else {
+      exportToPDF(filteredData, scope, filename, docTitle);
+    }
+
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(0,30,43,0.65)] backdrop-blur-[3px]"
-         role="dialog" aria-modal="true">
-      <div className="um-confirm-panel" style={{ textAlign: 'left' }}>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-[20px] font-semibold text-[var(--c-stone)] m-0">Export {type}</h2>
-          <button onClick={onClose} className="text-[var(--c-stone-muted)] hover:text-[var(--c-brand)] transition-colors">
+    <div
+      className="export-modal-backdrop"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="export-modal-title"
+    >
+      <div
+        className="export-modal-container"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header Band */}
+        <div className="export-modal-header">
+          <div className="export-modal-header__info">
+            <div className="export-modal-header__eyebrow">
+              <span className="material-symbols-outlined export-modal-header__icon">file_download</span>
+              <span>Administrative Intelligence</span>
+            </div>
+            <h2 id="export-modal-title" className="export-modal-header__title">
+              Export {scope}
+            </h2>
+            <p className="export-modal-header__subtitle">
+              Download field audit records and domain metrics in structured format.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="export-modal-close-btn"
+            aria-label="Close export dialog"
+          >
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
 
-        <div className="mb-4">
-          <label className="block text-[14px] font-medium text-[var(--c-stone)] mb-2">Export Format</label>
-          <select 
-            value={format} 
-            onChange={(e) => setFormat(e.target.value)}
-            className="w-full bg-[var(--c-bg-subtle)] border border-[var(--c-border)] rounded-[6px] px-3 py-2 text-[var(--c-stone)] focus:border-[var(--c-brand)] focus:outline-none"
-          >
-            <option value="csv">CSV (Spreadsheet)</option>
-            <option value="pdf">PDF Document</option>
-          </select>
+        {/* Modal Scrollable Body */}
+        <div className="export-modal-body">
+          {/* 1. Choose File Format Cards */}
+          <div className="export-section">
+            <label className="export-section__label">1. Choose File Format</label>
+            <div className="export-format-grid">
+              <button
+                type="button"
+                className={`export-format-card ${format === "csv" ? "export-format-card--active" : ""}`}
+                onClick={() => setFormat("csv")}
+              >
+                <div className="export-format-card__icon-wrap export-format-card__icon-wrap--csv">
+                  <span className="material-symbols-outlined">table_view</span>
+                </div>
+                <div className="export-format-card__content">
+                  <span className="export-format-card__title">CSV Spreadsheet</span>
+                  <span className="export-format-card__desc">Complete raw data with all specialized domain fields</span>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                className={`export-format-card ${format === "pdf" ? "export-format-card--active" : ""}`}
+                onClick={() => setFormat("pdf")}
+              >
+                <div className="export-format-card__icon-wrap export-format-card__icon-wrap--pdf">
+                  <span className="material-symbols-outlined">picture_as_pdf</span>
+                </div>
+                <div className="export-format-card__content">
+                  <span className="export-format-card__title">PDF Document</span>
+                  <span className="export-format-card__desc">Styled, branded printable document with summary headers</span>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* 2. Global Monitoring Category (if applicable) */}
+          {isGlobalMonitoring && (
+            <div className="export-section">
+              <label className="export-section__label">2. Category Scope</label>
+              <div className="export-chip-group">
+                {[
+                  { id: "all", label: "All Monitoring" },
+                  { id: "BMS", label: "BMS Flora & Fauna" },
+                  { id: "Water", label: "Water Resources" },
+                  { id: "Compliance", label: "Compliance & Waste" }
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    className={`export-chip ${selectedGlobalCategory === cat.id ? "export-chip--active" : ""}`}
+                    onClick={() => {
+                      setSelectedGlobalCategory(cat.id);
+                      setSelectedSubcategory("all");
+                    }}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 3. Subcategory Filter */}
+          <div className="export-section">
+            <label className="export-section__label">
+              {isIncidents ? "2. Incident Classification" : isGlobalMonitoring ? "3. Specific Subcategory" : "2. Subcategory Filter"}
+            </label>
+            <div className="export-select-wrap">
+              <select
+                value={selectedSubcategory}
+                onChange={(e) => setSelectedSubcategory(e.target.value)}
+                className="export-select"
+              >
+                {availableSubcategories.map((sub) => (
+                  <option key={sub.value} value={sub.value}>
+                    {sub.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* 4. Workflow Status Filter */}
+          <div className="export-section">
+            <label className="export-section__label">
+              {isGlobalMonitoring ? "4. Status Filter" : "3. Status Filter"}
+            </label>
+            <div className="export-chip-group">
+              {STATUS_PRESETS.map((st) => (
+                <button
+                  key={st.id}
+                  type="button"
+                  className={`export-chip ${statusFilter === st.id ? "export-chip--active" : ""}`}
+                  onClick={() => setStatusFilter(st.id)}
+                >
+                  {st.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 5. Date Range Selector */}
+          <div className="export-section">
+            <label className="export-section__label">
+              {isGlobalMonitoring ? "5. Date Range" : "4. Date Range"}
+            </label>
+            <div className="export-chip-group">
+              {DATE_PRESETS.map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  className={`export-chip ${dateRange === preset.id ? "export-chip--active" : ""}`}
+                  onClick={() => setDateRange(preset.id)}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+
+            {dateRange === "custom" && (
+              <div className="export-custom-date-grid">
+                <div className="export-input-wrap">
+                  <span className="export-input-label">Start Date</span>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="export-date-input"
+                  />
+                </div>
+                <div className="export-input-wrap">
+                  <span className="export-input-label">End Date</span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="export-date-input"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="mb-4">
-          <label className="block text-[14px] font-medium text-[var(--c-stone)] mb-2">Date Range</label>
-          <select 
-            value={dateRange} 
-            onChange={(e) => setDateRange(e.target.value)}
-            className="w-full bg-[var(--c-bg-subtle)] border border-[var(--c-border)] rounded-[6px] px-3 py-2 text-[var(--c-stone)] focus:border-[var(--c-brand)] focus:outline-none"
-          >
-            <option value="all">All Time</option>
-            <option value="30days">Last 30 Days</option>
-            <option value="7days">Last 7 Days</option>
-            <option value="today">Today</option>
-          </select>
-        </div>
+        {/* Footer with Live Match Counter and Action Buttons */}
+        <div className="export-modal-footer">
+          <div className="export-counter-badge">
+            <span className="material-symbols-outlined export-counter-badge__icon">analytics</span>
+            <span className="export-counter-badge__text">
+              <strong>{filteredData.length}</strong> {filteredData.length === 1 ? "record" : "records"} ready to export
+            </span>
+          </div>
 
-        <div className="mb-6">
-          <label className="block text-[14px] font-medium text-[var(--c-stone)] mb-2">Category Filter</label>
-          <select 
-            value={category} 
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full bg-[var(--c-bg-subtle)] border border-[var(--c-border)] rounded-[6px] px-3 py-2 text-[var(--c-stone)] focus:border-[var(--c-brand)] focus:outline-none"
-          >
-            <option value="all">All Categories</option>
-            <option value="Medical">Medical</option>
-            <option value="Fire">Fire</option>
-            <option value="Wildlife">Wildlife</option>
-          </select>
-        </div>
-
-        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[var(--c-border)]">
-          <button type="button" onClick={onClose} className="px-4 py-2 text-[14px] font-medium text-[var(--c-stone)] hover:bg-[var(--c-bg-subtle)] rounded-[6px] transition-colors">
-            Cancel
-          </button>
-          <button type="button" onClick={handleExport} className="px-4 py-2 text-[14px] font-medium bg-[var(--c-brand)] text-[var(--c-bg-dark)] rounded-[6px] hover:bg-[#00d65b] transition-colors flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px]">download</span>
-            Export Now
-          </button>
+          <div className="export-modal-footer__actions">
+            <button
+              type="button"
+              onClick={onClose}
+              className="export-btn export-btn--secondary"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleDownload}
+              disabled={filteredData.length === 0}
+              className="export-btn export-btn--primary"
+            >
+              <span className="material-symbols-outlined">download</span>
+              <span>Download {format.toUpperCase()}</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * Modern, responsive MongoDB-styled Export Modal for WMIRS Admin reports.
+ * @param {Object} props
+ * @param {boolean} props.isOpen
+ * @param {() => void} props.onClose
+ * @param {string} [props.scope]
+ * @param {Array<Object>} [props.data]
+ * @param {Function} [props.onExport]
+ */
+export default function ExportModal({
+  isOpen,
+  onClose,
+  scope = "Incidents",
+  data = [],
+  onExport = null
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <ExportModalDialog
+      onClose={onClose}
+      scope={scope}
+      data={data}
+      onExport={onExport}
+    />
   );
 }

@@ -7,7 +7,6 @@ import IncidentDetailsModal from "../components/common/IncidentDetailsModal";
 import ConfirmationModal from "../components/common/ConfirmationModal";
 import ConfirmModal from "../components/common/ConfirmModal";
 import ExportModal from "../components/common/ExportModal";
-import { exportToCSV, exportToPDF } from "../utils/exportService";
 import StatPill from "../components/common/StatPill";
 import StatusFilterBar from "../components/common/StatusFilterBar";
 import { getStatusesByLabel } from "../utils/incidentConstants";
@@ -113,58 +112,6 @@ function AdminIncidents() {
       console.error(err);
     } finally {
       setDeleteDialog(null);
-    }
-  };
-
-  const handleExport = ({ format, dateRange, category }) => {
-    let dataToExport = incidents;
-    
-    if (category !== 'all') {
-      dataToExport = dataToExport.filter(i => i.category === category);
-    }
-    
-    if (dateRange !== 'all') {
-      const now = new Date();
-      let days = 0;
-      if (dateRange === '30days') days = 30;
-      if (dateRange === '7days') days = 7;
-      if (dateRange === 'today') days = 1;
-      
-      const cutoff = new Date(now.setDate(now.getDate() - days));
-      dataToExport = dataToExport.filter(i => {
-        const d = i.createdAt?.seconds ? new Date(i.createdAt.seconds * 1000) : null;
-        return d && d >= cutoff;
-      });
-    }
-
-    const exportData = dataToExport.map(i => ({
-      id: i.id,
-      category: i.category,
-      type: i.incidentType,
-      reporter: i.reporter?.name || 'Unknown',
-      location: i.location,
-      status: i.status,
-      severity: i.severity,
-      date: i.createdAt?.seconds ? new Date(i.createdAt.seconds * 1000) : ''
-    }));
-
-    if (format === 'csv') {
-      exportToCSV(exportData, `WMIRS_Incidents_Export_${new Date().toISOString().split('T')[0]}`);
-    } else {
-      exportToPDF(
-        exportData, 
-        [
-          { header: 'ID', dataKey: 'id' },
-          { header: 'Category', dataKey: 'category' },
-          { header: 'Type', dataKey: 'type' },
-          { header: 'Reporter', dataKey: 'reporter' },
-          { header: 'Location', dataKey: 'location' },
-          { header: 'Status', dataKey: 'status' },
-          { header: 'Date', dataKey: 'date' }
-        ], 
-        `WMIRS_Incidents_Export_${new Date().toISOString().split('T')[0]}`,
-        'WMIRS Incident Reports'
-      );
     }
   };
 
@@ -279,8 +226,8 @@ function AdminIncidents() {
         <ExportModal
           isOpen={isExportOpen}
           onClose={() => setIsExportOpen(false)}
-          onExport={handleExport}
-          type="Incidents"
+          scope="Incidents"
+          data={incidents}
         />
       </div>
     </DashboardLayout>
