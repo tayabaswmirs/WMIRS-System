@@ -5,7 +5,7 @@ import StatusGauge from "../StatusGauge";
 import RecentLogsList from "../RecentLogsList";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  Area, CartesianGrid, Legend, ComposedChart
+  Area, CartesianGrid, ComposedChart
 } from "recharts";
 
 const TOOLTIP_STYLE = {
@@ -185,17 +185,30 @@ export default function ComplianceAnalyticsView({ items = [] }) {
       {/* Tier 3: Business Matrix */}
       <div className="dash-full-width-row">
         <ChartCard icon="storefront" title="Business Type Compliance Audit Matrix" subtitle="Inspections performance across retail categories" variant="dark" accentColor="#00ed64">
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={analytics.businessMatrixData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="name" stroke="var(--c-stone)" fontSize={11} angle={-15} textAnchor="end" interval={0} />
-              <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
-              <Tooltip contentStyle={TOOLTIP_STYLE} />
-              <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
-              <Bar dataKey="Compliant" stackId="a" fill="#00ed64" radius={[0, 0, 4, 4]} />
-              <Bar dataKey="Non-Compliant" stackId="a" fill="#fa6e39" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="dash-chart-scroll-wrap">
+            <div className="dash-chart-canvas-min">
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={analytics.businessMatrixData} margin={{ top: 10, right: 15, left: -20, bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <XAxis dataKey="name" stroke="var(--c-stone)" fontSize={11} angle={-15} textAnchor="end" interval={0} />
+                  <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
+                  <Tooltip contentStyle={TOOLTIP_STYLE} />
+                  <Bar dataKey="Compliant" stackId="a" fill="#00ed64" radius={[0, 0, 4, 4]} />
+                  <Bar dataKey="Non-Compliant" stackId="a" fill="#fa6e39" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          <div className="dash-chart-legend">
+            <div className="dash-chart-legend__item">
+              <span className="dash-chart-legend__dot" style={{ backgroundColor: "#00ed64" }} />
+              <span className="dash-chart-legend__label">Compliant</span>
+            </div>
+            <div className="dash-chart-legend__item">
+              <span className="dash-chart-legend__dot" style={{ backgroundColor: "#fa6e39" }} />
+              <span className="dash-chart-legend__label">Non-Compliant</span>
+            </div>
+          </div>
         </ChartCard>
       </div>
 
@@ -220,42 +233,65 @@ export default function ComplianceAnalyticsView({ items = [] }) {
             </div>
           }
         >
-          <ResponsiveContainer width="100%" height={320}>
-            <ComposedChart data={analytics.temporalBuckets} margin={{ top: 15, right: 10, left: -10, bottom: 5 }}>
-              <defs>
-                <linearGradient id="wasteGlow" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3d8eff" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#3d8eff" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="inspGlow" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#00ed64" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#00ed64" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
-              <XAxis dataKey="label" stroke="var(--c-stone)" fontSize={11} />
-              <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
-              <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => Math.round(value)} />
-              <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
-              <Area type="monotone" dataKey="wasteLogs" name="Waste Tracking Logs" stroke="#3d8eff" strokeWidth={3} fill="url(#wasteGlow)" />
-              <Area type="monotone" dataKey="inspections" name="Inspections Conducted" stroke="#00ed64" strokeWidth={2} fill="url(#inspGlow)" />
-            </ComposedChart>
-          </ResponsiveContainer>
+          <div className="dash-chart-scroll-wrap">
+            <div className="dash-chart-canvas-min">
+              <ResponsiveContainer width="100%" height={280}>
+                <ComposedChart data={analytics.temporalBuckets} margin={{ top: 15, right: 15, left: -10, bottom: 5 }}>
+                  <defs>
+                    <linearGradient id="wasteGlow" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3d8eff" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#3d8eff" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="inspGlow" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#00ed64" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#00ed64" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
+                  <XAxis dataKey="label" stroke="var(--c-stone)" fontSize={11} />
+                  <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
+                  <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => Math.round(value)} />
+                  <Area type="monotone" dataKey="wasteLogs" name="Waste Tracking Logs" stroke="#3d8eff" strokeWidth={3} fill="url(#wasteGlow)" />
+                  <Area type="monotone" dataKey="inspections" name="Inspections Conducted" stroke="#00ed64" strokeWidth={2} fill="url(#inspGlow)" />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          <div className="dash-chart-legend">
+            <div className="dash-chart-legend__item">
+              <span className="dash-chart-legend__dot" style={{ backgroundColor: "#3d8eff" }} />
+              <span className="dash-chart-legend__label">Waste Tracking Logs</span>
+            </div>
+            <div className="dash-chart-legend__item">
+              <span className="dash-chart-legend__dot" style={{ backgroundColor: "#00ed64" }} />
+              <span className="dash-chart-legend__label">Inspections Conducted</span>
+            </div>
+          </div>
         </ChartCard>
       </div>
 
       {/* Tier 5: Barangay Waste Logistics (70) + Enforcement Panel (30) */}
       <div className="dash-row-70-30">
         <ChartCard icon="local_shipping" title="Barangay Waste Logistics" subtitle="Aggregate volume collected per route" variant="warm" accentColor="#fa6e39">
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={analytics.barangayData} layout="vertical" margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" horizontal={false} vertical={true} />
-              <XAxis type="number" stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
-              <YAxis dataKey="name" type="category" stroke="var(--c-stone)" fontSize={11} width={80} />
-              <Tooltip contentStyle={TOOLTIP_STYLE} />
-              <Bar dataKey="kg" name="Volume (kg)" fill="#fa6e39" radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="dash-chart-scroll-wrap">
+            <div className="dash-chart-canvas-min">
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={analytics.barangayData} layout="vertical" margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" horizontal={false} vertical={true} />
+                  <XAxis type="number" stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
+                  <YAxis dataKey="name" type="category" stroke="var(--c-stone)" fontSize={11} width={80} />
+                  <Tooltip contentStyle={TOOLTIP_STYLE} />
+                  <Bar dataKey="kg" name="Volume (kg)" fill="#fa6e39" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          <div className="dash-chart-legend">
+            <div className="dash-chart-legend__item">
+              <span className="dash-chart-legend__dot" style={{ backgroundColor: "#fa6e39" }} />
+              <span className="dash-chart-legend__label">Volume (kg)</span>
+            </div>
+          </div>
         </ChartCard>
 
         <ChartCard icon="gavel" title="Enforcement Actions Panel" subtitle="Current non-compliance warnings and citations" variant="dark" accentColor="#7b3ff2">

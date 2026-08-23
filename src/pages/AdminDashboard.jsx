@@ -10,7 +10,7 @@ import { subscribeToAllIncidents } from "../firebase/services/incidentService";
 import { subscribeToAllMonitoring } from "../firebase/services/monitoringService";
 import {
   XAxis, YAxis, Tooltip, ResponsiveContainer,
-  Legend, ComposedChart, Line, CartesianGrid, Area
+  ComposedChart, Line, CartesianGrid, Area
 } from "recharts";
 import "../styles/dashboard.css";
 
@@ -375,61 +375,74 @@ function AdminDashboard() {
               </div>
             }
           >
-            <ResponsiveContainer width="100%" height={260}>
-              <ComposedChart data={chartData} margin={{ top: 15, right: 10, left: -10, bottom: 5 }}>
-                <defs>
-                  <linearGradient id="adminIncidentGlow" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#7b3ff2" stopOpacity={0.5} />
-                    <stop offset="95%" stopColor="#7b3ff2" stopOpacity={0.1} />
-                  </linearGradient>
-                  <linearGradient id="adminMonitoringGlow" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#00ed64" stopOpacity={0.5} />
-                    <stop offset="95%" stopColor="#00ed64" stopOpacity={0.1} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--c-hairline)" />
-                <XAxis dataKey="label" stroke="var(--c-stone)" fontSize={11} />
-                <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
-                <Tooltip
-                  contentStyle={TOOLTIP_STYLE}
-                  itemStyle={{ color: "#ffffff" }}
-                  labelStyle={{ color: "#00ed64", fontWeight: 700 }}
-                />
-                <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
-                <Area
-                  type="monotone"
-                  dataKey="incidents"
-                  stroke="none"
-                  fill="url(#adminIncidentGlow)"
-                  legendType="none"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="monitoring"
-                  stroke="none"
-                  fill="url(#adminMonitoringGlow)"
-                  legendType="none"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="incidents"
-                  name="Incident"
-                  stroke="#7b3ff2"
-                  strokeWidth={2.5}
-                  dot={{ fill: "#7b3ff2", r: 3 }}
-                  activeDot={{ r: 5 }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="monitoring"
-                  name="Monitoring Log"
-                  stroke="#00ed64"
-                  strokeWidth={2.5}
-                  dot={{ fill: "#00ed64", r: 3 }}
-                  activeDot={{ r: 5 }}
-                />
-              </ComposedChart>
-            </ResponsiveContainer>
+            <div className="dash-chart-scroll-wrap">
+              <div className="dash-chart-canvas-min">
+                <ResponsiveContainer width="100%" height={260}>
+                  <ComposedChart data={chartData} margin={{ top: 15, right: 15, left: -10, bottom: 5 }}>
+                    <defs>
+                      <linearGradient id="adminIncidentGlow" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#7b3ff2" stopOpacity={0.5} />
+                        <stop offset="95%" stopColor="#7b3ff2" stopOpacity={0.1} />
+                      </linearGradient>
+                      <linearGradient id="adminMonitoringGlow" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#00ed64" stopOpacity={0.5} />
+                        <stop offset="95%" stopColor="#00ed64" stopOpacity={0.1} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--c-hairline)" />
+                    <XAxis dataKey="label" stroke="var(--c-stone)" fontSize={11} />
+                    <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
+                    <Tooltip
+                      contentStyle={TOOLTIP_STYLE}
+                      itemStyle={{ color: "#ffffff" }}
+                      labelStyle={{ color: "#00ed64", fontWeight: 700 }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="incidents"
+                      stroke="none"
+                      fill="url(#adminIncidentGlow)"
+                      legendType="none"
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="monitoring"
+                      stroke="none"
+                      fill="url(#adminMonitoringGlow)"
+                      legendType="none"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="incidents"
+                      name="Incident"
+                      stroke="#7b3ff2"
+                      strokeWidth={2.5}
+                      dot={{ fill: "#7b3ff2", r: 3 }}
+                      activeDot={{ r: 5 }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="monitoring"
+                      name="Monitoring Log"
+                      stroke="#00ed64"
+                      strokeWidth={2.5}
+                      dot={{ fill: "#00ed64", r: 3 }}
+                      activeDot={{ r: 5 }}
+                    />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+            <div className="dash-chart-legend">
+              <div className="dash-chart-legend__item">
+                <span className="dash-chart-legend__dot" style={{ backgroundColor: "#7b3ff2" }} />
+                <span className="dash-chart-legend__label">Incidents</span>
+              </div>
+              <div className="dash-chart-legend__item">
+                <span className="dash-chart-legend__dot" style={{ backgroundColor: "#00ed64" }} />
+                <span className="dash-chart-legend__label">Monitoring Logs</span>
+              </div>
+            </div>
           </ChartCard>
         </div>
 

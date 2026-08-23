@@ -10,7 +10,7 @@ import { subscribeToAllIncidents } from "../../firebase/services/incidentService
 import { subscribeToCategoryMonitoring } from "../../firebase/services/monitoringService";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  Cell, AreaChart, Area, CartesianGrid, Legend, ComposedChart, Line
+  Cell, AreaChart, Area, CartesianGrid, ComposedChart, Line
 } from "recharts";
 import "../../styles/dashboard.css";
 
@@ -1121,18 +1121,29 @@ function StaffDashboard() {
           {/* Tier 3: Business Type Compliance Audit Matrix */}
           <div className="dash-full-width-row">
             <ChartCard icon="storefront" title="Business Type Compliance Audit Matrix" subtitle="Inspections performance across retail categories" variant="dark" accentColor="#00ed64">
-              <div style={{ width: "100%", height: 300 }}>
-                <ResponsiveContainer>
-                  <BarChart data={analytics.businessMatrixData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                    <XAxis dataKey="name" stroke="var(--c-stone)" fontSize={11} angle={-15} textAnchor="end" interval={0} />
-                    <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
-                    <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{fill: 'rgba(255,255,255,0.05)'}} />
-                    <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
-                    <Bar dataKey="Compliant" stackId="a" fill="#00ed64" radius={[0, 0, 4, 4]} />
-                    <Bar dataKey="Non-Compliant" stackId="a" fill="#fa6e39" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="dash-chart-scroll-wrap">
+                <div className="dash-chart-canvas-min">
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart data={analytics.businessMatrixData} margin={{ top: 10, right: 15, left: -20, bottom: 20 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                      <XAxis dataKey="name" stroke="var(--c-stone)" fontSize={11} angle={-15} textAnchor="end" interval={0} />
+                      <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
+                      <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{fill: 'rgba(255,255,255,0.05)'}} />
+                      <Bar dataKey="Compliant" stackId="a" fill="#00ed64" radius={[0, 0, 4, 4]} />
+                      <Bar dataKey="Non-Compliant" stackId="a" fill="#fa6e39" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="dash-chart-legend">
+                <div className="dash-chart-legend__item">
+                  <span className="dash-chart-legend__dot" style={{ backgroundColor: "#00ed64" }} />
+                  <span className="dash-chart-legend__label">Compliant</span>
+                </div>
+                <div className="dash-chart-legend__item">
+                  <span className="dash-chart-legend__dot" style={{ backgroundColor: "#fa6e39" }} />
+                  <span className="dash-chart-legend__label">Non-Compliant</span>
+                </div>
               </div>
             </ChartCard>
           </div>
@@ -1158,29 +1169,40 @@ function StaffDashboard() {
                 </div>
               }
             >
-              <div style={{ width: "100%", height: 320 }}>
-                <ResponsiveContainer>
-                  <ComposedChart data={analytics.temporalBuckets} margin={{ top: 15, right: 10, left: -20, bottom: 5 }}>
-                    <defs>
-                      <linearGradient id="wasteLogGlow" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3d8eff" stopOpacity={0.2} />
-                        <stop offset="95%" stopColor="#3d8eff" stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient id="inspGlow" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#00ed64" stopOpacity={0.2} />
-                        <stop offset="95%" stopColor="#00ed64" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
-                    <XAxis dataKey="label" stroke="var(--c-stone)" fontSize={11} />
-                    <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
-                    <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => Math.round(value)} />
-                    <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
-                    
-                    <Area type="monotone" dataKey="wasteLogs" name="Waste Tracking Logs" stroke="#3d8eff" strokeWidth={5} fill="url(#wasteLogGlow)" activeDot={{ r: 6 }} />
-                    <Area type="monotone" dataKey="inspections" name="Inspections Conducted" stroke="#00ed64" strokeWidth={2} fill="url(#inspGlow)" activeDot={{ r: 4 }} />
-                  </ComposedChart>
-                </ResponsiveContainer>
+              <div className="dash-chart-scroll-wrap">
+                <div className="dash-chart-canvas-min">
+                  <ResponsiveContainer width="100%" height={280}>
+                    <ComposedChart data={analytics.temporalBuckets} margin={{ top: 15, right: 15, left: -20, bottom: 5 }}>
+                      <defs>
+                        <linearGradient id="wasteLogGlow" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3d8eff" stopOpacity={0.2} />
+                          <stop offset="95%" stopColor="#3d8eff" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="inspGlow" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#00ed64" stopOpacity={0.2} />
+                          <stop offset="95%" stopColor="#00ed64" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" />
+                      <XAxis dataKey="label" stroke="var(--c-stone)" fontSize={11} />
+                      <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
+                      <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => Math.round(value)} />
+                      
+                      <Area type="monotone" dataKey="wasteLogs" name="Waste Tracking Logs" stroke="#3d8eff" strokeWidth={5} fill="url(#wasteLogGlow)" activeDot={{ r: 6 }} />
+                      <Area type="monotone" dataKey="inspections" name="Inspections Conducted" stroke="#00ed64" strokeWidth={2} fill="url(#inspGlow)" activeDot={{ r: 4 }} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="dash-chart-legend">
+                <div className="dash-chart-legend__item">
+                  <span className="dash-chart-legend__dot" style={{ backgroundColor: "#3d8eff" }} />
+                  <span className="dash-chart-legend__label">Waste Tracking Logs</span>
+                </div>
+                <div className="dash-chart-legend__item">
+                  <span className="dash-chart-legend__dot" style={{ backgroundColor: "#00ed64" }} />
+                  <span className="dash-chart-legend__label">Inspections Conducted</span>
+                </div>
               </div>
             </ChartCard>
           </div>
@@ -1188,16 +1210,24 @@ function StaffDashboard() {
           {/* Tier 5: Barangay Waste Logistics (70) + Enforcement Actions Panel (30) */}
           <div className="dash-row-70-30">
             <ChartCard icon="local_shipping" title="Barangay Waste Logistics" subtitle="Aggregate volume collected per route" variant="warm" accentColor="#fa6e39">
-              <div style={{ width: "100%", height: 280 }}>
-                <ResponsiveContainer>
-                  <BarChart data={analytics.barangayData} layout="vertical" margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" horizontal={false} vertical={true} />
-                    <XAxis type="number" stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
-                    <YAxis dataKey="name" type="category" stroke="var(--c-stone)" fontSize={11} width={80} />
-                    <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{fill: 'rgba(0,0,0,0.05)'}} />
-                    <Bar dataKey="kg" name="Volume (kg)" fill="#fa6e39" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="dash-chart-scroll-wrap">
+                <div className="dash-chart-canvas-min">
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart data={analytics.barangayData} layout="vertical" margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" horizontal={false} vertical={true} />
+                      <XAxis type="number" stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
+                      <YAxis dataKey="name" type="category" stroke="var(--c-stone)" fontSize={11} width={80} />
+                      <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{fill: 'rgba(0,0,0,0.05)'}} />
+                      <Bar dataKey="kg" name="Volume (kg)" fill="#fa6e39" radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="dash-chart-legend">
+                <div className="dash-chart-legend__item">
+                  <span className="dash-chart-legend__dot" style={{ backgroundColor: "#fa6e39" }} />
+                  <span className="dash-chart-legend__label">Volume (kg)</span>
+                </div>
               </div>
             </ChartCard>
 
@@ -1331,31 +1361,52 @@ function StaffDashboard() {
               {/* Row 4: Horizontal Stacked Bar Chart */}
               <div className="dash-full-width-row">
                 <ChartCard icon="bar_chart" title="No. of Incidents" subtitle="Incident volume breakdown by category and severity" variant="mint" accentColor="#00ed64">
-                  <ResponsiveContainer width="100%" height={260}>
-                    <BarChart
-                      key={`barchart-${items.length}`}
-                      data={analytics.categorySeverityData}
-                      layout="vertical"
-                      margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" horizontal={false} vertical={true} />
-                      <XAxis
-                        type="number"
-                        stroke="var(--c-stone)"
-                        fontSize={11}
-                        allowDecimals={false}
-                        domain={[0, analytics.maxIncidentCount]}
-                        tickCount={analytics.maxIncidentCount <= 10 ? analytics.maxIncidentCount + 1 : undefined}
-                      />
-                      <YAxis dataKey="name" type="category" stroke="var(--c-stone)" fontSize={11} width={120} />
-                      <Tooltip contentStyle={TOOLTIP_STYLE} />
-                      <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
-                      <Bar dataKey="Low" name="Low" stackId="a" fill="#00ed64" />
-                      <Bar dataKey="Medium" name="Medium" stackId="a" fill="#3d8eff" />
-                      <Bar dataKey="High" name="High" stackId="a" fill="#f5a524" />
-                      <Bar dataKey="Critical" name="Critical" stackId="a" fill="#ff5722" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <div className="dash-chart-scroll-wrap">
+                    <div className="dash-chart-canvas-min">
+                      <ResponsiveContainer width="100%" height={260}>
+                        <BarChart
+                          key={`barchart-${items.length}`}
+                          data={analytics.categorySeverityData}
+                          layout="vertical"
+                          margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" horizontal={false} vertical={true} />
+                          <XAxis
+                            type="number"
+                            stroke="var(--c-stone)"
+                            fontSize={11}
+                            allowDecimals={false}
+                            domain={[0, analytics.maxIncidentCount]}
+                            tickCount={analytics.maxIncidentCount <= 10 ? analytics.maxIncidentCount + 1 : undefined}
+                          />
+                          <YAxis dataKey="name" type="category" stroke="var(--c-stone)" fontSize={11} width={120} />
+                          <Tooltip contentStyle={TOOLTIP_STYLE} />
+                          <Bar dataKey="Low" name="Low" stackId="a" fill="#00ed64" />
+                          <Bar dataKey="Medium" name="Medium" stackId="a" fill="#3d8eff" />
+                          <Bar dataKey="High" name="High" stackId="a" fill="#f5a524" />
+                          <Bar dataKey="Critical" name="Critical" stackId="a" fill="#ff5722" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                  <div className="dash-chart-legend">
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#00ed64" }} />
+                      <span className="dash-chart-legend__label">Low</span>
+                    </div>
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#3d8eff" }} />
+                      <span className="dash-chart-legend__label">Medium</span>
+                    </div>
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#f5a524" }} />
+                      <span className="dash-chart-legend__label">High</span>
+                    </div>
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#ff5722" }} />
+                      <span className="dash-chart-legend__label">Critical</span>
+                    </div>
+                  </div>
                 </ChartCard>
               </div>
 
@@ -1381,55 +1432,84 @@ function StaffDashboard() {
                     </div>
                   }
                 >
-                  <ResponsiveContainer width="100%" height={260}>
-                    <ComposedChart data={analytics.logBuckets} margin={{ top: 15, right: 10, left: -20, bottom: 5 }}>
-                      <defs>
-                        <linearGradient id="forestGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#00a35c" stopOpacity={0.5} />
-                          <stop offset="95%" stopColor="#00a35c" stopOpacity={0.1} />
-                        </linearGradient>
-                        <linearGradient id="biodiversityGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#7b3ff2" stopOpacity={0.5} />
-                          <stop offset="95%" stopColor="#7b3ff2" stopOpacity={0.1} />
-                        </linearGradient>
-                        <linearGradient id="waterGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3d4f9f" stopOpacity={0.5} />
-                          <stop offset="95%" stopColor="#3d4f9f" stopOpacity={0.1} />
-                        </linearGradient>
-                        <linearGradient id="wasteGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#fa6e39" stopOpacity={0.5} />
-                          <stop offset="95%" stopColor="#fa6e39" stopOpacity={0.1} />
-                        </linearGradient>
-                        <linearGradient id="complianceGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#f06bb8" stopOpacity={0.5} />
-                          <stop offset="95%" stopColor="#f06bb8" stopOpacity={0.1} />
-                        </linearGradient>
-                        <linearGradient id="landGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#00684a" stopOpacity={0.5} />
-                          <stop offset="95%" stopColor="#00684a" stopOpacity={0.1} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
-                      <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
-                      <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={false} />
-                      <Tooltip contentStyle={TOOLTIP_STYLE} />
-                      <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
+                  <div className="dash-chart-scroll-wrap">
+                    <div className="dash-chart-canvas-min">
+                      <ResponsiveContainer width="100%" height={260}>
+                        <ComposedChart data={analytics.logBuckets} margin={{ top: 15, right: 15, left: -20, bottom: 5 }}>
+                          <defs>
+                            <linearGradient id="forestGlow" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#00a35c" stopOpacity={0.5} />
+                              <stop offset="95%" stopColor="#00a35c" stopOpacity={0.1} />
+                            </linearGradient>
+                            <linearGradient id="biodiversityGlow" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#7b3ff2" stopOpacity={0.5} />
+                              <stop offset="95%" stopColor="#7b3ff2" stopOpacity={0.1} />
+                            </linearGradient>
+                            <linearGradient id="waterGlow" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#3d4f9f" stopOpacity={0.5} />
+                              <stop offset="95%" stopColor="#3d4f9f" stopOpacity={0.1} />
+                            </linearGradient>
+                            <linearGradient id="wasteGlow" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#fa6e39" stopOpacity={0.5} />
+                              <stop offset="95%" stopColor="#fa6e39" stopOpacity={0.1} />
+                            </linearGradient>
+                            <linearGradient id="complianceGlow" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#f06bb8" stopOpacity={0.5} />
+                              <stop offset="95%" stopColor="#f06bb8" stopOpacity={0.1} />
+                            </linearGradient>
+                            <linearGradient id="landGlow" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#00684a" stopOpacity={0.5} />
+                              <stop offset="95%" stopColor="#00684a" stopOpacity={0.1} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
+                          <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
+                          <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={false} />
+                          <Tooltip contentStyle={TOOLTIP_STYLE} />
 
-                      <Area type="monotone" dataKey="Forest Incidents" stroke="none" fill="url(#forestGlow)" legendType="none" />
-                      <Area type="monotone" dataKey="Wildlife Incidents" stroke="none" fill="url(#biodiversityGlow)" legendType="none" />
-                      <Area type="monotone" dataKey="Water Resource Incidents" stroke="none" fill="url(#waterGlow)" legendType="none" />
-                      <Area type="monotone" dataKey="Waste Incidents" stroke="none" fill="url(#wasteGlow)" legendType="none" />
-                      <Area type="monotone" dataKey="Compliance Incidents" stroke="none" fill="url(#complianceGlow)" legendType="none" />
-                      <Area type="monotone" dataKey="Ecosystem Protection Incidents" stroke="none" fill="url(#landGlow)" legendType="none" />
+                          <Area type="monotone" dataKey="Forest Incidents" stroke="none" fill="url(#forestGlow)" legendType="none" />
+                          <Area type="monotone" dataKey="Wildlife Incidents" stroke="none" fill="url(#biodiversityGlow)" legendType="none" />
+                          <Area type="monotone" dataKey="Water Resource Incidents" stroke="none" fill="url(#waterGlow)" legendType="none" />
+                          <Area type="monotone" dataKey="Waste Incidents" stroke="none" fill="url(#wasteGlow)" legendType="none" />
+                          <Area type="monotone" dataKey="Compliance Incidents" stroke="none" fill="url(#complianceGlow)" legendType="none" />
+                          <Area type="monotone" dataKey="Ecosystem Protection Incidents" stroke="none" fill="url(#landGlow)" legendType="none" />
 
-                      <Line type="monotone" dataKey="Forest Incidents" name="Forest" stroke="#00a35c" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="Wildlife Incidents" name="Wildlife" stroke="#7b3ff2" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="Water Resource Incidents" name="Water" stroke="#3d4f9f" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="Waste Incidents" name="Waste" stroke="#fa6e39" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="Compliance Incidents" name="Compliance" stroke="#f06bb8" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="Ecosystem Protection Incidents" name="Ecosystem" stroke="#00684a" strokeWidth={2} dot={false} />
-                    </ComposedChart>
-                  </ResponsiveContainer>
+                          <Line type="monotone" dataKey="Forest Incidents" name="Forest" stroke="#00a35c" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="Wildlife Incidents" name="Wildlife" stroke="#7b3ff2" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="Water Resource Incidents" name="Water" stroke="#3d4f9f" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="Waste Incidents" name="Waste" stroke="#fa6e39" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="Compliance Incidents" name="Compliance" stroke="#f06bb8" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="Ecosystem Protection Incidents" name="Ecosystem" stroke="#00684a" strokeWidth={2} dot={false} />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                  <div className="dash-chart-legend">
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#00a35c" }} />
+                      <span className="dash-chart-legend__label">Forest</span>
+                    </div>
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#7b3ff2" }} />
+                      <span className="dash-chart-legend__label">Wildlife</span>
+                    </div>
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#3d4f9f" }} />
+                      <span className="dash-chart-legend__label">Water</span>
+                    </div>
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#fa6e39" }} />
+                      <span className="dash-chart-legend__label">Waste</span>
+                    </div>
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#f06bb8" }} />
+                      <span className="dash-chart-legend__label">Compliance</span>
+                    </div>
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#00684a" }} />
+                      <span className="dash-chart-legend__label">Ecosystem</span>
+                    </div>
+                  </div>
                 </ChartCard>
               </div>
 
@@ -1478,43 +1558,64 @@ function StaffDashboard() {
                     </div>
                   }
                 >
-                  <ResponsiveContainer width="100%" height={260}>
-                    <ComposedChart data={analytics.severityTrendBuckets} margin={{ top: 15, right: 10, left: -20, bottom: 5 }}>
-                      <defs>
-                        <linearGradient id="lowGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#00ed64" stopOpacity={0.5} />
-                          <stop offset="95%" stopColor="#00ed64" stopOpacity={0.1} />
-                        </linearGradient>
-                        <linearGradient id="mediumGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3d8eff" stopOpacity={0.5} />
-                          <stop offset="95%" stopColor="#3d8eff" stopOpacity={0.1} />
-                        </linearGradient>
-                        <linearGradient id="highGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#f5a524" stopOpacity={0.5} />
-                          <stop offset="95%" stopColor="#f5a524" stopOpacity={0.1} />
-                        </linearGradient>
-                        <linearGradient id="criticalGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#ff5722" stopOpacity={0.5} />
-                          <stop offset="95%" stopColor="#ff5722" stopOpacity={0.1} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
-                      <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
-                      <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={false} />
-                      <Tooltip contentStyle={TOOLTIP_STYLE} />
-                      <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
+                  <div className="dash-chart-scroll-wrap">
+                    <div className="dash-chart-canvas-min">
+                      <ResponsiveContainer width="100%" height={260}>
+                        <ComposedChart data={analytics.severityTrendBuckets} margin={{ top: 15, right: 15, left: -20, bottom: 5 }}>
+                          <defs>
+                            <linearGradient id="lowGlow" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#00ed64" stopOpacity={0.5} />
+                              <stop offset="95%" stopColor="#00ed64" stopOpacity={0.1} />
+                            </linearGradient>
+                            <linearGradient id="mediumGlow" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#3d8eff" stopOpacity={0.5} />
+                              <stop offset="95%" stopColor="#3d8eff" stopOpacity={0.1} />
+                            </linearGradient>
+                            <linearGradient id="highGlow" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#f5a524" stopOpacity={0.5} />
+                              <stop offset="95%" stopColor="#f5a524" stopOpacity={0.1} />
+                            </linearGradient>
+                            <linearGradient id="criticalGlow" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#ff5722" stopOpacity={0.5} />
+                              <stop offset="95%" stopColor="#ff5722" stopOpacity={0.1} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
+                          <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
+                          <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={false} />
+                          <Tooltip contentStyle={TOOLTIP_STYLE} />
 
-                      <Area type="monotone" dataKey="Low" stroke="none" fill="url(#lowGlow)" legendType="none" />
-                      <Area type="monotone" dataKey="Medium" stroke="none" fill="url(#mediumGlow)" legendType="none" />
-                      <Area type="monotone" dataKey="High" stroke="none" fill="url(#highGlow)" legendType="none" />
-                      <Area type="monotone" dataKey="Critical" stroke="none" fill="url(#criticalGlow)" legendType="none" />
+                          <Area type="monotone" dataKey="Low" stroke="none" fill="url(#lowGlow)" legendType="none" />
+                          <Area type="monotone" dataKey="Medium" stroke="none" fill="url(#mediumGlow)" legendType="none" />
+                          <Area type="monotone" dataKey="High" stroke="none" fill="url(#highGlow)" legendType="none" />
+                          <Area type="monotone" dataKey="Critical" stroke="none" fill="url(#criticalGlow)" legendType="none" />
 
-                      <Line type="monotone" dataKey="Low" name="Low" stroke="#00ed64" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="Medium" name="Medium" stroke="#3d8eff" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="High" name="High" stroke="#f5a524" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="Critical" name="Critical" stroke="#ff5722" strokeWidth={2} dot={false} />
-                    </ComposedChart>
-                  </ResponsiveContainer>
+                          <Line type="monotone" dataKey="Low" name="Low" stroke="#00ed64" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="Medium" name="Medium" stroke="#3d8eff" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="High" name="High" stroke="#f5a524" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="Critical" name="Critical" stroke="#ff5722" strokeWidth={2} dot={false} />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                  <div className="dash-chart-legend">
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#00ed64" }} />
+                      <span className="dash-chart-legend__label">Low</span>
+                    </div>
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#3d8eff" }} />
+                      <span className="dash-chart-legend__label">Medium</span>
+                    </div>
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#f5a524" }} />
+                      <span className="dash-chart-legend__label">High</span>
+                    </div>
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#ff5722" }} />
+                      <span className="dash-chart-legend__label">Critical</span>
+                    </div>
+                  </div>
                 </ChartCard>
               </div>
             </>
@@ -1603,20 +1704,33 @@ function StaffDashboard() {
               {/* Tier 3: Chart 1 - Taxonomic Breakdown */}
               <div className="dash-full-width-row">
                 <ChartCard icon="bar_chart" title="Taxonomic Classification Breakdown" subtitle="Organism abundance and log frequency per class" variant="mint" accentColor="#00ed64">
-                  <ResponsiveContainer width="100%" height={260}>
-                    <BarChart
-                      data={analytics.taxonomicData}
-                      margin={{ top: 10, right: 20, left: -20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" vertical={false} />
-                      <XAxis dataKey="name" stroke="var(--c-stone)" fontSize={11} />
-                      <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} domain={[0, analytics.maxTaxonomic + 2]} />
-                      <Tooltip contentStyle={TOOLTIP_STYLE} />
-                      <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
-                      <Bar dataKey="Organisms" name="Organisms Sighted" fill="#00ed64" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="Logs" name="Observation Logs" fill="#3d8eff" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <div className="dash-chart-scroll-wrap">
+                    <div className="dash-chart-canvas-min">
+                      <ResponsiveContainer width="100%" height={260}>
+                        <BarChart
+                          data={analytics.taxonomicData}
+                          margin={{ top: 10, right: 20, left: -20, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" vertical={false} />
+                          <XAxis dataKey="name" stroke="var(--c-stone)" fontSize={11} />
+                          <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} domain={[0, analytics.maxTaxonomic + 2]} />
+                          <Tooltip contentStyle={TOOLTIP_STYLE} />
+                          <Bar dataKey="Organisms" name="Organisms Sighted" fill="#00ed64" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="Logs" name="Observation Logs" fill="#3d8eff" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                  <div className="dash-chart-legend">
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#00ed64" }} />
+                      <span className="dash-chart-legend__label">Organisms Sighted</span>
+                    </div>
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#3d8eff" }} />
+                      <span className="dash-chart-legend__label">Observation Logs</span>
+                    </div>
+                  </div>
                 </ChartCard>
               </div>
 
@@ -1642,28 +1756,41 @@ function StaffDashboard() {
                     </div>
                   }
                 >
-                  <ResponsiveContainer width="100%" height={260}>
-                    <ComposedChart data={analytics.bmsLogBuckets} margin={{ top: 15, right: 10, left: -20, bottom: 5 }}>
-                      <defs>
-                        <linearGradient id="avianGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#00a35c" stopOpacity={0.5} />
-                          <stop offset="95%" stopColor="#00a35c" stopOpacity={0.1} />
-                        </linearGradient>
-                        <linearGradient id="wildlifeGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#7b3ff2" stopOpacity={0.5} />
-                          <stop offset="95%" stopColor="#7b3ff2" stopOpacity={0.1} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
-                      <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
-                      <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={false} />
-                      <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => Math.round(value)} />
-                      <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
+                  <div className="dash-chart-scroll-wrap">
+                    <div className="dash-chart-canvas-min">
+                      <ResponsiveContainer width="100%" height={260}>
+                        <ComposedChart data={analytics.bmsLogBuckets} margin={{ top: 15, right: 15, left: -20, bottom: 5 }}>
+                          <defs>
+                            <linearGradient id="avianGlow" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#00a35c" stopOpacity={0.5} />
+                              <stop offset="95%" stopColor="#00a35c" stopOpacity={0.1} />
+                            </linearGradient>
+                            <linearGradient id="wildlifeGlow" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#7b3ff2" stopOpacity={0.5} />
+                              <stop offset="95%" stopColor="#7b3ff2" stopOpacity={0.1} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
+                          <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
+                          <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={false} />
+                          <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => Math.round(value)} />
 
-                      <Area type="monotone" dataKey="Avian Census" stroke="#00a35c" strokeWidth={5} fill="url(#avianGlow)" activeDot={{ r: 6 }} />
-                      <Area type="monotone" dataKey="Wildlife Sightings" stroke="#7b3ff2" strokeWidth={2} fill="url(#wildlifeGlow)" activeDot={{ r: 4 }} />
-                    </ComposedChart>
-                  </ResponsiveContainer>
+                          <Area type="monotone" dataKey="Avian Census" stroke="#00a35c" strokeWidth={5} fill="url(#avianGlow)" activeDot={{ r: 6 }} />
+                          <Area type="monotone" dataKey="Wildlife Sightings" stroke="#7b3ff2" strokeWidth={2} fill="url(#wildlifeGlow)" activeDot={{ r: 4 }} />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                  <div className="dash-chart-legend">
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#00a35c" }} />
+                      <span className="dash-chart-legend__label">Avian Census</span>
+                    </div>
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#7b3ff2" }} />
+                      <span className="dash-chart-legend__label">Wildlife Sightings</span>
+                    </div>
+                  </div>
                 </ChartCard>
               </div>
 
@@ -1698,19 +1825,29 @@ function StaffDashboard() {
                     </div>
                   }
                 >
-                  <ResponsiveContainer width="100%" height={260}>
-                    <BarChart
-                      data={analytics.behaviorData}
-                      layout="vertical"
-                      margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" horizontal={false} vertical={true} />
-                      <XAxis type="number" stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
-                      <YAxis dataKey="name" type="category" stroke="var(--c-stone)" fontSize={11} width={80} />
-                      <Tooltip contentStyle={TOOLTIP_STYLE} />
-                      <Bar dataKey="Count" name="Occurrences" fill="#fa6e39" radius={[0, 4, 4, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <div className="dash-chart-scroll-wrap">
+                    <div className="dash-chart-canvas-min">
+                      <ResponsiveContainer width="100%" height={260}>
+                        <BarChart
+                          data={analytics.behaviorData}
+                          layout="vertical"
+                          margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" horizontal={false} vertical={true} />
+                          <XAxis type="number" stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
+                          <YAxis dataKey="name" type="category" stroke="var(--c-stone)" fontSize={11} width={80} />
+                          <Tooltip contentStyle={TOOLTIP_STYLE} />
+                          <Bar dataKey="Count" name="Occurrences" fill="#fa6e39" radius={[0, 4, 4, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                  <div className="dash-chart-legend">
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#fa6e39" }} />
+                      <span className="dash-chart-legend__label">Occurrences</span>
+                    </div>
+                  </div>
                 </ChartCard>
               </div>
             </>
@@ -1799,23 +1936,44 @@ function StaffDashboard() {
               {/* Tier 3: Chart 1 - Water Clarity vs Flow Condition */}
               <div className="dash-full-width-row">
                 <ChartCard icon="bar_chart" title="Water Clarity vs Flow Condition" subtitle="Cross-tabulation of Clarity and Flow condition occurrences" variant="dark" accentColor="#00ed64">
-                  <ResponsiveContainer width="100%" height={260}>
-                    <BarChart
-                      data={analytics.clarityFlowData}
-                      margin={{ top: 10, right: 20, left: -20, bottom: 5 }}
-                      maxBarSize={48}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" vertical={false} />
-                      <XAxis dataKey="flowRate" stroke="var(--c-stone)" fontSize={11} />
-                      <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
-                      <Tooltip contentStyle={TOOLTIP_STYLE} />
-                      <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
-                      <Bar stackId="a" dataKey="Clear" name="Clear" fill="#00ed64" radius={[4, 4, 0, 0]} />
-                      <Bar stackId="a" dataKey="Slightly Turbid" name="Slightly Turbid" fill="#3d8eff" radius={[4, 4, 0, 0]} />
-                      <Bar stackId="a" dataKey="Highly Turbid" name="Highly Turbid" fill="#fa6e39" radius={[4, 4, 0, 0]} />
-                      <Bar stackId="a" dataKey="Stagnant / Algal Bloom" name="Stagnant / Algal Bloom" fill="#7b3ff2" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <div className="dash-chart-scroll-wrap">
+                    <div className="dash-chart-canvas-min">
+                      <ResponsiveContainer width="100%" height={260}>
+                        <BarChart
+                          data={analytics.clarityFlowData}
+                          margin={{ top: 10, right: 20, left: -20, bottom: 5 }}
+                          maxBarSize={48}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" vertical={false} />
+                          <XAxis dataKey="flowRate" stroke="var(--c-stone)" fontSize={11} />
+                          <YAxis stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
+                          <Tooltip contentStyle={TOOLTIP_STYLE} />
+                          <Bar stackId="a" dataKey="Clear" name="Clear" fill="#00ed64" radius={[4, 4, 0, 0]} />
+                          <Bar stackId="a" dataKey="Slightly Turbid" name="Slightly Turbid" fill="#3d8eff" radius={[4, 4, 0, 0]} />
+                          <Bar stackId="a" dataKey="Highly Turbid" name="Highly Turbid" fill="#fa6e39" radius={[4, 4, 0, 0]} />
+                          <Bar stackId="a" dataKey="Stagnant / Algal Bloom" name="Stagnant / Algal Bloom" fill="#7b3ff2" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                  <div className="dash-chart-legend">
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#00ed64" }} />
+                      <span className="dash-chart-legend__label">Clear</span>
+                    </div>
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#3d8eff" }} />
+                      <span className="dash-chart-legend__label">Slightly Turbid</span>
+                    </div>
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#fa6e39" }} />
+                      <span className="dash-chart-legend__label">Highly Turbid</span>
+                    </div>
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#7b3ff2" }} />
+                      <span className="dash-chart-legend__label">Stagnant / Algal Bloom</span>
+                    </div>
+                  </div>
                 </ChartCard>
               </div>
 
@@ -1841,31 +1999,44 @@ function StaffDashboard() {
                     </div>
                   }
                 >
-                  <ResponsiveContainer width="100%" height={260}>
-                    <ComposedChart data={analytics.waterLogBuckets} margin={{ top: 15, right: 10, left: -20, bottom: 5 }}>
-                      <defs>
-                        <linearGradient id="surveyGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3d8eff" stopOpacity={0.5} />
-                          <stop offset="95%" stopColor="#3d8eff" stopOpacity={0.1} />
-                        </linearGradient>
-                        <linearGradient id="conservGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#00ed64" stopOpacity={0.5} />
-                          <stop offset="95%" stopColor="#00ed64" stopOpacity={0.1} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
-                      <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
-                      <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={false} />
-                      <Tooltip contentStyle={TOOLTIP_STYLE} />
-                      <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
+                  <div className="dash-chart-scroll-wrap">
+                    <div className="dash-chart-canvas-min">
+                      <ResponsiveContainer width="100%" height={260}>
+                        <ComposedChart data={analytics.waterLogBuckets} margin={{ top: 15, right: 15, left: -20, bottom: 5 }}>
+                          <defs>
+                            <linearGradient id="surveyGlow" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#3d8eff" stopOpacity={0.5} />
+                              <stop offset="95%" stopColor="#3d8eff" stopOpacity={0.1} />
+                            </linearGradient>
+                            <linearGradient id="conservGlow" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#00ed64" stopOpacity={0.5} />
+                              <stop offset="95%" stopColor="#00ed64" stopOpacity={0.1} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
+                          <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
+                          <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={false} />
+                          <Tooltip contentStyle={TOOLTIP_STYLE} />
 
-                      <Area type="monotone" dataKey="Water Source Surveys" stroke="none" fill="url(#surveyGlow)" legendType="none" />
-                      <Area type="monotone" dataKey="Conservation Logs" stroke="none" fill="url(#conservGlow)" legendType="none" />
+                          <Area type="monotone" dataKey="Water Source Surveys" stroke="none" fill="url(#surveyGlow)" legendType="none" />
+                          <Area type="monotone" dataKey="Conservation Logs" stroke="none" fill="url(#conservGlow)" legendType="none" />
 
-                      <Line type="monotone" dataKey="Water Source Surveys" stroke="#3d8eff" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="Conservation Logs" stroke="#00ed64" strokeWidth={2} dot={false} />
-                    </ComposedChart>
-                  </ResponsiveContainer>
+                          <Line type="monotone" dataKey="Water Source Surveys" stroke="#3d8eff" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="Conservation Logs" stroke="#00ed64" strokeWidth={2} dot={false} />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                  <div className="dash-chart-legend">
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#3d8eff" }} />
+                      <span className="dash-chart-legend__label">Water Source Surveys</span>
+                    </div>
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#00ed64" }} />
+                      <span className="dash-chart-legend__label">Conservation Logs</span>
+                    </div>
+                  </div>
                 </ChartCard>
               </div>
 
@@ -1878,19 +2049,29 @@ function StaffDashboard() {
                   variant="warm"
                   accentColor="#fa6e39"
                 >
-                  <ResponsiveContainer width="100%" height={260}>
-                    <BarChart
-                      data={analytics.pollutionRiskData}
-                      layout="vertical"
-                      margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" horizontal={false} vertical={true} />
-                      <XAxis type="number" stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
-                      <YAxis dataKey="name" type="category" stroke="var(--c-stone)" fontSize={11} width={100} />
-                      <Tooltip contentStyle={TOOLTIP_STYLE} />
-                      <Bar dataKey="Frequency" name="Occurrences" fill="#fa6e39" radius={[0, 4, 4, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <div className="dash-chart-scroll-wrap">
+                    <div className="dash-chart-canvas-min">
+                      <ResponsiveContainer width="100%" height={260}>
+                        <BarChart
+                          data={analytics.pollutionRiskData}
+                          layout="vertical"
+                          margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" horizontal={false} vertical={true} />
+                          <XAxis type="number" stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
+                          <YAxis dataKey="name" type="category" stroke="var(--c-stone)" fontSize={11} width={100} />
+                          <Tooltip contentStyle={TOOLTIP_STYLE} />
+                          <Bar dataKey="Frequency" name="Occurrences" fill="#fa6e39" radius={[0, 4, 4, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                  <div className="dash-chart-legend">
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#fa6e39" }} />
+                      <span className="dash-chart-legend__label">Occurrences</span>
+                    </div>
+                  </div>
                 </ChartCard>
 
                 <ChartCard
@@ -2004,37 +2185,54 @@ function StaffDashboard() {
                     </div>
                   }
                 >
-                  <ResponsiveContainer width="100%" height={260}>
-                    <ComposedChart data={analytics.fieldKit.trends} margin={{ top: 15, right: 10, left: -10, bottom: 5 }}>
-                      <defs>
-                        <linearGradient id="phGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#00ed64" stopOpacity={0.5} />
-                          <stop offset="95%" stopColor="#00ed64" stopOpacity={0.1} />
-                        </linearGradient>
-                        <linearGradient id="tempGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3d8eff" stopOpacity={0.5} />
-                          <stop offset="95%" stopColor="#3d8eff" stopOpacity={0.1} />
-                        </linearGradient>
-                        <linearGradient id="doGlow" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#fa6e39" stopOpacity={0.5} />
-                          <stop offset="95%" stopColor="#fa6e39" stopOpacity={0.1} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
-                      <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
-                      <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={true} />
-                      <Tooltip contentStyle={TOOLTIP_STYLE} />
-                      <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
+                  <div className="dash-chart-scroll-wrap">
+                    <div className="dash-chart-canvas-min">
+                      <ResponsiveContainer width="100%" height={260}>
+                        <ComposedChart data={analytics.fieldKit.trends} margin={{ top: 15, right: 15, left: -10, bottom: 5 }}>
+                          <defs>
+                            <linearGradient id="phGlow" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#00ed64" stopOpacity={0.5} />
+                              <stop offset="95%" stopColor="#00ed64" stopOpacity={0.1} />
+                            </linearGradient>
+                            <linearGradient id="tempGlow" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#3d8eff" stopOpacity={0.5} />
+                              <stop offset="95%" stopColor="#3d8eff" stopOpacity={0.1} />
+                            </linearGradient>
+                            <linearGradient id="doGlow" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#fa6e39" stopOpacity={0.5} />
+                              <stop offset="95%" stopColor="#fa6e39" stopOpacity={0.1} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
+                          <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
+                          <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={true} />
+                          <Tooltip contentStyle={TOOLTIP_STYLE} />
 
-                      <Area type="monotone" dataKey="pH Level" stroke="none" fill="url(#phGlow)" legendType="none" />
-                      <Area type="monotone" dataKey="Temperature (°C)" stroke="none" fill="url(#tempGlow)" legendType="none" />
-                      <Area type="monotone" dataKey="Dissolved Oxygen (mg/L)" stroke="none" fill="url(#doGlow)" legendType="none" />
+                          <Area type="monotone" dataKey="pH Level" stroke="none" fill="url(#phGlow)" legendType="none" />
+                          <Area type="monotone" dataKey="Temperature (°C)" stroke="none" fill="url(#tempGlow)" legendType="none" />
+                          <Area type="monotone" dataKey="Dissolved Oxygen (mg/L)" stroke="none" fill="url(#doGlow)" legendType="none" />
 
-                      <Line type="monotone" dataKey="pH Level" stroke="#00ed64" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="Temperature (°C)" stroke="#3d8eff" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="Dissolved Oxygen (mg/L)" stroke="#fa6e39" strokeWidth={2} dot={false} />
-                    </ComposedChart>
-                  </ResponsiveContainer>
+                          <Line type="monotone" dataKey="pH Level" stroke="#00ed64" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="Temperature (°C)" stroke="#3d8eff" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="Dissolved Oxygen (mg/L)" stroke="#fa6e39" strokeWidth={2} dot={false} />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                  <div className="dash-chart-legend">
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#00ed64" }} />
+                      <span className="dash-chart-legend__label">pH Level</span>
+                    </div>
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#3d8eff" }} />
+                      <span className="dash-chart-legend__label">Temperature (°C)</span>
+                    </div>
+                    <div className="dash-chart-legend__item">
+                      <span className="dash-chart-legend__dot" style={{ backgroundColor: "#fa6e39" }} />
+                      <span className="dash-chart-legend__label">Dissolved Oxygen (mg/L)</span>
+                    </div>
+                  </div>
                 </ChartCard>
               </div>
             </>
@@ -2106,42 +2304,56 @@ function StaffDashboard() {
           <div className="dash-chart-grid dash-chart-grid--two">
             {/* Chart 1: Scoped monthly trend */}
             <LocalChartCard icon="monitoring" title="Monthly Submissions & Closures">
-              <div style={{ width: "100%", height: 320 }}>
-                <ResponsiveContainer>
-                  <AreaChart data={analytics.monthlyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="staffVolumeGlow" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3d8eff" stopOpacity={0.2} />
-                        <stop offset="95%" stopColor="#3d8eff" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                    <XAxis dataKey="month" stroke="var(--c-stone)" fontSize={11} />
-                    <YAxis stroke="var(--c-stone)" fontSize={11} />
-                    <Tooltip contentStyle={TOOLTIP_STYLE} />
-                    <Area type="monotone" dataKey="volume" stroke="#3d8eff" strokeWidth={2} fillOpacity={1} fill="url(#staffVolumeGlow)" name="Submissions" />
-                    <Area type="monotone" dataKey="resolved" stroke="#00ed64" strokeWidth={2} fillOpacity={0} name="Closures" />
-                  </AreaChart>
-                </ResponsiveContainer>
+              <div className="dash-chart-scroll-wrap">
+                <div className="dash-chart-canvas-min">
+                  <ResponsiveContainer width="100%" height={280}>
+                    <AreaChart data={analytics.monthlyData} margin={{ top: 10, right: 15, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="staffVolumeGlow" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3d8eff" stopOpacity={0.2} />
+                          <stop offset="95%" stopColor="#3d8eff" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                      <XAxis dataKey="month" stroke="var(--c-stone)" fontSize={11} />
+                      <YAxis stroke="var(--c-stone)" fontSize={11} />
+                      <Tooltip contentStyle={TOOLTIP_STYLE} />
+                      <Area type="monotone" dataKey="volume" stroke="#3d8eff" strokeWidth={2} fillOpacity={1} fill="url(#staffVolumeGlow)" name="Submissions" />
+                      <Area type="monotone" dataKey="resolved" stroke="#00ed64" strokeWidth={2} fillOpacity={0} name="Closures" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="dash-chart-legend">
+                <div className="dash-chart-legend__item">
+                  <span className="dash-chart-legend__dot" style={{ backgroundColor: "#3d8eff" }} />
+                  <span className="dash-chart-legend__label">Submissions</span>
+                </div>
+                <div className="dash-chart-legend__item">
+                  <span className="dash-chart-legend__dot" style={{ backgroundColor: "#00ed64" }} />
+                  <span className="dash-chart-legend__label">Closures</span>
+                </div>
               </div>
             </LocalChartCard>
 
             {/* Chart 2: Monitoring subcategory Breakdown */}
             <LocalChartCard icon="bar_chart" title="Monitoring Subcategory Breakdown">
-              <div style={{ width: "100%", height: 320 }}>
-                <ResponsiveContainer>
-                  <BarChart data={analytics.subcatData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                    <XAxis dataKey="name" stroke="var(--c-stone)" fontSize={10} angle={-15} textAnchor="end" interval={0} />
-                    <YAxis stroke="var(--c-stone)" fontSize={11} />
-                    <Tooltip contentStyle={TOOLTIP_STYLE} />
-                    <Bar dataKey="value" name="Logs">
-                      {analytics.subcatData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="dash-chart-scroll-wrap">
+                <div className="dash-chart-canvas-min">
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart data={analytics.subcatData} margin={{ top: 10, right: 15, left: -20, bottom: 20 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                      <XAxis dataKey="name" stroke="var(--c-stone)" fontSize={10} angle={-15} textAnchor="end" interval={0} />
+                      <YAxis stroke="var(--c-stone)" fontSize={11} />
+                      <Tooltip contentStyle={TOOLTIP_STYLE} />
+                      <Bar dataKey="value" name="Logs">
+                        {analytics.subcatData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </LocalChartCard>
 

@@ -5,7 +5,7 @@ import StatusGauge from "../StatusGauge";
 import RecentLogsList from "../RecentLogsList";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  CartesianGrid, Legend, ComposedChart, Line
+  CartesianGrid, ComposedChart, Line
 } from "recharts";
 
 const TOOLTIP_STYLE = {
@@ -205,19 +205,40 @@ export default function IncidentsAnalyticsView({ items = [] }) {
       {/* Tier 3: Category Severity Stacked Bar */}
       <div className="dash-full-width-row">
         <ChartCard icon="bar_chart" title="Total Incidents by Category & Severity" subtitle="Cumulative volume of resolved incidents" variant="mint" accentColor="#00ed64">
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={analytics.categorySeverityData} layout="vertical" margin={{ top: 10, right: 15, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" horizontal={false} vertical={true} />
-              <XAxis type="number" stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
-              <YAxis dataKey="name" type="category" stroke="var(--c-stone)" fontSize={11} width={95} tick={{ fontSize: 10 }} />
-              <Tooltip contentStyle={TOOLTIP_STYLE} />
-              <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
-              <Bar dataKey="Low" stackId="a" fill="#00ed64" />
-              <Bar dataKey="Medium" stackId="a" fill="#3d8eff" />
-              <Bar dataKey="High" stackId="a" fill="#f5a524" />
-              <Bar dataKey="Critical" stackId="a" fill="#ff5722" radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="dash-chart-scroll-wrap">
+            <div className="dash-chart-canvas-min dash-chart-canvas-min--tall">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={analytics.categorySeverityData} layout="vertical" margin={{ top: 10, right: 15, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" horizontal={false} vertical={true} />
+                  <XAxis type="number" stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
+                  <YAxis dataKey="name" type="category" stroke="var(--c-stone)" fontSize={11} width={95} tick={{ fontSize: 10 }} />
+                  <Tooltip contentStyle={TOOLTIP_STYLE} />
+                  <Bar dataKey="Low" stackId="a" fill="#00ed64" />
+                  <Bar dataKey="Medium" stackId="a" fill="#3d8eff" />
+                  <Bar dataKey="High" stackId="a" fill="#f5a524" />
+                  <Bar dataKey="Critical" stackId="a" fill="#ff5722" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          <div className="dash-chart-legend">
+            <div className="dash-chart-legend__item">
+              <span className="dash-chart-legend__dot" style={{ backgroundColor: "#00ed64" }} />
+              <span className="dash-chart-legend__label">Low</span>
+            </div>
+            <div className="dash-chart-legend__item">
+              <span className="dash-chart-legend__dot" style={{ backgroundColor: "#3d8eff" }} />
+              <span className="dash-chart-legend__label">Medium</span>
+            </div>
+            <div className="dash-chart-legend__item">
+              <span className="dash-chart-legend__dot" style={{ backgroundColor: "#f5a524" }} />
+              <span className="dash-chart-legend__label">High</span>
+            </div>
+            <div className="dash-chart-legend__item">
+              <span className="dash-chart-legend__dot" style={{ backgroundColor: "#ff5722" }} />
+              <span className="dash-chart-legend__label">Critical</span>
+            </div>
+          </div>
         </ChartCard>
       </div>
 
@@ -243,21 +264,50 @@ export default function IncidentsAnalyticsView({ items = [] }) {
             </div>
           }
         >
-          <ResponsiveContainer width="100%" height={260}>
-            <ComposedChart data={analytics.logBuckets} margin={{ top: 15, right: 10, left: -10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
-              <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
-              <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={false} />
-              <Tooltip contentStyle={TOOLTIP_STYLE} />
-              <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
-              <Line type="monotone" dataKey="Forest Incidents" stroke="#00ed64" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="Wildlife Incidents" stroke="#3d8eff" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="Water Resource Incidents" stroke="#fa6e39" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="Waste Incidents" stroke="#7b3ff2" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="Compliance Incidents" stroke="#ffc107" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="Ecosystem Protection Incidents" stroke="#00b545" strokeWidth={2} dot={false} />
-            </ComposedChart>
-          </ResponsiveContainer>
+          <div className="dash-chart-scroll-wrap">
+            <div className="dash-chart-canvas-min">
+              <ResponsiveContainer width="100%" height={260}>
+                <ComposedChart data={analytics.logBuckets} margin={{ top: 15, right: 15, left: -10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
+                  <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
+                  <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={false} />
+                  <Tooltip contentStyle={TOOLTIP_STYLE} />
+                  <Line type="monotone" dataKey="Forest Incidents" stroke="#00ed64" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="Wildlife Incidents" stroke="#3d8eff" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="Water Resource Incidents" stroke="#fa6e39" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="Waste Incidents" stroke="#7b3ff2" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="Compliance Incidents" stroke="#ffc107" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="Ecosystem Protection Incidents" stroke="#00b545" strokeWidth={2} dot={false} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          <div className="dash-chart-legend">
+            <div className="dash-chart-legend__item">
+              <span className="dash-chart-legend__dot" style={{ backgroundColor: "#00ed64" }} />
+              <span className="dash-chart-legend__label">Forest</span>
+            </div>
+            <div className="dash-chart-legend__item">
+              <span className="dash-chart-legend__dot" style={{ backgroundColor: "#3d8eff" }} />
+              <span className="dash-chart-legend__label">Wildlife</span>
+            </div>
+            <div className="dash-chart-legend__item">
+              <span className="dash-chart-legend__dot" style={{ backgroundColor: "#fa6e39" }} />
+              <span className="dash-chart-legend__label">Water Resource</span>
+            </div>
+            <div className="dash-chart-legend__item">
+              <span className="dash-chart-legend__dot" style={{ backgroundColor: "#7b3ff2" }} />
+              <span className="dash-chart-legend__label">Waste</span>
+            </div>
+            <div className="dash-chart-legend__item">
+              <span className="dash-chart-legend__dot" style={{ backgroundColor: "#ffc107" }} />
+              <span className="dash-chart-legend__label">Compliance</span>
+            </div>
+            <div className="dash-chart-legend__item">
+              <span className="dash-chart-legend__dot" style={{ backgroundColor: "#00b545" }} />
+              <span className="dash-chart-legend__label">Ecosystem</span>
+            </div>
+          </div>
         </ChartCard>
       </div>
 
@@ -304,19 +354,40 @@ export default function IncidentsAnalyticsView({ items = [] }) {
             </div>
           }
         >
-          <ResponsiveContainer width="100%" height={260}>
-            <ComposedChart data={analytics.severityTrendBuckets} margin={{ top: 15, right: 10, left: -10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
-              <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
-              <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={false} />
-              <Tooltip contentStyle={TOOLTIP_STYLE} />
-              <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
-              <Line type="monotone" dataKey="Low" name="Low" stroke="#00ed64" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="Medium" name="Medium" stroke="#3d8eff" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="High" name="High" stroke="#f5a524" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="Critical" name="Critical" stroke="#ff5722" strokeWidth={2} dot={false} />
-            </ComposedChart>
-          </ResponsiveContainer>
+          <div className="dash-chart-scroll-wrap">
+            <div className="dash-chart-canvas-min">
+              <ResponsiveContainer width="100%" height={260}>
+                <ComposedChart data={analytics.severityTrendBuckets} margin={{ top: 15, right: 15, left: -10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
+                  <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
+                  <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={false} />
+                  <Tooltip contentStyle={TOOLTIP_STYLE} />
+                  <Line type="monotone" dataKey="Low" name="Low" stroke="#00ed64" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="Medium" name="Medium" stroke="#3d8eff" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="High" name="High" stroke="#f5a524" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="Critical" name="Critical" stroke="#ff5722" strokeWidth={2} dot={false} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          <div className="dash-chart-legend">
+            <div className="dash-chart-legend__item">
+              <span className="dash-chart-legend__dot" style={{ backgroundColor: "#00ed64" }} />
+              <span className="dash-chart-legend__label">Low</span>
+            </div>
+            <div className="dash-chart-legend__item">
+              <span className="dash-chart-legend__dot" style={{ backgroundColor: "#3d8eff" }} />
+              <span className="dash-chart-legend__label">Medium</span>
+            </div>
+            <div className="dash-chart-legend__item">
+              <span className="dash-chart-legend__dot" style={{ backgroundColor: "#f5a524" }} />
+              <span className="dash-chart-legend__label">High</span>
+            </div>
+            <div className="dash-chart-legend__item">
+              <span className="dash-chart-legend__dot" style={{ backgroundColor: "#ff5722" }} />
+              <span className="dash-chart-legend__label">Critical</span>
+            </div>
+          </div>
         </ChartCard>
       </div>
     </div>
