@@ -9,6 +9,7 @@ import ConfirmModal from "../components/common/ConfirmModal";
 import ExportModal from "../components/common/ExportModal";
 import { exportToCSV, exportToPDF } from "../utils/exportService";
 import StatPill from "../components/common/StatPill";
+import StatusFilterBar from "../components/common/StatusFilterBar";
 import { getStatusesByLabel } from "../utils/incidentConstants";
 import "../styles/dashboard.css";
 
@@ -212,21 +213,14 @@ function AdminIncidents() {
             </div>
           </div>
 
-          {/* Status filter tabs */}
-          <div className="inc-filter-tabs" role="tablist" aria-label="Filter incidents by status">
-            {STATUS_FILTERS.map((f) => (
-              <button
-                key={f}
-                role="tab"
-                aria-selected={activeFilter === f}
-                onClick={() => setActiveFilter(f)}
-                className={`inc-filter-tab${activeFilter === f ? " inc-filter-tab--active" : ""}`}
-                type="button"
-              >
-                {f}
-              </button>
-            ))}
-          </div>
+          {/* Status filter tabs & mobile dropdown */}
+          <StatusFilterBar
+            filters={STATUS_FILTERS}
+            activeFilter={activeFilter}
+            onSelectFilter={setActiveFilter}
+            ariaLabel="Filter incidents by status"
+            selectId="admin-incidents-filter-select"
+          />
 
           {/* Table */}
           <AdminIncidentTable

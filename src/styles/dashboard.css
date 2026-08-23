@@ -2845,7 +2845,8 @@ button:disabled,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--sp-xl);
+  gap: var(--sp-lg) var(--sp-xl);
+  flex-wrap: wrap;
   position: relative;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.07);
@@ -2886,8 +2887,9 @@ button:disabled,
   gap: var(--sp-xs);
   position: relative;
   z-index: 1;
-  min-width: 0;
-  flex: 1 1 auto;
+  flex: 1 1 280px;
+  min-width: 260px;
+  max-width: 100%;
 }
 
 .inc-hero__eyebrow {
@@ -2911,33 +2913,40 @@ button:disabled,
   font-size: 14px;
   color: var(--c-on-dark-muted);
   line-height: 1.55;
-  max-width: 480px;
+  max-width: 520px;
+  min-width: 0;
   margin: 0;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
 .inc-hero__stats {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--sp-md);
+  gap: var(--sp-sm) var(--sp-md);
   position: relative;
   z-index: 1;
-  flex-shrink: 0;
+  flex: 1 1 auto;
   min-width: 0;
+  max-width: 100%;
 }
 
 /* ── Stat Pills ──────────────────────────────────────────────── */
 .inc-stat-pill {
   display: flex;
   align-items: center;
-  gap: var(--sp-sm);
+  gap: clamp(6px, 0.6vw, 10px);
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: var(--r-lg);
-  padding: var(--sp-sm) var(--sp-lg);
-  min-width: 0;
-  width: 100%;
+  padding: 6px clamp(10px, 0.9vw, 14px);
+  min-width: 155px;
+  flex: 1 1 155px;
   box-sizing: border-box;
   transition: background var(--transition);
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .inc-stat-pill:hover {
@@ -2945,7 +2954,7 @@ button:disabled,
 }
 
 .inc-stat-pill__icon {
-  font-size: 22px;
+  font-size: clamp(17px, 1.3vw, 20px);
   font-variation-settings: "opsz" 24, "wght" 300, "FILL" 0;
   flex-shrink: 0;
 }
@@ -2955,22 +2964,27 @@ button:disabled,
   flex-direction: column;
   gap: 1px;
   min-width: 0;
+  flex: 1 1 0%;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .inc-stat-pill__count {
-  font-size: 22px;
+  font-size: clamp(17px, 1.4vw, 20px);
   font-weight: 700;
   line-height: 1;
   letter-spacing: -0.5px;
 }
 
 .inc-stat-pill__label {
-  font-size: 11px;
-  font-weight: 500;
+  font-size: clamp(9px, 0.72vw, 11px);
+  font-weight: 600;
   color: var(--c-on-dark-muted);
-  letter-spacing: 0.2px;
-  white-space: normal;
-  line-height: 1.25;
+  letter-spacing: 0.1px;
+  white-space: nowrap;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ── Form Card ───────────────────────────────────────────────── */
@@ -3517,6 +3531,51 @@ button:disabled,
   font-weight: 600;
 }
 
+/* ── Mobile Filter Dropdown ─────────────────────────────────── */
+.inc-filter-select-wrap {
+  display: none;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: 10px var(--sp-md);
+  border-bottom: 1px solid var(--c-hairline);
+  background: var(--c-surface-soft);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.inc-filter-select-icon {
+  font-size: 20px;
+  color: var(--c-steel);
+  flex-shrink: 0;
+}
+
+.inc-filter-select {
+  flex: 1;
+  min-width: 0;
+  height: 38px;
+  padding: 0 36px 0 12px;
+  background-color: var(--c-canvas);
+  border: 1px solid var(--c-hairline-strong);
+  border-radius: var(--r-md);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-ink);
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='20' viewBox='0 -960 960 960' width='20' fill='%236e7681'%3E%3Cpath d='M480-360 280-560h400L480-360Z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  cursor: pointer;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.inc-filter-select:focus {
+  border-color: var(--c-green-dark);
+  box-shadow: 0 0 0 2px rgba(0, 104, 74, 0.12);
+}
+
 /* ── Empty State ─────────────────────────────────────────────── */
 .inc-empty-state {
   display: flex;
@@ -4041,7 +4100,7 @@ button:disabled,
 }
 
 /* ── Responsive ──────────────────────────────────────────────── */
-@media (max-width: 1023px) {
+@media (max-width: 1300px) {
   .inc-hero {
     flex-direction: column;
     align-items: stretch;
@@ -4051,6 +4110,12 @@ button:disabled,
 
   .inc-hero__left {
     width: 100%;
+    min-width: 0;
+    flex: none;
+  }
+
+  .inc-hero__subtitle {
+    max-width: 100%;
   }
 
   .inc-hero__title {
@@ -4059,14 +4124,45 @@ button:disabled,
 
   .inc-hero__stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
     width: 100%;
   }
 
   .inc-stat-pill {
-    padding: var(--sp-sm) var(--sp-md);
+    padding: 7px 12px;
     width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .inc-stat-pill__label {
+    font-size: clamp(9.5px, 0.85vw, 11px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Table Card Responsive Layout starting at 1300px */
+  .inc-history-card__head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--sp-md);
+    padding: var(--sp-lg) var(--sp-xl);
+  }
+
+  .inc-search-wrap {
+    width: 100%;
+    max-width: 100%;
+    flex-shrink: 1;
+  }
+
+  .inc-filter-tabs {
+    display: none !important;
+  }
+
+  .inc-filter-select-wrap {
+    display: flex !important;
   }
 
   .inc-form__row--three {
@@ -4107,22 +4203,27 @@ button:disabled,
   }
 
   .inc-stat-pill {
-    padding: 8px 12px;
-    gap: 8px;
+    padding: 6px 10px;
+    gap: 6px;
     border-radius: var(--r-md);
+    min-width: 0;
+    overflow: hidden;
   }
 
   .inc-stat-pill__icon {
-    font-size: 18px;
+    font-size: 17px;
   }
 
   .inc-stat-pill__count {
-    font-size: 18px;
+    font-size: 17px;
   }
 
   .inc-stat-pill__label {
-    font-size: 10px;
+    font-size: clamp(8.5px, 2.5vw, 10.5px);
+    white-space: nowrap;
     line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .inc-form__row--two,
@@ -4150,15 +4251,11 @@ button:disabled,
   }
 
   .inc-filter-tabs {
-    padding: var(--sp-xs) var(--sp-md);
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    display: none !important;
   }
 
-  .inc-filter-tab {
-    flex-shrink: 0;
+  .inc-filter-select-wrap {
+    display: flex !important;
   }
 
   .inc-drawer {

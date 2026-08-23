@@ -5,6 +5,7 @@ import DashboardLayout from "../components/layout/DashboardLayout";
 import IncidentDetailsModal from "../components/common/IncidentDetailsModal";
 import { CATEGORY_META, getSeverityClass, getStatusClass, getStatusLabel, getStatusesByLabel, formatIncidentDate } from "../utils/incidentConstants";
 import StatPill from "../components/common/StatPill";
+import StatusFilterBar from "../components/common/StatusFilterBar";
 import "../styles/dashboard.css";
 
 // Filter options rendered as tabs above the history table
@@ -100,21 +101,14 @@ function IncidentHistory() {
             </div>
           </div>
 
-          {/* Status filter tabs */}
-          <div className="inc-filter-tabs" role="tablist" aria-label="Filter incidents by status">
-            {STATUS_FILTERS.map((f) => (
-              <button
-                key={f}
-                role="tab"
-                aria-selected={activeFilter === f}
-                onClick={() => setActiveFilter(f)}
-                className={`inc-filter-tab${activeFilter === f ? " inc-filter-tab--active" : ""}`}
-                type="button"
-              >
-                {f}
-              </button>
-            ))}
-          </div>
+          {/* Status filter tabs & mobile dropdown */}
+          <StatusFilterBar
+            filters={STATUS_FILTERS}
+            activeFilter={activeFilter}
+            onSelectFilter={setActiveFilter}
+            ariaLabel="Filter incidents by status"
+            selectId="incident-history-filter-select"
+          />
 
           {/* Table */}
           {filteredIncidents.length === 0 ? (

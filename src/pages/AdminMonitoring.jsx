@@ -5,6 +5,7 @@ import DashboardLayout from "../components/layout/DashboardLayout";
 import MonitoringTable from "../components/common/monitoring/MonitoringTable";
 import MonitoringDetailsModal from "../components/common/monitoring/MonitoringDetailsModal";
 import StatPill from "../components/common/StatPill";
+import StatusFilterBar from "../components/common/StatusFilterBar";
 import ConfirmModal from "../components/common/ConfirmModal";
 import ExportModal from "../components/common/ExportModal";
 import { exportToCSV, exportToPDF } from "../utils/exportService";
@@ -189,20 +190,14 @@ function AdminMonitoring() {
             </div>
           </div>
 
-          <div className="inc-filter-tabs" role="tablist" aria-label="Filter monitoring by status">
-            {STATUS_FILTERS.map((f) => (
-              <button
-                key={f}
-                role="tab"
-                aria-selected={activeFilter === f}
-                onClick={() => setActiveFilter(f)}
-                className={`inc-filter-tab${activeFilter === f ? " inc-filter-tab--active" : ""}`}
-                type="button"
-              >
-                {f}
-              </button>
-            ))}
-          </div>
+          {/* Status filter tabs & mobile dropdown */}
+          <StatusFilterBar
+            filters={STATUS_FILTERS}
+            activeFilter={activeFilter}
+            onSelectFilter={setActiveFilter}
+            ariaLabel="Filter monitoring by status"
+            selectId="admin-monitoring-filter-select"
+          />
 
           {loading ? (
             <p className="loading-text" style={{ padding: "32px", textAlign: "center", color: "var(--c-steel)" }}>

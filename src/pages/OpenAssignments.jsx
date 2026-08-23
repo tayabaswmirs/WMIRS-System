@@ -7,6 +7,7 @@ import MonitoringDetailsModal from "../components/common/monitoring/MonitoringDe
 import { getSeverityClass } from "../utils/incidentConstants";
 import { subscribeToOpenAssignments, resolveAssignmentByRanger } from "../firebase/services/incidentService"; // Will implement next
 import StatPill from "../components/common/StatPill";
+import StatusFilterBar from "../components/common/StatusFilterBar";
 import "../styles/dashboard.css";
 import "../styles/workflow.css"; // ensure workflow styles are loaded
 
@@ -111,21 +112,14 @@ function OpenAssignments() {
             </div>
           </div>
 
-          {/* Status filter tabs */}
-          <div className="inc-filter-tabs" role="tablist" aria-label="Filter assignments by type">
-            {["All", "Incident", "Monitoring"].map((tab) => (
-              <button
-                key={tab}
-                role="tab"
-                aria-selected={activeFilter === tab}
-                onClick={() => setActiveFilter(tab)}
-                className={`inc-filter-tab${activeFilter === tab ? " inc-filter-tab--active" : ""}`}
-                type="button"
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
+          {/* Status filter tabs & mobile dropdown */}
+          <StatusFilterBar
+            filters={["All", "Incident", "Monitoring"]}
+            activeFilter={activeFilter}
+            onSelectFilter={setActiveFilter}
+            ariaLabel="Filter assignments by type"
+            selectId="open-assignments-filter-select"
+          />
 
           <div className="assignments-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem', padding: '1.5rem', backgroundColor: 'var(--c-bg-subtle)' }}>
         {filteredAssignments.length === 0 ? (
