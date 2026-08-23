@@ -603,10 +603,10 @@ function StaffDashboard() {
       });
       const waterBodiesList = Array.from(uniqueWaterBodies).sort();
 
-      const filteredItems = selectedWaterBody === "All" ? filteredItems : filteredItems.filter(item => item.waterBody === selectedWaterBody);
+      const waterFilteredItems = selectedWaterBody === "All" ? filteredItems : filteredItems.filter(item => item.waterBody === selectedWaterBody);
       const completedFilteredItems = selectedWaterBody === "All" ? completedItems : completedItems.filter(item => item.waterBody === selectedWaterBody);
 
-      const total = filteredItems.length;
+      const total = waterFilteredItems.length;
       let surveysCount = 0;
       let conservationCount = 0;
       let threatsAlerts = 0;
@@ -627,7 +627,7 @@ function StaffDashboard() {
       let sumTemp = 0;
       let sumDO = 0;
 
-      filteredItems.forEach(item => {
+      waterFilteredItems.forEach(item => {
         const isSurvey = item.subcategory === "Local Water Source Monitoring Form";
         const isConservation = item.subcategory === "Ecosystem Conservation Log";
         
@@ -729,7 +729,7 @@ function StaffDashboard() {
         });
       }
 
-      filteredItems.forEach((item) => {
+      waterFilteredItems.forEach((item) => {
         const ts = item.createdAt?.seconds ? item.createdAt.seconds * 1000 : null;
         if (!ts || ts < startTimestamp) return;
 
@@ -782,7 +782,7 @@ function StaffDashboard() {
         "Dissolved Oxygen (mg/L)": b.countDO > 0 ? Number((b.sumDO / b.countDO).toFixed(1)) : 0,
       }));
       
-      const recentWater = [...filteredItems]
+      const recentWater = [...waterFilteredItems]
         .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
         .slice(0, 5);
         
@@ -1968,7 +1968,7 @@ function StaffDashboard() {
                   variant="blue"
                   accentColor="#00ed64"
                   extraHeader={
-                    <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                    <div className="dash-chart-controls">
                       <select
                         className="inc-form__input"
                         style={{
@@ -2005,7 +2005,7 @@ function StaffDashboard() {
                   }
                 >
                   <ResponsiveContainer width="100%" height={260}>
-                    <ComposedChart data={analytics.fieldKit.trends} margin={{ top: 15, right: 10, left: -20, bottom: 5 }}>
+                    <ComposedChart data={analytics.fieldKit.trends} margin={{ top: 15, right: 10, left: -10, bottom: 5 }}>
                       <defs>
                         <linearGradient id="phGlow" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#00ed64" stopOpacity={0.5} />

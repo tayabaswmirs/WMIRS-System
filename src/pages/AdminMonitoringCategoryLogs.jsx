@@ -239,14 +239,14 @@ export default function AdminMonitoringCategoryLogs({ category = "BMS" }) {
         </div>
 
         {/* Export Reports Button */}
-        <div className="flex justify-end mt-6">
+        <div className="inc-export-action-row">
           <button 
+            type="button"
             onClick={() => setIsExportOpen(true)}
-            className="flex items-center bg-[#00ed64] text-[#001e2b] font-semibold rounded-full hover:bg-[#00c552] active:bg-[#00a344] transition-all shadow-md hover:shadow-lg focus:outline-none"
-            style={{ padding: "12px 32px", gap: "8px" }}
+            className="inc-export-btn"
           >
-            <span className="material-symbols-outlined text-[20px]" style={{ margin: 0, padding: 0, lineHeight: 1 }}>download</span>
-            Export Logs
+            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>download</span>
+            <span>Export Logs</span>
           </button>
         </div>
 

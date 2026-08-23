@@ -206,10 +206,10 @@ export default function IncidentsAnalyticsView({ items = [] }) {
       <div className="dash-full-width-row">
         <ChartCard icon="bar_chart" title="Total Incidents by Category & Severity" subtitle="Cumulative volume of resolved incidents" variant="mint" accentColor="#00ed64">
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={analytics.categorySeverityData} layout="vertical" margin={{ top: 10, right: 30, left: 40, bottom: 5 }}>
+            <BarChart data={analytics.categorySeverityData} layout="vertical" margin={{ top: 10, right: 15, left: 0, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" horizontal={false} vertical={true} />
               <XAxis type="number" stroke="var(--c-stone)" fontSize={11} allowDecimals={false} />
-              <YAxis dataKey="name" type="category" stroke="var(--c-stone)" fontSize={11} width={120} />
+              <YAxis dataKey="name" type="category" stroke="var(--c-stone)" fontSize={11} width={95} tick={{ fontSize: 10 }} />
               <Tooltip contentStyle={TOOLTIP_STYLE} />
               <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} iconType="circle" iconSize={8} />
               <Bar dataKey="Low" stackId="a" fill="#00ed64" />
@@ -244,7 +244,7 @@ export default function IncidentsAnalyticsView({ items = [] }) {
           }
         >
           <ResponsiveContainer width="100%" height={260}>
-            <ComposedChart data={analytics.logBuckets} margin={{ top: 15, right: 10, left: -20, bottom: 5 }}>
+            <ComposedChart data={analytics.logBuckets} margin={{ top: 15, right: 10, left: -10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
               <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
               <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={false} />
@@ -270,10 +270,11 @@ export default function IncidentsAnalyticsView({ items = [] }) {
           variant="warm"
           accentColor="#fa6e39"
           extraHeader={
-            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <div className="dash-chart-controls">
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
+                className="dash-chart-select"
                 style={{
                   background: "var(--c-canvas)",
                   border: "1px solid var(--c-hairline)",
@@ -304,7 +305,7 @@ export default function IncidentsAnalyticsView({ items = [] }) {
           }
         >
           <ResponsiveContainer width="100%" height={260}>
-            <ComposedChart data={analytics.severityTrendBuckets} margin={{ top: 15, right: 10, left: -20, bottom: 5 }}>
+            <ComposedChart data={analytics.severityTrendBuckets} margin={{ top: 15, right: 10, left: -10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
               <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
               <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={false} />

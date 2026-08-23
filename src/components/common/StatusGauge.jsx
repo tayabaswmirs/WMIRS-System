@@ -16,15 +16,15 @@ export default function StatusGauge({ data = [], total = 0, label }) {
   return (
     <div className="gauge-card-container">
       <div className="gauge-chart-wrapper">
-        <ResponsiveContainer width="100%" height={205}>
+        <ResponsiveContainer width="100%" height={180}>
           <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
             {/* Background track rail */}
             <Pie
               data={[{ value: 1 }]}
               cx="50%"
               cy="95%"
-              innerRadius={96}
-              outerRadius={140}
+              innerRadius={72}
+              outerRadius={112}
               startAngle={180}
               endAngle={0}
               dataKey="value"
@@ -38,8 +38,8 @@ export default function StatusGauge({ data = [], total = 0, label }) {
                 data={activeData}
                 cx="50%"
                 cy="95%"
-                innerRadius={96}
-                outerRadius={140}
+                innerRadius={72}
+                outerRadius={112}
                 startAngle={180}
                 endAngle={0}
                 dataKey="value"

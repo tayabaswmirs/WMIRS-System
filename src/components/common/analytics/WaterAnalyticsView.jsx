@@ -294,7 +294,7 @@ export default function WaterAnalyticsView({ items = [] }) {
           }
         >
           <ResponsiveContainer width="100%" height={260}>
-            <ComposedChart data={analytics.waterLogBuckets} margin={{ top: 15, right: 10, left: -20, bottom: 5 }}>
+            <ComposedChart data={analytics.waterLogBuckets} margin={{ top: 15, right: 10, left: -10, bottom: 5 }}>
               <defs>
                 <linearGradient id="surveyGlow" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#3d8eff" stopOpacity={0.5} />
@@ -323,7 +323,7 @@ export default function WaterAnalyticsView({ items = [] }) {
       <div className="dash-row-70-30">
         <ChartCard icon="insights" title="Field-Kit Metrics (pH / DO / Temp)" subtitle={`Average: pH ${analytics.avgPH} | Temp ${analytics.avgTemp}°C | DO ${analytics.avgDO} mg/L`} variant="warm" accentColor="#fa6e39">
           <ResponsiveContainer width="100%" height={260}>
-            <ComposedChart data={analytics.fieldKitTrends} margin={{ top: 15, right: 10, left: -20, bottom: 5 }}>
+            <ComposedChart data={analytics.fieldKitTrends} margin={{ top: 15, right: 10, left: -10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.15)" />
               <XAxis dataKey="label" stroke="rgba(0,0,0,0.5)" fontSize={11} />
               <YAxis stroke="rgba(0,0,0,0.5)" fontSize={11} allowDecimals={true} />
