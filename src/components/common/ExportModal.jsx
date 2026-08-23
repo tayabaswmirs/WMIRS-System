@@ -57,6 +57,7 @@ function ExportModalDialog({
   onExport = null
 }) {
   const [format, setFormat] = useState("csv");
+  const [includeAnalytics, setIncludeAnalytics] = useState(true);
   const [selectedSubcategory, setSelectedSubcategory] = useState("all");
   const [selectedGlobalCategory, setSelectedGlobalCategory] = useState("all");
   const [dateRange, setDateRange] = useState("all");
@@ -195,6 +196,7 @@ function ExportModalDialog({
     if (onExport) {
       onExport({
         format,
+        includeAnalytics,
         dateRange,
         category: selectedGlobalCategory,
         subcategory: selectedSubcategory,
@@ -206,9 +208,9 @@ function ExportModalDialog({
     }
 
     if (format === "csv") {
-      exportToCSV(filteredData, scope, filename);
+      exportToCSV(filteredData, scope, filename, { includeAnalytics });
     } else {
-      exportToPDF(filteredData, scope, filename, docTitle);
+      exportToPDF(filteredData, scope, filename, docTitle, { includeAnalytics });
     }
 
     onClose();
@@ -237,7 +239,7 @@ function ExportModalDialog({
               Export {scope}
             </h2>
             <p className="export-modal-header__subtitle">
-              Download field audit records and domain metrics in structured format.
+              Download field audit records, graphs, and domain metrics in structured format.
             </p>
           </div>
           <button
@@ -266,7 +268,7 @@ function ExportModalDialog({
                 </div>
                 <div className="export-format-card__content">
                   <span className="export-format-card__title">CSV Spreadsheet</span>
-                  <span className="export-format-card__desc">Complete raw data with all specialized domain fields</span>
+                  <span className="export-format-card__desc">Complete raw data with specialized domain fields & time-series summaries</span>
                 </div>
               </button>
 
@@ -280,13 +282,36 @@ function ExportModalDialog({
                 </div>
                 <div className="export-format-card__content">
                   <span className="export-format-card__title">PDF Document</span>
-                  <span className="export-format-card__desc">Styled, branded printable document with summary headers</span>
+                  <span className="export-format-card__desc">Executive dossier with embedded vector trend graphs & audit table</span>
                 </div>
               </button>
             </div>
           </div>
 
-          {/* 2. Global Monitoring Category (if applicable) */}
+          {/* 2. Visual Analytics Graphs Toggle */}
+          <div className="export-toggle-card">
+            <label className="export-toggle-label">
+              <input
+                type="checkbox"
+                checked={includeAnalytics}
+                onChange={(e) => setIncludeAnalytics(e.target.checked)}
+                className="export-toggle-checkbox"
+              />
+              <div className="export-toggle-content">
+                <div className="export-toggle-title">
+                  <span className="material-symbols-outlined export-toggle-icon">auto_graph</span>
+                  <span>Include Visual Analytics Graphs & Trend Summaries</span>
+                </div>
+                <p className="export-toggle-desc">
+                  {format === "pdf"
+                    ? "Generates Executive KPI cards, Temporal Activity Line Graphs, and Domain Distribution Charts on Page 1."
+                    : "Pre-pends an aggregated Time-Series Trend & Classification summary before detailed record rows."}
+                </p>
+              </div>
+            </label>
+          </div>
+
+          {/* 3. Global Monitoring Category (if applicable) */}
           {isGlobalMonitoring && (
             <div className="export-section">
               <label className="export-section__label">2. Category Scope</label>
@@ -313,7 +338,7 @@ function ExportModalDialog({
             </div>
           )}
 
-          {/* 3. Subcategory Filter */}
+          {/* 4. Subcategory Filter */}
           <div className="export-section">
             <label className="export-section__label">
               {isIncidents ? "2. Incident Classification" : isGlobalMonitoring ? "3. Specific Subcategory" : "2. Subcategory Filter"}
@@ -333,7 +358,7 @@ function ExportModalDialog({
             </div>
           </div>
 
-          {/* 4. Workflow Status Filter */}
+          {/* 5. Workflow Status Filter */}
           <div className="export-section">
             <label className="export-section__label">
               {isGlobalMonitoring ? "4. Status Filter" : "3. Status Filter"}
@@ -352,7 +377,7 @@ function ExportModalDialog({
             </div>
           </div>
 
-          {/* 5. Date Range Selector */}
+          {/* 6. Date Range Selector */}
           <div className="export-section">
             <label className="export-section__label">
               {isGlobalMonitoring ? "5. Date Range" : "4. Date Range"}

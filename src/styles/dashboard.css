@@ -3999,6 +3999,63 @@ button:disabled,
   line-height: 1.35;
 }
 
+/* Analytics Graph Toggle Card */
+.export-toggle-card {
+  background: var(--c-bg-subtle, #f7f9fa);
+  border: 1.5px solid var(--c-hairline, #e1e5e8);
+  border-radius: 12px;
+  padding: 12px 14px;
+  transition: all 0.18s ease;
+}
+
+.export-toggle-card:hover {
+  border-color: #00ed64;
+  background: #ffffff;
+}
+
+.export-toggle-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.export-toggle-checkbox {
+  width: 17px;
+  height: 17px;
+  margin-top: 2px;
+  accent-color: #00ed64;
+  cursor: pointer;
+}
+
+.export-toggle-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.export-toggle-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-ink, #001e2b);
+}
+
+.export-toggle-icon {
+  font-size: 16px;
+  color: #008f3d;
+}
+
+.export-toggle-desc {
+  margin: 0;
+  font-size: 11px;
+  color: var(--c-stone, #5c6c7a);
+  line-height: 1.35;
+}
+
 /* Chip Selectors */
 .export-chip-group {
   display: flex;
