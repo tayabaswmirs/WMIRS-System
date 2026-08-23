@@ -7,4 +7,8 @@ export { adminSetRole } from "./src/triggers/https/adminSetRole.js";
 export { adminDeleteUser } from "./src/triggers/https/adminDeleteUser.js";
 export { selfDeleteAccount } from "./src/triggers/https/selfDeleteAccount.js";
 export { onUserUpdate } from "./src/triggers/db/onUserUpdate.js";
+export { pruneOldNotifications } from "./src/triggers/db/pruneOldNotifications.js";
+export { onIncidentCreated } from "./src/triggers/db/onIncidentCreated.js";
+export { onMonitoringCreated } from "./src/triggers/db/onMonitoringCreated.js";
+export { onIncidentUpdated, onMonitoringUpdated } from "./src/triggers/db/onWorkflowStatusUpdated.js";
 

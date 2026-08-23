@@ -1,6 +1,7 @@
 import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, getDocs, query, orderBy, where, serverTimestamp } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import { db, functions } from "../firebase";
+import { sendNotification, sendRoleNotification } from "./notificationService";
 
 /**
  * Creates a user profile document in Firestore.
@@ -14,7 +15,7 @@ import { db, functions } from "../firebase";
 export const createUserProfile = async (uid, name, email) => {
   if (!uid) throw new Error("Cannot create user profile: missing UID");
   const userRef = doc(db, "users", uid);
-  return setDoc(userRef, {
+  await setDoc(userRef, {
     uid,
     name: name || "",
     email: email || "",
@@ -22,6 +23,20 @@ export const createUserProfile = async (uid, name, email) => {
     staffScope: null,
     createdAt: serverTimestamp()
   });
+
+  // Notify administrators of pending registration
+  sendRoleNotification(
+    { role: "admin" },
+    {
+      title: "New Account Pending Approval",
+      message: `${name || "A new applicant"} (${email || "No email provided"}) registered and is awaiting role vetting.`,
+      type: "account_vetted_pending",
+      category: "system",
+      referenceId: uid,
+      referenceType: "user",
+      link: "/admin/vetting"
+    }
+  ).catch((err) => console.warn("Failed to notify admins of user registration:", err));
 };
 
 /**
@@ -109,10 +124,12 @@ export const updateUserAdmin = async (uid, updateData) => {
  */
 export const setUserRoleAdmin = async (uid, role, staffScope = null) => {
   const resolvedScope = role === "staff" ? staffScope : null;
+  let result;
+
   try {
     const setRoleFn = httpsCallable(functions, "adminSetRole");
     const res = await setRoleFn({ uid, role, staffScope: resolvedScope });
-    return res.data;
+    result = res.data;
   } catch (err) {
     console.warn("Cloud Function 'adminSetRole' call failed (backend deployment pending). Falling back to direct Firestore document update:", err);
     const userRef = doc(db, "users", uid);
@@ -120,8 +137,19 @@ export const setUserRoleAdmin = async (uid, role, staffScope = null) => {
       role,
       staffScope: resolvedScope,
     });
-    return { status: "success", fallback: true };
+    result = { status: "success", fallback: true };
   }
+
+  // Notify the user of their role assignment/update
+  sendNotification(uid, {
+    title: "Account Role Updated",
+    message: `Your account role has been set to ${role.toUpperCase()}${resolvedScope ? ` (${resolvedScope})` : ""}.`,
+    type: "role_updated",
+    category: "system",
+    link: "/profile"
+  }).catch((notifErr) => console.warn("Failed to dispatch role update notification:", notifErr));
+
+  return result;
 };
 
 /**

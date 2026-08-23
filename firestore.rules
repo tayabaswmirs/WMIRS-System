@@ -55,6 +55,19 @@ service cloud.firestore {
       
       // Deleting profiles is restricted solely to administrators
       allow delete: if isAdmin();
+
+      // Subcollection for user notifications
+      match /notifications/{notificationId} {
+        // Users can read and delete their own notifications; admins can also read/delete
+        allow read, delete: if isOwner(userId) || isAdmin();
+        
+        // Authenticated users can write notifications for users (e.g. system dispatches & status alerts)
+        allow create: if isAuthenticated();
+        
+        // Users can only update the read status of their own notifications
+        allow update: if isOwner(userId) && 
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead', 'readAt']);
+      }
     }
 
     // Rules for the incidents collection

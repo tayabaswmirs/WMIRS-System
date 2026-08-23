@@ -2,6 +2,9 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import Sidebar from "./Sidebar";
+import NotificationBell from "./NotificationBell";
+import NotificationToast from "../common/NotificationToast";
+import { useNotifications } from "../../hooks/useNotifications";
 import "../../styles/dashboard.css";
 
 /**
@@ -18,6 +21,7 @@ function DashboardLayout({ children }) {
   const navigate = useNavigate();
 
   const { currentUser, profileData, userRole, logout } = useAuth();
+  const { toastNotification, dismissToast } = useNotifications();
 
   const displayName = currentUser?.displayName || profileData?.name || "User";
   // Generate initials for the avatar placeholder
@@ -86,6 +90,9 @@ function DashboardLayout({ children }) {
           </div>
 
           <div className="topbar__right">
+            {/* Notification Bell */}
+            <NotificationBell />
+
             {/* ── Desktop Controls (>= 768px) ── */}
             <div className="topbar-desktop-actions">
               {/* User Profile Info (Unpressable) */}
@@ -196,6 +203,12 @@ function DashboardLayout({ children }) {
         </main>
       </div>
 
+      {/* Real-time In-App Notification Toast */}
+      <NotificationToast
+        notification={toastNotification}
+        onClose={dismissToast}
+        onNavigate={(link) => navigate(link)}
+      />
     </div>
   );
 }
