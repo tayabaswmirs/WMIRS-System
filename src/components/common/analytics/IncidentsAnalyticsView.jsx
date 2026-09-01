@@ -7,6 +7,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, ComposedChart, Line
 } from "recharts";
+import { TIME_RANGES, createTemporalBuckets, incrementTemporalBucket, extractTimestampMs } from "../../../utils/temporalBuckets";
 
 const TOOLTIP_STYLE = {
   backgroundColor: "#001e2b",
@@ -40,11 +41,9 @@ const LEGACY_MAP = {
 };
 
 const normalizeCategory = (cat) => {
-  if (!cat) return "";
-  const trimmed = cat.trim().toLowerCase();
-  if (LEGACY_MAP[trimmed]) return LEGACY_MAP[trimmed];
-  const found = CATEGORIES_LIST.find((c) => c.toLowerCase() === trimmed);
-  return found || cat;
+  if (!cat) return "Forest Incidents";
+  const lower = cat.toLowerCase().trim();
+  return LEGACY_MAP[lower] || cat;
 };
 
 const getStatusGroup = (status) => {
@@ -104,70 +103,44 @@ export default function IncidentsAnalyticsView({ items = [] }) {
     });
 
     // Logging per Day temporal buckets
-    const now = new Date();
-    const numBuckets = timeRange === "1D" ? 24 : timeRange === "1W" ? 7 : 30;
-    const timeLimitMs = (timeRange === "1D" ? 24 : timeRange === "1W" ? 7 : 30) * (timeRange === "1D" ? 3600000 : 86400000);
-    const startTimestamp = now.getTime() - timeLimitMs;
-    const logBuckets = [];
-    const half = Math.floor(numBuckets / 2);
-
-    for (let i = half; i > half - numBuckets; i--) {
-      const d = new Date(now.getTime() - i * (timeRange === "1D" ? 3600000 : 86400000));
-      const label = timeRange === "1D"
-        ? d.toLocaleTimeString(undefined, { hour: "numeric", minute: "numeric", hour12: true })
-        : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-      const bucketObj = { label, timestamp: d.getTime() };
-      CATEGORIES_LIST.forEach((cat) => { bucketObj[cat] = 0; });
-      logBuckets.push(bucketObj);
-    }
+    const initialCategorySeries = {};
+    CATEGORIES_LIST.forEach((cat) => { initialCategorySeries[cat] = 0; });
+    const logBuckets = createTemporalBuckets(timeRange, filteredItems, initialCategorySeries);
 
     filteredItems.forEach((item) => {
-      const ts = item.createdAt?.seconds ? item.createdAt.seconds * 1000 : null;
-      if (!ts || ts < startTimestamp) return;
+      const ts = extractTimestampMs(item.createdAt || item.dateTime);
+      if (!ts) return;
       const itemCat = normalizeCategory(item.category);
       const matchedCat = CATEGORIES_LIST.find((c) => c === itemCat || c.toLowerCase() === itemCat.toLowerCase());
       if (!matchedCat) return;
 
-      let bestIdx = 0, minDiff = Infinity;
-      logBuckets.forEach((bucket, idx) => {
-        const diff = Math.abs(bucket.timestamp - ts);
-        if (diff < minDiff) { minDiff = diff; bestIdx = idx; }
+      incrementTemporalBucket(logBuckets, timeRange, ts, (bucket) => {
+        bucket[matchedCat] = (bucket[matchedCat] || 0) + 1;
       });
-      logBuckets[bestIdx][matchedCat]++;
     });
 
     // Severity Trends
-    const sevNumBuckets = severityTimeRange === "1D" ? 24 : severityTimeRange === "1W" ? 7 : 30;
-    const sevLimitMs = (severityTimeRange === "1D" ? 24 : severityTimeRange === "1W" ? 7 : 30) * (severityTimeRange === "1D" ? 3600000 : 86400000);
-    const sevStartTimestamp = now.getTime() - sevLimitMs;
-    const severityTrendBuckets = [];
-    const sevHalf = Math.floor(sevNumBuckets / 2);
-
-    for (let i = sevHalf; i > sevHalf - sevNumBuckets; i--) {
-      const d = new Date(now.getTime() - i * (severityTimeRange === "1D" ? 3600000 : 86400000));
-      const label = severityTimeRange === "1D"
-        ? d.toLocaleTimeString(undefined, { hour: "numeric", minute: "numeric", hour12: true })
-        : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-      severityTrendBuckets.push({ label, timestamp: d.getTime(), Low: 0, Medium: 0, High: 0, Critical: 0 });
-    }
+    const severityTrendBuckets = createTemporalBuckets(severityTimeRange, completedItems, {
+      Low: 0,
+      Medium: 0,
+      High: 0,
+      Critical: 0
+    });
 
     completedItems.forEach((item) => {
       if (categoryFilter !== "All") {
         const itemCat = normalizeCategory(item.category);
         if (itemCat !== categoryFilter && itemCat.toLowerCase() !== categoryFilter.toLowerCase()) return;
       }
-      const ts = item.createdAt?.seconds ? item.createdAt.seconds * 1000 : null;
-      if (!ts || ts < sevStartTimestamp) return;
+      const ts = extractTimestampMs(item.createdAt || item.dateTime);
+      if (!ts) return;
 
       const norm = (item.severity || "Low").toLowerCase();
       const sev = norm === "critical" ? "Critical" : norm === "high" ? "High" : norm === "medium" ? "Medium" : "Low";
 
-      let bestIdx = 0, minDiff = Infinity;
-      severityTrendBuckets.forEach((bucket, idx) => {
-        const diff = Math.abs(bucket.timestamp - ts);
-        if (diff < minDiff) { minDiff = diff; bestIdx = idx; }
+      incrementTemporalBucket(severityTrendBuckets, severityTimeRange, ts, (bucket) => {
+        bucket[sev] = (bucket[sev] || 0) + 1;
       });
-      severityTrendBuckets[bestIdx][sev]++;
     });
 
     return {
@@ -252,7 +225,7 @@ export default function IncidentsAnalyticsView({ items = [] }) {
           accentColor="#3d8eff"
           extraHeader={
             <div className="time-tabs">
-              {["1D", "1W", "1M"].map((range) => (
+              {TIME_RANGES.map((range) => (
                 <button
                   key={range}
                   className={`time-tab ${timeRange === range ? "time-tab--active" : ""}`}
@@ -341,7 +314,7 @@ export default function IncidentsAnalyticsView({ items = [] }) {
                 ))}
               </select>
               <div className="time-tabs">
-                {["1D", "1W", "1M"].map((range) => (
+                {TIME_RANGES.map((range) => (
                   <button
                     key={range}
                     className={`time-tab ${severityTimeRange === range ? "time-tab--active" : ""}`}

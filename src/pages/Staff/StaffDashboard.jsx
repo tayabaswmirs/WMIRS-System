@@ -12,6 +12,8 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   Cell, AreaChart, Area, CartesianGrid, ComposedChart, Line
 } from "recharts";
+import SpeciesBreakdownCard from "../../components/common/analytics/SpeciesBreakdownCard";
+import { TIME_RANGES } from "../../utils/temporalBuckets";
 import "../../styles/dashboard.css";
 
 /* ΓöÇΓöÇ Color & Chart Config Tokens ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
@@ -832,11 +834,13 @@ function StaffDashboard() {
 
       // Tier 3: Business Matrix
       const businessMap = {
+        "Commercial Establishment": { compliant: 0, nonCompliant: 0 },
         "Public Market Vendor": { compliant: 0, nonCompliant: 0 },
         "Supermarket": { compliant: 0, nonCompliant: 0 },
         "Convenience Store": { compliant: 0, nonCompliant: 0 },
         "Restaurant/Eatery": { compliant: 0, nonCompliant: 0 },
-        "Wholesale/Retail Store": { compliant: 0, nonCompliant: 0 }
+        "Wholesale/Retail Store": { compliant: 0, nonCompliant: 0 },
+        "Individual": { compliant: 0, nonCompliant: 0 }
       };
 
       // Tier 5: Barangay Waste Logistics
@@ -933,10 +937,16 @@ function StaffDashboard() {
             barangayWasteMap[bName] += amt;
           }
         } else if (item.subcategory === "Plastic Bag Ban Inspection Form") {
-          if (item.businessType && businessMap[item.businessType]) {
-            if (item.compliant) businessMap[item.businessType].compliant++;
-            else businessMap[item.businessType].nonCompliant++;
+          let bType = item.businessType || "Commercial Establishment";
+          if (bType.toLowerCase() === "establishment") bType = "Commercial Establishment";
+
+          if (businessMap[bType]) {
+            if (item.compliant) businessMap[bType].compliant++;
+            else businessMap[bType].nonCompliant++;
+          } else {
+            businessMap["Commercial Establishment"][item.compliant ? "compliant" : "nonCompliant"]++;
           }
+
           if (item.compliant === false) {
             enforcementActionsCount++;
             if (item.actionToken === "Verbal Warning") enforcementTypes["Verbal Warning"]++;
@@ -961,7 +971,8 @@ function StaffDashboard() {
       ];
 
       const businessMatrixData = Object.entries(businessMap).map(([name, data]) => ({
-        name: name.replace(" Store", "").replace(" Vendor", ""),
+        name: name.replace(" Store", "").replace(" Vendor", "").replace("Commercial ", ""),
+        fullName: name,
         Compliant: data.compliant,
         "Non-Compliant": data.nonCompliant
       }));
@@ -1157,7 +1168,7 @@ function StaffDashboard() {
               variant="transparent"
               extraHeader={
                 <div className="time-tabs">
-                  {["1D", "1W", "1M"].map((range) => (
+                  {TIME_RANGES.map((range) => (
                     <button
                       key={range}
                       className={`time-tab ${timeRange === range ? "time-tab--active" : ""}`}
@@ -1420,7 +1431,7 @@ function StaffDashboard() {
                   accentColor="#3d8eff"
                   extraHeader={
                     <div className="time-tabs">
-                      {["1D", "1W", "1M"].map((range) => (
+                      {TIME_RANGES.map((range) => (
                         <button
                           key={range}
                           className={`time-tab ${timeRange === range ? "time-tab--active" : ""}`}
@@ -1545,7 +1556,7 @@ function StaffDashboard() {
                         ))}
                       </select>
                       <div className="time-tabs">
-                        {["1D", "1W", "1M"].map((range) => (
+                        {TIME_RANGES.map((range) => (
                           <button
                             key={range}
                             className={`time-tab ${severityTimeRange === range ? "time-tab--active" : ""}`}
@@ -1744,7 +1755,7 @@ function StaffDashboard() {
                   accentColor="#3d8eff"
                   extraHeader={
                     <div className="time-tabs">
-                      {["1D", "1W", "1M"].map((range) => (
+                      {TIME_RANGES.map((range) => (
                         <button
                           key={range}
                           className={`time-tab ${timeRange === range ? "time-tab--active" : ""}`}
@@ -1849,6 +1860,11 @@ function StaffDashboard() {
                     </div>
                   </div>
                 </ChartCard>
+              </div>
+
+              {/* Tier 6: Species Census Breakdown Table */}
+              <div className="dash-full-width-row">
+                <SpeciesBreakdownCard items={items} />
               </div>
             </>
           )}
@@ -1987,7 +2003,7 @@ function StaffDashboard() {
                   accentColor="#3d8eff"
                   extraHeader={
                     <div className="time-tabs">
-                      {["1D", "1W", "1M"].map((range) => (
+                      {TIME_RANGES.map((range) => (
                         <button
                           key={range}
                           className={`time-tab ${timeRange === range ? "time-tab--active" : ""}`}
@@ -2172,7 +2188,7 @@ function StaffDashboard() {
                         ))}
                       </select>
                       <div className="time-tabs">
-                        {["1D", "1W", "1M"].map((range) => (
+                        {TIME_RANGES.map((range) => (
                           <button
                             key={range}
                             className={`time-tab ${timeRange === range ? "time-tab--active" : ""}`}

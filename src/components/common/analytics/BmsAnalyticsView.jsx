@@ -7,6 +7,8 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   Area, CartesianGrid, ComposedChart, Line
 } from "recharts";
+import SpeciesBreakdownCard from "./SpeciesBreakdownCard";
+import { TIME_RANGES, createTemporalBuckets, incrementTemporalBucket, extractTimestampMs } from "../../../utils/temporalBuckets";
 
 const TOOLTIP_STYLE = {
   backgroundColor: "#001e2b",
@@ -85,37 +87,24 @@ export default function BmsAnalyticsView({ items = [] }) {
       Count: avianBehaviors[key]
     }));
 
-    // Temporal logging buckets
-    const now = new Date();
-    const numBuckets = timeRange === "1D" ? 24 : timeRange === "1W" ? 7 : 30;
-    const timeLimitMs = (timeRange === "1D" ? 24 : timeRange === "1W" ? 7 : 30) * (timeRange === "1D" ? 3600000 : 86400000);
-    const startTimestamp = now.getTime() - timeLimitMs;
-    const bmsLogBuckets = [];
-    const half = Math.floor(numBuckets / 2);
-
-    for (let i = half; i > half - numBuckets; i--) {
-      const d = new Date(now.getTime() - i * (timeRange === "1D" ? 3600000 : 86400000));
-      const label = timeRange === "1D"
-        ? d.toLocaleTimeString(undefined, { hour: "numeric", minute: "numeric", hour12: true })
-        : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-      bmsLogBuckets.push({ label, timestamp: d.getTime(), "Avian Census": 0, "Wildlife Sightings": 0 });
-    }
+    // Temporal logging buckets via centralized engine
+    const bmsLogBuckets = createTemporalBuckets(timeRange, filteredItems, {
+      "Avian Census": 0,
+      "Wildlife Sightings": 0
+    });
 
     filteredItems.forEach((item) => {
-      const ts = item.createdAt?.seconds ? item.createdAt.seconds * 1000 : null;
-      if (!ts || ts < startTimestamp) return;
+      const ts = extractTimestampMs(item.createdAt || item.dateTime);
+      if (!ts) return;
 
       let seriesName = null;
       if (item.subcategory === "Avian Tracking Form") seriesName = "Avian Census";
       else if (item.subcategory === "Wildlife Observations Form") seriesName = "Wildlife Sightings";
       if (!seriesName) return;
 
-      let bestIdx = 0, minDiff = Infinity;
-      bmsLogBuckets.forEach((bucket, idx) => {
-        const diff = Math.abs(bucket.timestamp - ts);
-        if (diff < minDiff) { minDiff = diff; bestIdx = idx; }
+      incrementTemporalBucket(bmsLogBuckets, timeRange, ts, (bucket) => {
+        bucket[seriesName] = (bucket[seriesName] || 0) + 1;
       });
-      bmsLogBuckets[bestIdx][seriesName]++;
     });
 
     const recentBMS = [...filteredItems]
@@ -205,7 +194,7 @@ export default function BmsAnalyticsView({ items = [] }) {
           accentColor="#3d8eff"
           extraHeader={
             <div className="time-tabs">
-              {["1D", "1W", "1M"].map((range) => (
+              {TIME_RANGES.map((range) => (
                 <button
                   key={range}
                   className={`time-tab ${timeRange === range ? "time-tab--active" : ""}`}
@@ -279,6 +268,11 @@ export default function BmsAnalyticsView({ items = [] }) {
             </div>
           </div>
         </ChartCard>
+      </div>
+
+      {/* Tier 6: Species Census Breakdown Table */}
+      <div className="dash-full-width-row">
+        <SpeciesBreakdownCard items={items} />
       </div>
     </div>
   );

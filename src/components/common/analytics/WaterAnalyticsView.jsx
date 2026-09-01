@@ -7,6 +7,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   Area, CartesianGrid, ComposedChart, Line
 } from "recharts";
+import { TIME_RANGES, createTemporalBuckets, incrementTemporalBucket, extractTimestampMs } from "../../../utils/temporalBuckets";
 
 const TOOLTIP_STYLE = {
   backgroundColor: "#001e2b",
@@ -108,65 +109,45 @@ export default function WaterAnalyticsView({ items = [] }) {
     const avgDO = totalKits > 0 ? (sumDO / totalKits).toFixed(1) : "N/A";
 
     // Temporal logging trends
-    const now = new Date();
-    const numBuckets = timeRange === "1D" ? 24 : timeRange === "1W" ? 7 : 30;
-    const timeLimitMs = (timeRange === "1D" ? 24 : timeRange === "1W" ? 7 : 30) * (timeRange === "1D" ? 3600000 : 86400000);
-    const startTimestamp = now.getTime() - timeLimitMs;
+    const waterLogBuckets = createTemporalBuckets(timeRange, filteredItems, {
+      "Water Source Surveys": 0,
+      "Conservation Logs": 0
+    });
 
-    const waterLogBuckets = [];
-    const fieldKitTrendBuckets = [];
-    const half = Math.floor(numBuckets / 2);
-
-    for (let i = half; i > half - numBuckets; i--) {
-      const d = new Date(now.getTime() - i * (timeRange === "1D" ? 3600000 : 86400000));
-      const label = timeRange === "1D"
-        ? d.toLocaleTimeString(undefined, { hour: "numeric", minute: "numeric", hour12: true })
-        : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-      waterLogBuckets.push({ label, timestamp: d.getTime(), "Water Source Surveys": 0, "Conservation Logs": 0 });
-      fieldKitTrendBuckets.push({
-        label,
-        timestamp: d.getTime(),
-        sumPH: 0, countPH: 0,
-        sumTemp: 0, countTemp: 0,
-        sumDO: 0, countDO: 0
-      });
-    }
+    const fieldKitTrendBuckets = createTemporalBuckets(timeRange, completedFilteredItems, {
+      sumPH: 0, countPH: 0,
+      sumTemp: 0, countTemp: 0,
+      sumDO: 0, countDO: 0
+    });
 
     filteredItems.forEach((item) => {
-      const ts = item.createdAt?.seconds ? item.createdAt.seconds * 1000 : null;
-      if (!ts || ts < startTimestamp) return;
+      const ts = extractTimestampMs(item.createdAt || item.dateTime);
+      if (!ts) return;
       const seriesName = item.subcategory === "Ecosystem Conservation Log" ? "Conservation Logs" : "Water Source Surveys";
 
-      let bestIdx = 0, minDiff = Infinity;
-      waterLogBuckets.forEach((bucket, idx) => {
-        const diff = Math.abs(bucket.timestamp - ts);
-        if (diff < minDiff) { minDiff = diff; bestIdx = idx; }
+      incrementTemporalBucket(waterLogBuckets, timeRange, ts, (bucket) => {
+        bucket[seriesName] = (bucket[seriesName] || 0) + 1;
       });
-      waterLogBuckets[bestIdx][seriesName]++;
     });
 
     completedFilteredItems.forEach((item) => {
-      const ts = item.createdAt?.seconds ? item.createdAt.seconds * 1000 : null;
-      if (!ts || ts < startTimestamp) return;
+      const ts = extractTimestampMs(item.createdAt || item.dateTime);
+      if (!ts) return;
 
-      let bestIdx = 0, minDiff = Infinity;
-      fieldKitTrendBuckets.forEach((bucket, idx) => {
-        const diff = Math.abs(bucket.timestamp - ts);
-        if (diff < minDiff) { minDiff = diff; bestIdx = idx; }
+      incrementTemporalBucket(fieldKitTrendBuckets, timeRange, ts, (bucket) => {
+        if (item.phLevel) {
+          bucket.sumPH += Number(item.phLevel);
+          bucket.countPH++;
+        }
+        if (item.temperature) {
+          bucket.sumTemp += Number(item.temperature);
+          bucket.countTemp++;
+        }
+        if (item.dissolvedOxygen) {
+          bucket.sumDO += Number(item.dissolvedOxygen);
+          bucket.countDO++;
+        }
       });
-
-      if (item.phLevel) {
-        fieldKitTrendBuckets[bestIdx].sumPH += Number(item.phLevel);
-        fieldKitTrendBuckets[bestIdx].countPH++;
-      }
-      if (item.temperature) {
-        fieldKitTrendBuckets[bestIdx].sumTemp += Number(item.temperature);
-        fieldKitTrendBuckets[bestIdx].countTemp++;
-      }
-      if (item.dissolvedOxygen) {
-        fieldKitTrendBuckets[bestIdx].sumDO += Number(item.dissolvedOxygen);
-        fieldKitTrendBuckets[bestIdx].countDO++;
-      }
     });
 
     const fieldKitTrends = fieldKitTrendBuckets.map(b => ({
@@ -302,7 +283,7 @@ export default function WaterAnalyticsView({ items = [] }) {
           accentColor="#3d8eff"
           extraHeader={
             <div className="time-tabs">
-              {["1D", "1W", "1M"].map((range) => (
+              {TIME_RANGES.map((range) => (
                 <button
                   key={range}
                   className={`time-tab ${timeRange === range ? "time-tab--active" : ""}`}

@@ -335,20 +335,26 @@ function DrawerContent({ log, onClose, onStatusChange }) {
 }
 
 function LogSpecificDetails({ log }) {
+  const formattedObsDate = formatLogDate(log.dateTime || log.createdAt);
+
   switch (log.subcategory) {
     case "Avian Tracking Form":
       return (
         <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "8px" }}>
-          <DetailRow label="Observation Date & Time" value={log.dateTime} />
+          <DetailRow label="Observation Date & Time" value={formattedObsDate} />
           <DetailRow label="Location" value={log.stationId} />
           <DetailRow label="Avian Species" value={log.avianSpecies} />
           <DetailRow label="Count / Sighted" value={log.count} />
-          <DetailRow label="Observed Activities" value={log.activities?.join(", ") || "None"} />
+          <DetailRow
+            label="Observed Activities"
+            value={Array.isArray(log.activities) ? log.activities.join(", ") : (log.activities || "None")}
+          />
         </div>
       );
     case "Wildlife Observations Form":
       return (
         <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "8px" }}>
+          <DetailRow label="Observation Date & Time" value={formattedObsDate} />
           <DetailRow label="Classification" value={log.classification} />
           <DetailRow label="Species Name" value={log.speciesName} />
           <DetailRow label="Quantity Sighted" value={log.quantity} />
@@ -358,7 +364,7 @@ function LogSpecificDetails({ log }) {
     case "Local Water Source Monitoring Form":
       return (
         <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "8px" }}>
-          {log.dateTime && <DetailRow label="Observation Date & Time" value={formatLogDate(log.dateTime)} />}
+          <DetailRow label="Observation Date & Time" value={formattedObsDate} />
           <DetailRow label="Water Body Identifier" value={log.waterBody} />
           <DetailRow label="Specific Location Marker" value={log.locationMarker} />
           {log.sourceType && <DetailRow label="Source Type" value={log.sourceType} />}
@@ -378,7 +384,7 @@ function LogSpecificDetails({ log }) {
     case "Ecosystem Conservation Log":
       return (
         <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "8px" }}>
-          {log.dateTime && <DetailRow label="Observation Date & Time" value={formatLogDate(log.dateTime)} />}
+          <DetailRow label="Observation Date & Time" value={formattedObsDate} />
           {log.waterBody && <DetailRow label="Water Body Identifier" value={log.waterBody} />}
           {log.locationMarker && <DetailRow label="Specific Location Marker" value={log.locationMarker} />}
           {log.threatLevel && (
@@ -391,13 +397,17 @@ function LogSpecificDetails({ log }) {
               } 
             />
           )}
-          <DetailRow label="Pollution Risk Indicators" value={log.pollutionIndicators?.join(", ") || "None"} />
+          <DetailRow
+            label="Pollution Risk Indicators"
+            value={Array.isArray(log.pollutionIndicators) ? log.pollutionIndicators.join(", ") : (log.pollutionIndicators || "None")}
+          />
           <DetailRow label="Observed Aquatic Wildlife Activity" value={log.aquaticWildlifeNotes} isParagraph />
         </div>
       );
     case "Waste Collection Tracking Form":
       return (
         <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "8px" }}>
+          <DetailRow label="Observation Date & Time" value={formattedObsDate} />
           <DetailRow label="Barangay / Route" value={log.barangay} />
           <DetailRow label="Collection Type" value={log.collectionType} />
           <DetailRow label="Volume Metric Estimate" value={`${log.volumeValue || 0} ${log.volumeUnit || ""}`} />
@@ -407,6 +417,7 @@ function LogSpecificDetails({ log }) {
     case "Plastic Bag Ban Inspection Form":
       return (
         <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "8px" }}>
+          <DetailRow label="Inspection Date & Time" value={formattedObsDate} />
           <DetailRow label="Establishment Name" value={log.establishmentName} />
           <DetailRow label="Business Type" value={log.businessType} />
           <DetailRow label="Compliance Status" value={log.compliant ? "Compliant" : "Non-Compliant"} />

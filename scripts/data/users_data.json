@@ -1,0 +1,26 @@
+[
+  {
+    "uid": "historical_officer_1",
+    "name": "Archival Officer (BMS)",
+    "displayName": "Archival Officer (BMS)",
+    "email": "historical.bms@tayabasenro.gov.ph",
+    "role": "archival_officer",
+    "accountType": "archival_officer",
+    "staffScope": "BMS",
+    "isHistorical": true,
+    "status": "active",
+    "createdAt": "2025-01-01T00:00:00.000Z"
+  },
+  {
+    "uid": "historical_officer_2",
+    "name": "Archival Officer (Compliance)",
+    "displayName": "Archival Officer (Compliance)",
+    "email": "historical.compliance@tayabasenro.gov.ph",
+    "role": "archival_officer",
+    "accountType": "archival_officer",
+    "staffScope": "Compliance",
+    "isHistorical": true,
+    "status": "active",
+    "createdAt": "2025-01-01T00:00:00.000Z"
+  }
+]

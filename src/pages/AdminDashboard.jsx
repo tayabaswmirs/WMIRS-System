@@ -9,9 +9,16 @@ import { getAllUsers } from "../firebase/services/userService";
 import { subscribeToAllIncidents } from "../firebase/services/incidentService";
 import { subscribeToAllMonitoring } from "../firebase/services/monitoringService";
 import {
-  XAxis, YAxis, Tooltip, ResponsiveContainer,
-  ComposedChart, Line, CartesianGrid, Area
+  ResponsiveContainer,
+  ComposedChart,
+  Area,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
 } from "recharts";
+import { TIME_RANGES, createTemporalBuckets, incrementTemporalBucket, extractTimestampMs } from "../utils/temporalBuckets";
 import "../styles/dashboard.css";
 
 /** Shared dark-mode tooltip styling for Recharts */
@@ -154,103 +161,31 @@ function AdminDashboard() {
   }, [logs]);
 
   const chartData = useMemo(() => {
-    const now = new Date();
-    if (timeRange === "1D") {
-      const buckets = [];
-      for (let i = 12; i >= -11; i--) {
-        const d = new Date(now.getTime() - i * 3600000);
-        d.setMinutes(0, 0, 0);
-        buckets.push({
-          time: d,
-          label: d.toLocaleTimeString(undefined, { hour: "numeric", hour12: true }),
-          incidents: 0,
-          monitoring: 0
+    const allItems = [...incidents, ...logs];
+    const buckets = createTemporalBuckets(timeRange, allItems, {
+      incidents: 0,
+      monitoring: 0
+    });
+
+    incidents.forEach((item) => {
+      const ts = extractTimestampMs(item.createdAt || item.dateTime);
+      if (ts) {
+        incrementTemporalBucket(buckets, timeRange, ts, (b) => {
+          b.incidents = (b.incidents || 0) + 1;
         });
       }
-      incidents.forEach((item) => {
-        const ts = item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000) : new Date(item.createdAt);
-        if (isNaN(ts.getTime())) return;
-        const diffHours = Math.floor((now - ts) / 3600000);
-        if (diffHours >= 0 && diffHours < 24) {
-          buckets[23 - diffHours].incidents++;
-        }
-      });
-      logs.forEach((item) => {
-        const ts = item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000) : new Date(item.createdAt);
-        if (isNaN(ts.getTime())) return;
-        const diffHours = Math.floor((now - ts) / 3600000);
-        if (diffHours >= 0 && diffHours < 24) {
-          buckets[23 - diffHours].monitoring++;
-        }
-      });
-      return buckets;
-    } else if (timeRange === "1W") {
-      const buckets = [];
-      for (let i = 3; i >= -3; i--) {
-        const d = new Date(now.getTime() - i * 86400000);
-        d.setHours(0, 0, 0, 0);
-        buckets.push({
-          time: d,
-          label: d.toLocaleDateString(undefined, { weekday: "short" }),
-          incidents: 0,
-          monitoring: 0
+    });
+
+    logs.forEach((item) => {
+      const ts = extractTimestampMs(item.createdAt || item.dateTime);
+      if (ts) {
+        incrementTemporalBucket(buckets, timeRange, ts, (b) => {
+          b.monitoring = (b.monitoring || 0) + 1;
         });
       }
-      incidents.forEach((item) => {
-        const ts = item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000) : new Date(item.createdAt);
-        if (isNaN(ts.getTime())) return;
-        const itemDate = new Date(ts);
-        itemDate.setHours(0, 0, 0, 0);
-        const idx = buckets.findIndex((b) => b.time.getTime() === itemDate.getTime());
-        if (idx !== -1) {
-          buckets[idx].incidents++;
-        }
-      });
-      logs.forEach((item) => {
-        const ts = item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000) : new Date(item.createdAt);
-        if (isNaN(ts.getTime())) return;
-        const itemDate = new Date(ts);
-        itemDate.setHours(0, 0, 0, 0);
-        const idx = buckets.findIndex((b) => b.time.getTime() === itemDate.getTime());
-        if (idx !== -1) {
-          buckets[idx].monitoring++;
-        }
-      });
-      return buckets;
-    } else { // "1M"
-      const buckets = [];
-      for (let i = 15; i >= -14; i--) {
-        const d = new Date(now.getTime() - i * 86400000);
-        d.setHours(0, 0, 0, 0);
-        buckets.push({
-          time: d,
-          label: d.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
-          incidents: 0,
-          monitoring: 0
-        });
-      }
-      incidents.forEach((item) => {
-        const ts = item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000) : new Date(item.createdAt);
-        if (isNaN(ts.getTime())) return;
-        const itemDate = new Date(ts);
-        itemDate.setHours(0, 0, 0, 0);
-        const idx = buckets.findIndex((b) => b.time.getTime() === itemDate.getTime());
-        if (idx !== -1) {
-          buckets[idx].incidents++;
-        }
-      });
-      logs.forEach((item) => {
-        const ts = item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000) : new Date(item.createdAt);
-        if (isNaN(ts.getTime())) return;
-        const itemDate = new Date(ts);
-        itemDate.setHours(0, 0, 0, 0);
-        const idx = buckets.findIndex((b) => b.time.getTime() === itemDate.getTime());
-        if (idx !== -1) {
-          buckets[idx].monitoring++;
-        }
-      });
-      return buckets;
-    }
+    });
+
+    return buckets;
   }, [incidents, logs, timeRange]);
 
   /* ── Render ─────────────────────────────────────────────── */
@@ -354,24 +289,15 @@ function AdminDashboard() {
             accentColor="#3d8eff"
             extraHeader={
               <div className="time-tabs">
-                <button
-                  className={`time-tab ${timeRange === "1D" ? "time-tab--active" : ""}`}
-                  onClick={() => setTimeRange("1D")}
-                >
-                  1D
-                </button>
-                <button
-                  className={`time-tab ${timeRange === "1W" ? "time-tab--active" : ""}`}
-                  onClick={() => setTimeRange("1W")}
-                >
-                  1W
-                </button>
-                <button
-                  className={`time-tab ${timeRange === "1M" ? "time-tab--active" : ""}`}
-                  onClick={() => setTimeRange("1M")}
-                >
-                  1M
-                </button>
+                {TIME_RANGES.map((range) => (
+                  <button
+                    key={range}
+                    className={`time-tab ${timeRange === range ? "time-tab--active" : ""}`}
+                    onClick={() => setTimeRange(range)}
+                  >
+                    {range}
+                  </button>
+                ))}
               </div>
             }
           >

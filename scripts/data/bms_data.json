@@ -1,0 +1,1606 @@
+[
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Balicassiao",
+    "count": 7,
+    "stationId": "Station 0",
+    "activities": [
+      "Foraging",
+      "Calling"
+    ],
+    "date": "March 4, 2025",
+    "dateTime": "2025-03-04T05:54:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Blue-headed Fantail",
+    "count": 2,
+    "stationId": "Station 1",
+    "activities": [
+      "Flying"
+    ],
+    "date": "March 4, 2025",
+    "dateTime": "2025-03-04T05:54:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Elegant Tit",
+    "count": 8,
+    "stationId": "Station 2",
+    "activities": [
+      "Foraging"
+    ],
+    "date": "March 4, 2025",
+    "dateTime": "2025-03-04T05:54:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Grey-capped Emerald Dove",
+    "count": 1,
+    "stationId": "Station 3",
+    "activities": [
+      "Perching"
+    ],
+    "date": "March 4, 2025",
+    "dateTime": "2025-03-04T05:54:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Tarictic Hornbill",
+    "count": 1,
+    "stationId": "Station 4",
+    "activities": [
+      "Calling"
+    ],
+    "date": "March 4, 2025",
+    "dateTime": "2025-03-04T05:54:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Philippine Bulbul",
+    "count": 16,
+    "stationId": "Station 5",
+    "activities": [
+      "Foraging",
+      "Calling"
+    ],
+    "date": "March 4, 2025",
+    "dateTime": "2025-03-04T05:54:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Philippine Hanging Parrot",
+    "count": 7,
+    "stationId": "Station 6",
+    "activities": [
+      "Flying"
+    ],
+    "date": "March 4, 2025",
+    "dateTime": "2025-03-04T05:54:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Red Junglefowl",
+    "count": 1,
+    "stationId": "Station 7",
+    "activities": [
+      "Foraging"
+    ],
+    "date": "March 4, 2025",
+    "dateTime": "2025-03-04T05:54:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "White-eared Brown Dove",
+    "count": 1,
+    "stationId": "Station 8",
+    "activities": [
+      "Perching"
+    ],
+    "date": "March 4, 2025",
+    "dateTime": "2025-03-04T05:54:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Olive-backed Sunbird",
+    "count": 1,
+    "stationId": "Station 0",
+    "activities": [
+      "Nesting"
+    ],
+    "date": "March 4, 2025",
+    "dateTime": "2025-03-04T05:54:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Philippine Fairy-bluebird",
+    "count": 3,
+    "stationId": "Station 1",
+    "activities": [
+      "Calling"
+    ],
+    "date": "March 4, 2025",
+    "dateTime": "2025-03-04T05:54:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Northern Sooty Woodpecker",
+    "count": 3,
+    "stationId": "Station 2",
+    "activities": [
+      "Foraging"
+    ],
+    "date": "March 4, 2025",
+    "dateTime": "2025-03-04T05:54:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "White-browed Shama",
+    "count": 1,
+    "stationId": "Station 3",
+    "activities": [
+      "Calling"
+    ],
+    "date": "March 4, 2025",
+    "dateTime": "2025-03-04T05:54:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Buzzing Flowerpecker",
+    "count": 1,
+    "stationId": "Station 4",
+    "activities": [
+      "Flying"
+    ],
+    "date": "March 4, 2025",
+    "dateTime": "2025-03-04T05:54:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Philippine Scops-owl",
+    "count": 1,
+    "stationId": "Station 5",
+    "activities": [
+      "Perching"
+    ],
+    "date": "March 4, 2025",
+    "dateTime": "2025-03-04T05:54:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Sulphur-billed Nuthatch",
+    "count": 1,
+    "stationId": "Station 6",
+    "activities": [
+      "Foraging"
+    ],
+    "date": "March 4, 2025",
+    "dateTime": "2025-03-04T05:54:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Spotted Wood Kingfisher",
+    "count": 4,
+    "stationId": "Station 7",
+    "activities": [
+      "Perching"
+    ],
+    "date": "March 4, 2025",
+    "dateTime": "2025-03-04T05:54:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Philippine Drongo-Cuckoo",
+    "count": 3,
+    "stationId": "Station 8",
+    "activities": [
+      "Calling"
+    ],
+    "date": "March 4, 2025",
+    "dateTime": "2025-03-04T05:54:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Red-keeled Flowerpecker",
+    "count": 2,
+    "stationId": "Station 0",
+    "activities": [
+      "Flying"
+    ],
+    "date": "March 4, 2025",
+    "dateTime": "2025-03-04T05:54:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Guaiabero",
+    "count": 2,
+    "stationId": "Station 1",
+    "activities": [
+      "Foraging"
+    ],
+    "date": "March 4, 2025",
+    "dateTime": "2025-03-04T05:54:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Grey-backed Tailorbird",
+    "count": 2,
+    "stationId": "Station 2",
+    "activities": [
+      "Calling"
+    ],
+    "date": "March 4, 2025",
+    "dateTime": "2025-03-04T05:54:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Phil. Night Jar",
+    "count": 1,
+    "stationId": "Station 3",
+    "activities": [
+      "Perching"
+    ],
+    "date": "March 4, 2025",
+    "dateTime": "2025-03-04T05:54:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Balicassiao",
+    "count": 4,
+    "stationId": "Station 0",
+    "activities": [
+      "Foraging"
+    ],
+    "date": "May 21, 2025",
+    "dateTime": "2025-05-21T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Blue-headed Fantail",
+    "count": 3,
+    "stationId": "Station 1",
+    "activities": [
+      "Flying"
+    ],
+    "date": "May 21, 2025",
+    "dateTime": "2025-05-21T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Elegant Tit",
+    "count": 3,
+    "stationId": "Station 2",
+    "activities": [
+      "Foraging",
+      "Calling"
+    ],
+    "date": "May 21, 2025",
+    "dateTime": "2025-05-21T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Large-billed Crow",
+    "count": 2,
+    "stationId": "Station 3",
+    "activities": [
+      "Calling"
+    ],
+    "date": "May 21, 2025",
+    "dateTime": "2025-05-21T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Lowland White-eye",
+    "count": 1,
+    "stationId": "Station 4",
+    "activities": [
+      "Foraging"
+    ],
+    "date": "May 21, 2025",
+    "dateTime": "2025-05-21T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Philippine Bulbul",
+    "count": 5,
+    "stationId": "Station 5",
+    "activities": [
+      "Calling"
+    ],
+    "date": "May 21, 2025",
+    "dateTime": "2025-05-21T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Philippine Coucal",
+    "count": 2,
+    "stationId": "Station 6",
+    "activities": [
+      "Foraging"
+    ],
+    "date": "May 21, 2025",
+    "dateTime": "2025-05-21T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Philippine Cuckoo-Dove",
+    "count": 10,
+    "stationId": "Station 7",
+    "activities": [
+      "Perching",
+      "Calling"
+    ],
+    "date": "May 21, 2025",
+    "dateTime": "2025-05-21T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Philippine Hanging Parrot",
+    "count": 3,
+    "stationId": "Station 8",
+    "activities": [
+      "Flying"
+    ],
+    "date": "May 21, 2025",
+    "dateTime": "2025-05-21T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Philippine Pygmy Woodpecker",
+    "count": 2,
+    "stationId": "Station 0",
+    "activities": [
+      "Foraging"
+    ],
+    "date": "May 21, 2025",
+    "dateTime": "2025-05-21T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Red Junglefowl",
+    "count": 3,
+    "stationId": "Station 1",
+    "activities": [
+      "Foraging"
+    ],
+    "date": "May 21, 2025",
+    "dateTime": "2025-05-21T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "White-eared Brown Dove",
+    "count": 10,
+    "stationId": "Station 2",
+    "activities": [
+      "Perching"
+    ],
+    "date": "May 21, 2025",
+    "dateTime": "2025-05-21T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Bicolored Flowerpecker",
+    "count": 1,
+    "stationId": "Station 3",
+    "activities": [
+      "Flying"
+    ],
+    "date": "May 21, 2025",
+    "dateTime": "2025-05-21T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Black-chinned Fruit Dove",
+    "count": 1,
+    "stationId": "Station 4",
+    "activities": [
+      "Perching"
+    ],
+    "date": "May 21, 2025",
+    "dateTime": "2025-05-21T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Guaiabero",
+    "count": 1,
+    "stationId": "Station 5",
+    "activities": [
+      "Calling"
+    ],
+    "date": "May 21, 2025",
+    "dateTime": "2025-05-21T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Amethyst Brown Dove",
+    "count": 1,
+    "stationId": "Station 6",
+    "activities": [
+      "Perching"
+    ],
+    "date": "May 21, 2025",
+    "dateTime": "2025-05-21T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Orange-bellied Flowerpecker",
+    "count": 1,
+    "stationId": "Station 7",
+    "activities": [
+      "Foraging"
+    ],
+    "date": "May 21, 2025",
+    "dateTime": "2025-05-21T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Wattled Bulbul",
+    "count": 1,
+    "stationId": "Station 8",
+    "activities": [
+      "Calling"
+    ],
+    "date": "May 21, 2025",
+    "dateTime": "2025-05-21T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Balicassiao",
+    "count": 19,
+    "stationId": "Station 0",
+    "activities": [
+      "Foraging",
+      "Calling"
+    ],
+    "date": "September 4, 2025",
+    "dateTime": "2025-09-04T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Blue-headed Fantail",
+    "count": 2,
+    "stationId": "Station 1",
+    "activities": [
+      "Flying"
+    ],
+    "date": "September 4, 2025",
+    "dateTime": "2025-09-04T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Elegant Tit",
+    "count": 2,
+    "stationId": "Station 2",
+    "activities": [
+      "Foraging"
+    ],
+    "date": "September 4, 2025",
+    "dateTime": "2025-09-04T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Large-billed Crow",
+    "count": 1,
+    "stationId": "Station 3",
+    "activities": [
+      "Calling"
+    ],
+    "date": "September 4, 2025",
+    "dateTime": "2025-09-04T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Tarictic Hornbill",
+    "count": 3,
+    "stationId": "Station 4",
+    "activities": [
+      "Calling",
+      "Flying"
+    ],
+    "date": "September 4, 2025",
+    "dateTime": "2025-09-04T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Philippine Bulbul",
+    "count": 13,
+    "stationId": "Station 5",
+    "activities": [
+      "Foraging"
+    ],
+    "date": "September 4, 2025",
+    "dateTime": "2025-09-04T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Philippine Cuckoo-Dove",
+    "count": 5,
+    "stationId": "Station 6",
+    "activities": [
+      "Perching"
+    ],
+    "date": "September 4, 2025",
+    "dateTime": "2025-09-04T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Philippine Hanging Parrot",
+    "count": 6,
+    "stationId": "Station 7",
+    "activities": [
+      "Flying"
+    ],
+    "date": "September 4, 2025",
+    "dateTime": "2025-09-04T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Red Junglefowl",
+    "count": 1,
+    "stationId": "Station 8",
+    "activities": [
+      "Foraging"
+    ],
+    "date": "September 4, 2025",
+    "dateTime": "2025-09-04T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "White-eared Brown Dove",
+    "count": 7,
+    "stationId": "Station 0",
+    "activities": [
+      "Perching"
+    ],
+    "date": "September 4, 2025",
+    "dateTime": "2025-09-04T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Rough-crested Malkoha",
+    "count": 2,
+    "stationId": "Station 1",
+    "activities": [
+      "Foraging"
+    ],
+    "date": "September 4, 2025",
+    "dateTime": "2025-09-04T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Philippine Fairy-bluebird",
+    "count": 5,
+    "stationId": "Station 2",
+    "activities": [
+      "Calling"
+    ],
+    "date": "September 4, 2025",
+    "dateTime": "2025-09-04T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Philippine Hawk-eagle",
+    "count": 1,
+    "stationId": "Station 3",
+    "activities": [
+      "Flying"
+    ],
+    "date": "September 4, 2025",
+    "dateTime": "2025-09-04T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Northern Sooty Woodpecker",
+    "count": 1,
+    "stationId": "Station 4",
+    "activities": [
+      "Foraging"
+    ],
+    "date": "September 4, 2025",
+    "dateTime": "2025-09-04T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "White-browed Shama",
+    "count": 1,
+    "stationId": "Station 5",
+    "activities": [
+      "Calling"
+    ],
+    "date": "September 4, 2025",
+    "dateTime": "2025-09-04T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Guaiabero",
+    "count": 1,
+    "stationId": "Station 6",
+    "activities": [
+      "Perching"
+    ],
+    "date": "September 4, 2025",
+    "dateTime": "2025-09-04T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Amethyst Brown Dove",
+    "count": 1,
+    "stationId": "Station 7",
+    "activities": [
+      "Perching"
+    ],
+    "date": "September 4, 2025",
+    "dateTime": "2025-09-04T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Philippine Trogon",
+    "count": 1,
+    "stationId": "Station 8",
+    "activities": [
+      "Calling"
+    ],
+    "date": "September 4, 2025",
+    "dateTime": "2025-09-04T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Grey-backed Tailorbird",
+    "count": 2,
+    "stationId": "Station 0",
+    "activities": [
+      "Nesting"
+    ],
+    "date": "September 4, 2025",
+    "dateTime": "2025-09-04T05:55:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Balicassiao",
+    "count": 9,
+    "stationId": "Station 0",
+    "activities": [
+      "Foraging"
+    ],
+    "date": "November 11, 2025",
+    "dateTime": "2025-11-11T06:04:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Elegant Tit",
+    "count": 2,
+    "stationId": "Station 1",
+    "activities": [
+      "Calling"
+    ],
+    "date": "November 11, 2025",
+    "dateTime": "2025-11-11T06:04:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Large-billed Crow",
+    "count": 3,
+    "stationId": "Station 2",
+    "activities": [
+      "Calling"
+    ],
+    "date": "November 11, 2025",
+    "dateTime": "2025-11-11T06:04:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Tarictic Hornbill",
+    "count": 3,
+    "stationId": "Station 3",
+    "activities": [
+      "Flying",
+      "Calling"
+    ],
+    "date": "November 11, 2025",
+    "dateTime": "2025-11-11T06:04:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Philippine Bulbul",
+    "count": 20,
+    "stationId": "Station 4",
+    "activities": [
+      "Foraging",
+      "Calling"
+    ],
+    "date": "November 11, 2025",
+    "dateTime": "2025-11-11T06:04:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Philippine Cuckoo-Dove",
+    "count": 2,
+    "stationId": "Station 5",
+    "activities": [
+      "Perching"
+    ],
+    "date": "November 11, 2025",
+    "dateTime": "2025-11-11T06:04:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Philippine Hanging Parrot",
+    "count": 14,
+    "stationId": "Station 6",
+    "activities": [
+      "Flying"
+    ],
+    "date": "November 11, 2025",
+    "dateTime": "2025-11-11T06:04:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Red Junglefowl",
+    "count": 3,
+    "stationId": "Station 7",
+    "activities": [
+      "Foraging"
+    ],
+    "date": "November 11, 2025",
+    "dateTime": "2025-11-11T06:04:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "White-eared Brown Dove",
+    "count": 4,
+    "stationId": "Station 8",
+    "activities": [
+      "Perching"
+    ],
+    "date": "November 11, 2025",
+    "dateTime": "2025-11-11T06:04:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Bicolored Flowerpecker",
+    "count": 1,
+    "stationId": "Station 0",
+    "activities": [
+      "Flying"
+    ],
+    "date": "November 11, 2025",
+    "dateTime": "2025-11-11T06:04:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Philippine Fairy-bluebird",
+    "count": 1,
+    "stationId": "Station 1",
+    "activities": [
+      "Calling"
+    ],
+    "date": "November 11, 2025",
+    "dateTime": "2025-11-11T06:04:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Philippine Hawk-eagle",
+    "count": 1,
+    "stationId": "Station 2",
+    "activities": [
+      "Flying"
+    ],
+    "date": "November 11, 2025",
+    "dateTime": "2025-11-11T06:04:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Buzzing Flowerpecker",
+    "count": 1,
+    "stationId": "Station 3",
+    "activities": [
+      "Foraging"
+    ],
+    "date": "November 11, 2025",
+    "dateTime": "2025-11-11T06:04:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Philippine Serpent Eagle",
+    "count": 1,
+    "stationId": "Station 4",
+    "activities": [
+      "Flying"
+    ],
+    "date": "November 11, 2025",
+    "dateTime": "2025-11-11T06:04:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Mountain Tailor Bird",
+    "count": 1,
+    "stationId": "Station 5",
+    "activities": [
+      "Calling"
+    ],
+    "date": "November 11, 2025",
+    "dateTime": "2025-11-11T06:04:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Guaiabero",
+    "count": 4,
+    "stationId": "Station 6",
+    "activities": [
+      "Foraging"
+    ],
+    "date": "November 11, 2025",
+    "dateTime": "2025-11-11T06:04:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  },
+  {
+    "category": "BMS",
+    "subcategory": "Avian Tracking Form",
+    "classification": "Avian",
+    "avianSpecies": "Amethyst Brown Dove",
+    "count": 2,
+    "stationId": "Station 7",
+    "activities": [
+      "Perching"
+    ],
+    "date": "November 11, 2025",
+    "dateTime": "2025-11-11T06:04:00",
+    "status": "completed",
+    "reporter": {
+      "uid": "historical_officer_1",
+      "name": "Archival Officer (BMS)",
+      "email": "historical.bms@tayabasenro.gov.ph",
+      "role": "archival_officer"
+    },
+    "isHistorical": true
+  }
+]

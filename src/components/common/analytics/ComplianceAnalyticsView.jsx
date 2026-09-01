@@ -7,6 +7,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   Area, CartesianGrid, ComposedChart
 } from "recharts";
+import { TIME_RANGES, createTemporalBuckets, incrementTemporalBucket, extractTimestampMs } from "../../../utils/temporalBuckets";
 
 const TOOLTIP_STYLE = {
   backgroundColor: "#001e2b",
@@ -42,31 +43,23 @@ export default function ComplianceAnalyticsView({ items = [] }) {
 
     const statusCounts = { "Submitted": 0, "Open Assignment": 0, "Pending Verification": 0, "Pending Completion": 0, "Completed": 0 };
     const businessMap = {
+      "Commercial Establishment": { compliant: 0, nonCompliant: 0 },
       "Public Market Vendor": { compliant: 0, nonCompliant: 0 },
       "Supermarket": { compliant: 0, nonCompliant: 0 },
       "Convenience Store": { compliant: 0, nonCompliant: 0 },
       "Restaurant/Eatery": { compliant: 0, nonCompliant: 0 },
-      "Wholesale/Retail Store": { compliant: 0, nonCompliant: 0 }
+      "Wholesale/Retail Store": { compliant: 0, nonCompliant: 0 },
+      "Individual": { compliant: 0, nonCompliant: 0 }
     };
     const barangayWasteMap = {};
     const enforcementTypes = { "Verbal Warning": 0, "Written Notice": 0, "Citation": 0 };
     const recentOperationalIssues = [];
 
-    // Temporal setup
-    const now = new Date();
-    const numBuckets = timeRange === "1D" ? 24 : timeRange === "1W" ? 7 : 30;
-    const timeLimitMs = (timeRange === "1D" ? 24 : timeRange === "1W" ? 7 : 30) * (timeRange === "1D" ? 3600000 : 86400000);
-    const startTimestamp = now.getTime() - timeLimitMs;
-    const temporalBuckets = [];
-    const half = Math.floor(numBuckets / 2);
-
-    for (let i = half; i > half - numBuckets; i--) {
-      const d = new Date(now.getTime() - i * (timeRange === "1D" ? 3600000 : 86400000));
-      const label = timeRange === "1D"
-        ? d.toLocaleTimeString(undefined, { hour: "numeric", minute: "numeric", hour12: true })
-        : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-      temporalBuckets.push({ label, timestamp: d.getTime(), wasteLogs: 0, inspections: 0 });
-    }
+    // Temporal setup via centralized engine
+    const temporalBuckets = createTemporalBuckets(timeRange, filteredItems, {
+      wasteLogs: 0,
+      inspections: 0
+    });
 
     filteredItems.forEach((item) => {
       const grp = getStatusGroup(item.status);
@@ -78,15 +71,12 @@ export default function ComplianceAnalyticsView({ items = [] }) {
         recentOperationalIssues.push(item);
       }
 
-      const ts = item.createdAt?.seconds ? item.createdAt.seconds * 1000 : null;
-      if (ts && ts >= startTimestamp) {
-        let bestIdx = 0, minDiff = Infinity;
-        temporalBuckets.forEach((bucket, idx) => {
-          const diff = Math.abs(bucket.timestamp - ts);
-          if (diff < minDiff) { minDiff = diff; bestIdx = idx; }
+      const ts = extractTimestampMs(item.createdAt || item.dateTime);
+      if (ts) {
+        incrementTemporalBucket(temporalBuckets, timeRange, ts, (bucket) => {
+          if (item.subcategory === "Waste Collection Tracking Form") bucket.wasteLogs++;
+          else if (item.subcategory === "Plastic Bag Ban Inspection Form") bucket.inspections++;
         });
-        if (item.subcategory === "Waste Collection Tracking Form") temporalBuckets[bestIdx].wasteLogs++;
-        else if (item.subcategory === "Plastic Bag Ban Inspection Form") temporalBuckets[bestIdx].inspections++;
       }
     });
 
@@ -105,10 +95,16 @@ export default function ComplianceAnalyticsView({ items = [] }) {
           barangayWasteMap[bName] = (barangayWasteMap[bName] || 0) + amt;
         }
       } else if (item.subcategory === "Plastic Bag Ban Inspection Form") {
-        if (item.businessType && businessMap[item.businessType]) {
-          if (item.compliant) businessMap[item.businessType].compliant++;
-          else businessMap[item.businessType].nonCompliant++;
+        let bType = item.businessType || "Commercial Establishment";
+        if (bType.toLowerCase() === "establishment") bType = "Commercial Establishment";
+
+        if (businessMap[bType]) {
+          if (item.compliant) businessMap[bType].compliant++;
+          else businessMap[bType].nonCompliant++;
+        } else {
+          businessMap["Commercial Establishment"][item.compliant ? "compliant" : "nonCompliant"]++;
         }
+
         if (item.compliant === false) {
           enforcementActionsCount++;
           if (item.actionToken === "Verbal Warning") enforcementTypes["Verbal Warning"]++;
@@ -131,7 +127,8 @@ export default function ComplianceAnalyticsView({ items = [] }) {
     ];
 
     const businessMatrixData = Object.entries(businessMap).map(([name, data]) => ({
-      name: name.replace(" Store", "").replace(" Vendor", ""),
+      name: name.replace(" Store", "").replace(" Vendor", "").replace("Commercial ", ""),
+      fullName: name,
       Compliant: data.compliant,
       "Non-Compliant": data.nonCompliant
     }));
@@ -221,7 +218,7 @@ export default function ComplianceAnalyticsView({ items = [] }) {
           variant="transparent"
           extraHeader={
             <div className="time-tabs">
-              {["1D", "1W", "1M"].map((range) => (
+              {TIME_RANGES.map((range) => (
                 <button
                   key={range}
                   className={`time-tab ${timeRange === range ? "time-tab--active" : ""}`}

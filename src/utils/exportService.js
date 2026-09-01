@@ -363,6 +363,44 @@ export const computeDomainDistribution = (rawData, scope) => {
 };
 
 /**
+ * Computes ranked species census metrics for BMS reports.
+ * @param {Array<object>} rawData
+ * @returns {Array<object>}
+ */
+export const computeSpeciesRankings = (rawData = []) => {
+  const map = {};
+  let totalOrganisms = 0;
+
+  rawData.forEach((item) => {
+    const isAvian = item.subcategory === "Avian Tracking Form" || item.classification === "Avian";
+    const isWildlife = item.subcategory === "Wildlife Observations Form";
+    if (!isAvian && !isWildlife && !item.avianSpecies && !item.species) return;
+
+    const name = (isAvian
+      ? item.avianSpecies || item.speciesName
+      : item.species || item.speciesName || item.commonName || item.animalName || "Unspecified Fauna")?.trim();
+
+    if (!name) return;
+    const count = Number(item.count || item.quantity || 1);
+    totalOrganisms += count;
+
+    if (!map[name]) {
+      map[name] = { count: 0, class: isAvian ? "Avian" : item.classification || "Wildlife" };
+    }
+    map[name].count += count;
+  });
+
+  return Object.entries(map)
+    .map(([species, data]) => ({
+      species,
+      classification: data.class,
+      count: data.count,
+      percentage: totalOrganisms > 0 ? ((data.count / totalOrganisms) * 100).toFixed(1) : "0.0"
+    }))
+    .sort((a, b) => b.count - a.count);
+};
+
+/**
  * Draws executive KPI cards ribbon across the top of Page 1.
  */
 const drawKpiCardsRibbon = (doc, x, y, width, rawData, scope) => {
@@ -655,6 +693,24 @@ export const exportToCSV = (rawData, scope, filename, options = { includeAnalyti
       return [formatCsvCell(d.label), formatCsvCell(d.value), formatCsvCell(share)].join(",");
     });
 
+    let speciesSection = [];
+    if ((scope || "").toLowerCase() === "bms") {
+      const speciesRankings = computeSpeciesRankings(rawData);
+      if (speciesRankings.length > 0) {
+        speciesSection = [
+          '\r\n"=== TOP SPECIES CENSUS & BIODIVERSITY RANKINGS ==="',
+          ['"Rank"', '"Species / Fauna Name"', '"Taxonomic Class"', '"Total Organisms Tracked"', '"Census Share %"'].join(","),
+          ...speciesRankings.map((r, i) => [
+            formatCsvCell(`#${i + 1}`),
+            formatCsvCell(r.species),
+            formatCsvCell(r.classification),
+            formatCsvCell(r.count),
+            formatCsvCell(`${r.percentage}%`)
+          ].join(","))
+        ];
+      }
+    }
+
     csvContent = [
       ...trendHeader,
       trendColumns.join(","),
@@ -662,6 +718,7 @@ export const exportToCSV = (rawData, scope, filename, options = { includeAnalyti
       ...distHeader,
       distColumns.join(","),
       ...distRows,
+      ...speciesSection,
       '\r\n"=== DETAILED FIELD AUDIT RECORDS ==="'
     ].join("\r\n") + "\r\n";
   }
@@ -786,8 +843,57 @@ export const exportToPDF = (rawData, scope, filename, title, options = { include
   let selectedKeys = allKeys.slice(0, 7);
 
   const lowerScope = (scope || "").toLowerCase();
+  let startTableY = 28;
+
   if (lowerScope === "bms") {
     selectedKeys = ["Log ID", "Subcategory", "Species / Fauna Name", "Taxonomic Class", "Organisms Count", "Location / Barangay", "Status", "Date Sighted"];
+    
+    const speciesRankings = computeSpeciesRankings(rawData);
+    if (speciesRankings.length > 0) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.5);
+      doc.setTextColor(0, 30, 43);
+      doc.text("Top Species Census & Biodiversity Rankings", 14, 27);
+
+      autoTable(doc, {
+        startY: 30,
+        head: [["Rank", "Species / Fauna Name", "Taxonomic Class", "Total Organisms Tracked", "Census Share %"]],
+        body: speciesRankings.slice(0, 8).map((r, i) => [
+          `#${i + 1}`,
+          r.species,
+          r.classification,
+          `${r.count} individuals`,
+          `${r.percentage}%`
+        ]),
+        theme: "grid",
+        headStyles: {
+          fillColor: [0, 30, 43],
+          textColor: [0, 237, 100],
+          fontStyle: "bold",
+          fontSize: 8,
+          cellPadding: 2.5,
+          lineColor: [28, 45, 56],
+          lineWidth: 0.1
+        },
+        bodyStyles: {
+          fontSize: 7.5,
+          cellPadding: 2,
+          textColor: [0, 30, 43],
+          lineColor: [225, 229, 232],
+          lineWidth: 0.1
+        },
+        alternateRowStyles: {
+          fillColor: [247, 249, 250]
+        },
+        margin: { left: 14, right: 14 }
+      });
+
+      startTableY = doc.lastAutoTable.finalY + 10;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.5);
+      doc.setTextColor(0, 30, 43);
+      doc.text("Detailed Field Observation Records", 14, startTableY - 3);
+    }
   } else if (lowerScope === "water") {
     selectedKeys = ["Log ID", "Subcategory", "Water Body / Source", "Flow Level / Rate", "Water Clarity", "pH Level", "Threat Severity", "Status"];
   } else if (lowerScope === "compliance") {
@@ -800,7 +906,7 @@ export const exportToPDF = (rawData, scope, filename, title, options = { include
   const tableBody = records.map((rec) => selectedKeys.map((key) => String(rec[key] ?? "")));
 
   autoTable(doc, {
-    startY: 28,
+    startY: startTableY,
     head: tableHead,
     body: tableBody,
     theme: "grid",

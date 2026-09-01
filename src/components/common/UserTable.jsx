@@ -60,10 +60,12 @@ function EmptyState() {
 function UserRow({ user, currentAdminUid, onEdit, onToggleRole, onDelete, isEven }) {
   const isAdmin     = user.role === "admin";
   const isSelf      = user.uid === currentAdminUid;
-  const displayName = user.name || "User";
+  const isHistorical = user.isHistorical === true;
+  const displayName = user.name || user.displayName || "User";
   const initials    = getInitials(displayName);
-  const cannotModifyRole = isSelf || isAdmin;
-  const cannotDelete = isSelf || isAdmin;
+  const cannotModifyRole = isSelf || isAdmin || isHistorical;
+  const cannotDelete = isSelf || isAdmin || isHistorical;
+  const cannotEdit = isHistorical;
 
   return (
     <tr
@@ -83,6 +85,11 @@ function UserRow({ user, currentAdminUid, onEdit, onToggleRole, onDelete, isEven
             {displayName}
             {isSelf && (
               <span className="um-self-tag" aria-label="This is you">You</span>
+            )}
+            {isHistorical && (
+              <span className="um-role-badge" style={{ marginLeft: "8px", fontSize: "10px", padding: "2px 6px", backgroundColor: "var(--c-stone-light)", color: "var(--c-stone)" }}>
+                Historical Reference (Info Only)
+              </span>
             )}
           </div>
         </div>
@@ -130,9 +137,11 @@ function UserRow({ user, currentAdminUid, onEdit, onToggleRole, onDelete, isEven
           <button
             id={`um-edit-btn-${user.uid}`}
             type="button"
-            className="um-action-btn um-action-btn--edit"
+            className={`um-action-btn ${cannotEdit ? "um-action-btn--disabled" : "um-action-btn--edit"}`}
             onClick={() => onEdit(user)}
-            title="Edit credentials"
+            disabled={cannotEdit}
+            title={cannotEdit ? "Historical profiles cannot be edited" : "Edit credentials"}
+            aria-disabled={cannotEdit}
           >
             <span className="material-symbols-outlined um-action-btn__icon" aria-hidden="true">edit</span>
             <span className="um-action-btn__label">Edit</span>
@@ -149,7 +158,9 @@ function UserRow({ user, currentAdminUid, onEdit, onToggleRole, onDelete, isEven
             onClick={() => onToggleRole(user)}
             disabled={cannotModifyRole}
             title={
-              isSelf
+              isHistorical
+                ? "Historical profiles cannot be modified"
+                : isSelf
                 ? "Self-role changes are blocked"
                 : isAdmin
                 ? "Administrators cannot edit other administrators"
@@ -172,7 +183,9 @@ function UserRow({ user, currentAdminUid, onEdit, onToggleRole, onDelete, isEven
             onClick={() => onDelete(user)}
             disabled={cannotDelete}
             title={
-              isSelf
+              isHistorical
+                ? "Historical profiles cannot be modified"
+                : isSelf
                 ? "Self-deletion is blocked"
                 : isAdmin
                 ? "Administrators cannot delete other administrators"

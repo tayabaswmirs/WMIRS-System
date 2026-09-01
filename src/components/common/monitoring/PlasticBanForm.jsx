@@ -2,11 +2,13 @@ import { useEffect } from "react";
 
 function PlasticBanForm({ formData, onChange, setFormData }) {
   const businessTypes = [
+    "Commercial Establishment",
     "Public Market Vendor",
     "Supermarket",
     "Convenience Store",
     "Restaurant/Eatery",
-    "Wholesale/Retail Store"
+    "Wholesale/Retail Store",
+    "Individual"
   ];
 
   const actionTokens = [
