@@ -6,6 +6,7 @@ import NotificationBell from "./NotificationBell";
 import NotificationToast from "../common/NotificationToast";
 import { useNotifications } from "../../hooks/useNotifications";
 import Avatar from "../common/Avatar";
+import SyncStatusBar from "../common/SyncStatusBar";
 import "../../styles/dashboard.css";
 
 /**
@@ -89,6 +90,9 @@ function DashboardLayout({ children }) {
           </div>
 
           <div className="topbar__right">
+            {/* Real-time Offline & Sync Status */}
+            <SyncStatusBar />
+
             {/* Notification Bell */}
             <NotificationBell />
 

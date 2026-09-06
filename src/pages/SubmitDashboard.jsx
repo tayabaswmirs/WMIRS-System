@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { createIncidentReport } from "../firebase/services/incidentService";
+import { compressImage } from "../utils/imageCompressor";
+import { saveToOutbox } from "../services/outboxDb";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import SubmitChoice from "../components/common/SubmitChoice";
 import IncidentForm from "../components/common/IncidentForm";
@@ -48,6 +50,39 @@ function SubmitDashboard() {
       },
     };
 
+    // Handle offline submission directly via local Outbox
+    if (!navigator.onLine) {
+      try {
+        setFormFeedback({ type: "info", message: "Compressing photos for offline storage..." });
+        const compressedFiles = await Promise.all(
+          (formData.files || []).map(async (file) => {
+            const res = await compressImage(file);
+            return { name: res.name, type: res.type, blob: res.blob };
+          })
+        );
+
+        await saveToOutbox({
+          logType: "Incident",
+          data: incidentData,
+          files: compressedFiles,
+          uid: currentUser.uid,
+        });
+
+        setFormFeedback({
+          type: "success",
+          message: "Report saved to local Outbox! It will automatically sync when connection returns."
+        });
+        onSuccess();
+        return;
+      } catch (offlineErr) {
+        console.error("Failed to save to outbox:", offlineErr);
+        setFormFeedback({ type: "error", message: "Failed to queue report offline. Please try again." });
+        return;
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+
     try {
       await createIncidentReport(incidentData, formData.files, (fileIdx, progress) => {
         setUploadProgress((prev) => ({ ...prev, [fileIdx]: progress }));
@@ -56,7 +91,28 @@ function SubmitDashboard() {
       onSuccess();
     } catch (err) {
       console.error("Incident submission failed:", err);
-      setFormFeedback({ type: "error", message: "Failed to submit the incident. Please try again." });
+      // Fallback: If network failed mid-submission, offer or attempt outbox save
+      try {
+        const compressedFiles = await Promise.all(
+          (formData.files || []).map(async (file) => {
+            const res = await compressImage(file);
+            return { name: res.name, type: res.type, blob: res.blob };
+          })
+        );
+        await saveToOutbox({
+          logType: "Incident",
+          data: incidentData,
+          files: compressedFiles,
+          uid: currentUser.uid,
+        });
+        setFormFeedback({
+          type: "success",
+          message: "Network dropped during upload. Report was safely saved to your Outbox!"
+        });
+        onSuccess();
+      } catch {
+        setFormFeedback({ type: "error", message: "Failed to submit the incident. Please try again." });
+      }
     } finally {
       setIsSubmitting(false);
     }

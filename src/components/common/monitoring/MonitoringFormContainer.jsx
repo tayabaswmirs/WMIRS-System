@@ -2,6 +2,8 @@ import { useState, useRef } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { CATEGORIES, SUBCATEGORY_META } from "../../../utils/monitoringConstants";
 import { createMonitoringLog } from "../../../firebase/services/monitoringService";
+import { compressImage } from "../../../utils/imageCompressor";
+import { saveToOutbox } from "../../../services/outboxDb";
 
 import AvianTrackingForm from "./AvianTrackingForm";
 import WildlifeObservationForm from "./WildlifeObservationForm";
@@ -52,6 +54,42 @@ function MonitoringFormContainer({ category, subcategory, onBack, onSubmitSucces
       }
     };
 
+    // Handle offline submission directly via local Outbox
+    if (!navigator.onLine) {
+      try {
+        setFeedback({ type: "info", message: "Compressing attachments for offline storage..." });
+        const compressedFiles = await Promise.all(
+          evidenceFiles.map(async (file) => {
+            const res = await compressImage(file);
+            return { name: res.name, type: res.type, blob: res.blob };
+          })
+        );
+
+        await saveToOutbox({
+          logType: "Monitoring",
+          data: logPayload,
+          files: compressedFiles,
+          uid: currentUser.uid,
+        });
+
+        setFeedback({
+          type: "success",
+          message: "Monitoring log saved to Outbox! It will automatically sync when connection returns."
+        });
+        setFormFields({});
+        setEvidenceFiles([]);
+        setUploadProgress({});
+        onSubmitSuccess();
+        return;
+      } catch (offlineErr) {
+        console.error("Failed to save monitoring log to outbox:", offlineErr);
+        setFeedback({ type: "error", message: "Failed to queue log offline. Please try again." });
+        return;
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+
     try {
       await createMonitoringLog(logPayload, evidenceFiles, (fileIdx, pct) => {
         setUploadProgress((prev) => ({ ...prev, [fileIdx]: pct }));
@@ -63,7 +101,30 @@ function MonitoringFormContainer({ category, subcategory, onBack, onSubmitSucces
       onSubmitSuccess();
     } catch (err) {
       console.error(err);
-      setFeedback({ type: "error", message: "Failed to submit log. Please try again." });
+      // Fallback: If network failed mid-submission, save to Outbox
+      try {
+        const compressedFiles = await Promise.all(
+          evidenceFiles.map(async (file) => {
+            const res = await compressImage(file);
+            return { name: res.name, type: res.type, blob: res.blob };
+          })
+        );
+        await saveToOutbox({
+          logType: "Monitoring",
+          data: logPayload,
+          files: compressedFiles,
+          uid: currentUser.uid,
+        });
+        setFeedback({
+          type: "success",
+          message: "Network dropped. Monitoring log was safely saved to your Outbox!"
+        });
+        setFormFields({});
+        setEvidenceFiles([]);
+        onSubmitSuccess();
+      } catch {
+        setFeedback({ type: "error", message: "Failed to submit log. Please try again." });
+      }
     } finally {
       setIsSubmitting(false);
     }
