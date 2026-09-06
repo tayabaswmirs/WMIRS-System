@@ -5,17 +5,15 @@ import {
   adminOverrideMonitoring,
   deleteMonitoringLog
 } from "../firebase/services/monitoringService";
+import { useLogFilters } from "../hooks/useLogFilters";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import MonitoringTable from "../components/common/monitoring/MonitoringTable";
 import MonitoringDetailsModal from "../components/common/monitoring/MonitoringDetailsModal";
 import StatPill from "../components/common/StatPill";
-import StatusFilterBar from "../components/common/StatusFilterBar";
+import SearchFilterBar from "../components/common/SearchFilterBar";
 import ConfirmModal from "../components/common/ConfirmModal";
 import ExportModal from "../components/common/ExportModal";
-import { getStatusesByLabel } from "../utils/incidentConstants";
 import "../styles/dashboard.css";
-
-const STATUS_FILTERS = ["All", "Submitted", "Denied", "Open Assignment", "Pending Verification", "Pending Completion", "Completed"];
 
 const CATEGORY_INFO = {
   BMS: {
@@ -52,8 +50,6 @@ export default function AdminMonitoringCategoryLogs({ category = "BMS" }) {
 
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedLog, setSelectedLog] = useState(null);
   const [deleteDialog, setDeleteDialog] = useState(null);
   const [isExportOpen, setIsExportOpen] = useState(false);
@@ -69,6 +65,9 @@ export default function AdminMonitoringCategoryLogs({ category = "BMS" }) {
       if (unsubscribe) unsubscribe();
     };
   }, [category]);
+
+  /* Headless filter engine with locked category */
+  const filterHook = useLogFilters(logs, { mode: "monitoring", isAdmin: true, fixedCategory: category });
 
   const stats = useMemo(() => {
     return logs.reduce((acc, r) => {
@@ -86,22 +85,6 @@ export default function AdminMonitoringCategoryLogs({ category = "BMS" }) {
       return acc;
     }, { total: 0, submitted: 0, active: 0, resolved: 0, approved: 0 });
   }, [logs]);
-
-  const filteredLogs = useMemo(() => {
-    const byStatus = activeFilter === "All"
-      ? logs
-      : logs.filter((r) => getStatusesByLabel(activeFilter).includes(r.status?.toLowerCase()));
-
-    if (!searchQuery.trim()) return byStatus;
-    const q = searchQuery.toLowerCase();
-    return byStatus.filter((r) =>
-      r.subcategory?.toLowerCase().includes(q) ||
-      r.location?.toLowerCase().includes(q) ||
-      r.reporter?.name?.toLowerCase().includes(q) ||
-      r.waterBody?.toLowerCase().includes(q) ||
-      r.businessName?.toLowerCase().includes(q)
-    );
-  }, [logs, activeFilter, searchQuery]);
 
   const handleStatusChange = async (logId, newStatus, remarks) => {
     if (!currentUser?.uid) return;
@@ -133,7 +116,7 @@ export default function AdminMonitoringCategoryLogs({ category = "BMS" }) {
     }
   };
 
-  const logsWithDelete = filteredLogs.map(log => ({
+  const logsWithDelete = filterHook.filteredItems.map((log) => ({
     ...log,
     onDelete: handleDeleteRequest
   }));
@@ -161,28 +144,15 @@ export default function AdminMonitoringCategoryLogs({ category = "BMS" }) {
         <div className="inc-history-card card-base">
           <div className="inc-history-card__head">
             <h2 className="inc-history-card__title">{info.tableTitle}</h2>
-            
-            {/* Search Input */}
-            <div className="inc-search-wrap">
-              <span className="material-symbols-outlined inc-search-icon">search</span>
-              <input
-                id={`mon-${category.toLowerCase()}-search`}
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={info.searchPlaceholder}
-                className="inc-search-input"
-              />
-            </div>
           </div>
 
-          {/* Status filter tabs & mobile dropdown */}
-          <StatusFilterBar
-            filters={STATUS_FILTERS}
-            activeFilter={activeFilter}
-            onSelectFilter={setActiveFilter}
-            ariaLabel={`Filter ${category} monitoring by status`}
-            selectId={`mon-${category.toLowerCase()}-filter-select`}
+          {/* Comprehensive Search & Multi-Toggle Filter Bar */}
+          <SearchFilterBar
+            filterHook={filterHook}
+            placeholder={info.searchPlaceholder}
+            mode="monitoring"
+            isAdmin={true}
+            fixedCategory={category}
           />
 
           {/* Monitoring Table */}

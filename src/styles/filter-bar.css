@@ -1,0 +1,580 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   WMIRS System — Comprehensive Search & Multi-Toggle Filter System
+   Strict adherence to MongoDB Design Tokens (mongodb-DESIGN.md)
+   Documentation surface: #ffffff / #f9fbfa, Hairlines: #e1e5e8 / #c1ccd6
+   Brand Green: #00ed64, Dark Green: #00684a, Ink: #001e2b, Steel: #5c6c7a
+   ───────────────────────────────────────────────────────────────────────── */
+
+.wmirs-filter-system {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 24px;
+  background-color: var(--c-canvas, #ffffff);
+  border-bottom: 1px solid var(--c-hairline, #e1e5e8);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Search & Filter Master Row ───────────────────────────────────────── */
+.wmirs-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.wmirs-search-wrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.wmirs-search-icon {
+  position: absolute;
+  left: 16px;
+  font-size: 20px;
+  color: var(--c-steel, #5c6c7a);
+  pointer-events: none;
+  user-select: none;
+}
+
+.wmirs-search-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 42px 0 46px;
+  background-color: var(--c-surface, #f9fbfa);
+  border: 1px solid var(--c-hairline-strong, #c1ccd6);
+  border-radius: 9999px;
+  color: var(--c-ink, #001e2b);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wmirs-search-input:focus {
+  outline: none;
+  border-color: var(--c-brand-green-dark, #00684a);
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(0, 237, 100, 0.22);
+}
+
+.wmirs-search-input::placeholder {
+  color: var(--c-steel, #5c6c7a);
+  opacity: 0.85;
+}
+
+.wmirs-search-clear-btn {
+  position: absolute;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: var(--c-steel, #5c6c7a);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.wmirs-search-clear-btn:hover {
+  color: var(--c-ink, #001e2b);
+  background-color: var(--c-hairline-soft, #eceff1);
+}
+
+/* ── "Filters" Toggle Button ──────────────────────────────────────────── */
+.wmirs-filter-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 20px;
+  background-color: var(--c-canvas, #ffffff);
+  border: 1px solid var(--c-hairline-strong, #c1ccd6);
+  border-radius: 9999px;
+  color: var(--c-ink, #001e2b);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.wmirs-filter-toggle-btn:hover {
+  background-color: var(--c-surface, #f9fbfa);
+  border-color: var(--c-ink, #001e2b);
+}
+
+.wmirs-filter-toggle-btn:active {
+  transform: scale(0.98);
+}
+
+.wmirs-filter-toggle-btn.is-active {
+  border-color: var(--c-brand-green-dark, #00684a);
+  background-color: var(--c-surface-feature, #e3fcef);
+  color: var(--c-brand-green-dark, #00684a);
+}
+
+.wmirs-filter-toggle-btn.is-open {
+  background-color: var(--c-ink, #001e2b);
+  border-color: var(--c-ink, #001e2b);
+  color: #ffffff;
+}
+
+.wmirs-filter-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background-color: var(--c-brand-green, #00ed64);
+  color: var(--c-on-primary, #001e2b);
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: inherit;
+  line-height: 1;
+}
+
+/* ── Clear All Link in Header Bar ─────────────────────────────────────── */
+.wmirs-clear-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  height: 44px;
+  background: transparent;
+  border: none;
+  color: var(--c-steel, #5c6c7a);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+
+.wmirs-clear-all-btn:hover {
+  color: var(--c-brand-green-dark, #00684a);
+  text-decoration: underline;
+}
+
+/* ── Expandable Filter Panel (Documentation Surface) ──────────────────── */
+.wmirs-filter-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 22px 24px;
+  background-color: var(--c-surface, #f9fbfa);
+  border: 1px solid var(--c-hairline, #e1e5e8);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 30, 43, 0.04);
+  animation: wmirsPanelSlide 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+@keyframes wmirsPanelSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Filter Sections & Labels ─────────────────────────────────────────── */
+.wmirs-filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wmirs-filter-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--c-steel, #5c6c7a);
+  user-select: none;
+  margin: 0;
+}
+
+/* ── Multi-Select Pill Groups ─────────────────────────────────────────── */
+.wmirs-pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.wmirs-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  min-height: 32px;
+  background-color: var(--c-canvas, #ffffff);
+  border: 1px solid var(--c-hairline, #e1e5e8);
+  border-radius: 9999px;
+  color: var(--c-slate, #3d4f5b);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.wmirs-pill-btn:hover {
+  background-color: var(--c-surface-soft, #f4f7f6);
+  border-color: var(--c-hairline-strong, #c1ccd6);
+  color: var(--c-ink, #001e2b);
+}
+
+.wmirs-pill-btn:active {
+  transform: scale(0.97);
+}
+
+/* Signature MongoDB Green Active Pill */
+.wmirs-pill-btn.is-selected {
+  background-color: var(--c-brand-green, #00ed64);
+  color: var(--c-on-primary, #001e2b);
+  border-color: var(--c-brand-green, #00ed64);
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 237, 100, 0.28);
+}
+
+/* Semantic Severity Active Overrides */
+.wmirs-pill-btn.is-severity-low.is-selected {
+  background-color: var(--c-surface-feature, #e3fcef);
+  color: var(--c-brand-green-dark, #00684a);
+  border-color: var(--c-brand-green, #00ed64);
+  box-shadow: 0 2px 6px rgba(0, 237, 100, 0.2);
+}
+
+.wmirs-pill-btn.is-severity-medium.is-selected {
+  background-color: var(--c-semantic-warning-bg, #fff8e0);
+  color: var(--c-semantic-warning-text, #946f3f);
+  border-color: #ffb020;
+  box-shadow: 0 2px 6px rgba(255, 176, 32, 0.2);
+}
+
+.wmirs-pill-btn.is-severity-high.is-selected {
+  background-color: #fff0eb;
+  color: #c44315;
+  border-color: var(--c-accent-orange, #fa6e39);
+  box-shadow: 0 2px 6px rgba(250, 110, 57, 0.2);
+}
+
+.wmirs-pill-btn.is-severity-critical.is-selected {
+  background-color: #feecee;
+  color: #cf222e;
+  border-color: #ff3d57;
+  box-shadow: 0 2px 6px rgba(255, 61, 87, 0.2);
+}
+
+.wmirs-pill-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: currentColor;
+  flex-shrink: 0;
+}
+
+/* ── Dropdown Select Grid ─────────────────────────────────────────────── */
+.wmirs-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.wmirs-select-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wmirs-select-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.wmirs-select-icon {
+  position: absolute;
+  left: 12px;
+  font-size: 18px;
+  color: var(--c-steel, #5c6c7a);
+  pointer-events: none;
+  user-select: none;
+}
+
+.wmirs-select-chevron {
+  position: absolute;
+  right: 12px;
+  font-size: 20px;
+  color: var(--c-steel, #5c6c7a);
+  pointer-events: none;
+  user-select: none;
+  transition: transform 0.15s ease;
+}
+
+.wmirs-filter-select {
+  width: 100%;
+  height: 40px;
+  padding: 0 36px 0 38px;
+  background-color: var(--c-canvas, #ffffff);
+  border: 1px solid var(--c-hairline, #e1e5e8);
+  border-radius: 8px;
+  color: var(--c-ink, #001e2b);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.wmirs-filter-select:focus {
+  outline: none;
+  border-color: var(--c-brand-green-dark, #00684a);
+  box-shadow: 0 0 0 2px rgba(0, 237, 100, 0.2);
+}
+
+.wmirs-filter-select:hover {
+  border-color: var(--c-hairline-strong, #c1ccd6);
+}
+
+.wmirs-filter-select option {
+  background-color: #ffffff;
+  color: var(--c-ink, #001e2b);
+  padding: 8px;
+}
+
+/* ── Date Range Controls ──────────────────────────────────────────────── */
+.wmirs-date-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.wmirs-custom-date-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--c-canvas, #ffffff);
+  padding: 4px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--c-hairline, #e1e5e8);
+}
+
+.wmirs-date-input-field {
+  height: 32px;
+  padding: 0 8px;
+  background-color: transparent;
+  border: 1px solid var(--c-hairline, #e1e5e8);
+  border-radius: 6px;
+  color: var(--c-ink, #001e2b);
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.wmirs-date-input-field:focus {
+  outline: none;
+  border-color: var(--c-brand-green-dark, #00684a);
+}
+
+.wmirs-date-separator {
+  color: var(--c-steel, #5c6c7a);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ── Filter Panel Bottom Actions ──────────────────────────────────────── */
+.wmirs-filter-panel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid var(--c-hairline, #e1e5e8);
+  margin-top: 4px;
+}
+
+.wmirs-panel-active-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--c-steel, #5c6c7a);
+}
+
+.wmirs-panel-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wmirs-btn-reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 16px;
+  background: transparent;
+  border: 1px solid var(--c-hairline-strong, #c1ccd6);
+  border-radius: 9999px;
+  color: var(--c-ink, #001e2b);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.wmirs-btn-reset:hover {
+  background-color: var(--c-surface-soft, #f4f7f6);
+  border-color: var(--c-ink, #001e2b);
+}
+
+.wmirs-btn-apply {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 20px;
+  background-color: var(--c-brand-green, #00ed64);
+  color: var(--c-on-primary, #001e2b);
+  border: none;
+  border-radius: 9999px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 237, 100, 0.28);
+  transition: all 0.15s ease;
+}
+
+.wmirs-btn-apply:hover {
+  background-color: var(--c-primary-deep, #00b545);
+}
+
+.wmirs-btn-apply:active {
+  background-color: var(--c-primary-pressed, #008c34);
+  transform: scale(0.98);
+}
+
+/* ── Active Filter Chips Row ──────────────────────────────────────────── */
+.wmirs-active-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.wmirs-active-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background-color: var(--c-surface-feature, #e3fcef);
+  border: 1px solid var(--c-brand-green-soft, #c3f0d2);
+  border-radius: 9999px;
+  color: var(--c-brand-green-dark, #00684a);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  box-sizing: border-box;
+}
+
+.wmirs-chip-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: var(--c-brand-green-dark, #00684a);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.15s ease;
+}
+
+.wmirs-chip-remove-btn:hover {
+  background-color: rgba(0, 104, 74, 0.15);
+  color: var(--c-ink, #001e2b);
+}
+
+/* ── Responsive Behavior ──────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .wmirs-filter-system {
+    padding: 14px 16px;
+  }
+
+  .wmirs-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .wmirs-search-input {
+    height: 48px; /* Touch target >= 44px */
+  }
+
+  .wmirs-filter-toggle-btn {
+    height: 48px;
+    width: 100%;
+  }
+
+  .wmirs-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wmirs-custom-date-inputs {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .wmirs-date-input-field {
+    height: 40px;
+    width: 100%;
+  }
+
+  .wmirs-filter-panel-footer {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .wmirs-panel-actions-group {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

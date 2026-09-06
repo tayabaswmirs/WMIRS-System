@@ -1,27 +1,26 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { subscribeToAllMonitoring, adminOverrideMonitoring, deleteMonitoringLog } from "../firebase/services/monitoringService";
+import { useLogFilters } from "../hooks/useLogFilters";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import MonitoringTable from "../components/common/monitoring/MonitoringTable";
 import MonitoringDetailsModal from "../components/common/monitoring/MonitoringDetailsModal";
 import StatPill from "../components/common/StatPill";
-import StatusFilterBar from "../components/common/StatusFilterBar";
+import SearchFilterBar from "../components/common/SearchFilterBar";
 import ConfirmModal from "../components/common/ConfirmModal";
 import ExportModal from "../components/common/ExportModal";
-import { getStatusesByLabel } from "../utils/incidentConstants";
-
-const STATUS_FILTERS = ["All", "Submitted", "Denied", "Open Assignment", "Pending Verification", "Pending Completion", "Completed"];
 
 function AdminMonitoring() {
   const { currentUser } = useAuth();
   
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedLog, setSelectedLog] = useState(null);
   const [deleteDialog, setDeleteDialog] = useState(null);
   const [isExportOpen, setIsExportOpen] = useState(false);
+
+  /* Headless filter engine */
+  const filterHook = useLogFilters(logs, { mode: "monitoring", isAdmin: true });
 
   const stats = useMemo(() => {
     return logs.reduce((acc, r) => {
@@ -78,26 +77,7 @@ function AdminMonitoring() {
     }
   };
 
-  const filteredLogs = useMemo(() => {
-    const byStatus = activeFilter === "All" 
-      ? logs 
-      : logs.filter((log) => getStatusesByLabel(activeFilter).includes(log.status?.toLowerCase()));
-
-    if (!searchQuery.trim()) return byStatus;
-    const q = searchQuery.toLowerCase();
-    
-    return byStatus.filter((log) => 
-      log.subcategory?.toLowerCase().includes(q) ||
-      log.category?.toLowerCase().includes(q) ||
-      (log.reporter?.name && log.reporter.name.toLowerCase().includes(q)) ||
-      (log.speciesName && log.speciesName.toLowerCase().includes(q)) ||
-      (log.avianSpecies && log.avianSpecies.toLowerCase().includes(q)) ||
-      (log.barangay && log.barangay.toLowerCase().includes(q)) ||
-      (log.waterBody && log.waterBody.toLowerCase().includes(q))
-    );
-  }, [logs, activeFilter, searchQuery]);
-
-  const logsWithDelete = filteredLogs.map(log => ({
+  const logsWithDelete = filterHook.filteredItems.map((log) => ({
     ...log,
     onDelete: handleDeleteRequest
   }));
@@ -126,27 +106,14 @@ function AdminMonitoring() {
         <div className="inc-history-card card-base">
           <div className="inc-history-card__head">
             <h2 className="inc-history-card__title">All Monitoring Logs</h2>
-            
-            <div className="inc-search-wrap">
-              <span className="material-symbols-outlined inc-search-icon">search</span>
-              <input
-                id="mon-admin-search"
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search subcategory, reporter, species, location..."
-                className="inc-search-input"
-              />
-            </div>
           </div>
 
-          {/* Status filter tabs & mobile dropdown */}
-          <StatusFilterBar
-            filters={STATUS_FILTERS}
-            activeFilter={activeFilter}
-            onSelectFilter={setActiveFilter}
-            ariaLabel="Filter monitoring by status"
-            selectId="admin-monitoring-filter-select"
+          {/* Comprehensive Search & Multi-Toggle Filter Bar */}
+          <SearchFilterBar
+            filterHook={filterHook}
+            placeholder="Search subcategory, reporter, species, location, water body..."
+            mode="monitoring"
+            isAdmin={true}
           />
 
           {loading ? (

@@ -1,13 +1,15 @@
 import { CATEGORY_META, STATUS_METADATA, getSeverityClass, getStatusClass, formatIncidentDate } from "../../utils/incidentConstants";
+import { isCriticalActive } from "../../utils/filterUtils";
 
 /**
- * AdminIncidentTable — renders the full incident list for admin review.
+ * AdminIncidentTable — renders the full incident list with priority highlighting.
  *
  * Props:
  *   incidents      {Array}    — filtered list of incident objects
  *   onViewDetails  {Function} — (incident) called when the details icon is clicked
+ *   stageId        {string}   — optional stage identifier for contextual priority evaluation
  */
-function AdminIncidentTable({ incidents, onViewDetails }) {
+function AdminIncidentTable({ incidents, onViewDetails, stageId = null }) {
   if (incidents.length === 0) {
     return (
       <div className="inc-empty-state">
@@ -35,10 +37,12 @@ function AdminIncidentTable({ incidents, onViewDetails }) {
         <tbody>
           {incidents.map((inc, idx) => {
             const catMeta = CATEGORY_META[inc.category] ?? { icon: "report", color: "#00ed64" };
+            const isPriority = isCriticalActive(inc, stageId);
+
             return (
               <tr
                 key={inc.id}
-                className={`inc-table__row${idx % 2 === 0 ? " inc-table__row--even" : ""}`}
+                className={`inc-table__row${idx % 2 === 0 ? " inc-table__row--even" : ""}${isPriority ? " inc-table__row--priority" : ""}`}
               >
                 {/* Category — color icon + dot + label */}
                 <td className="inc-table__td">
@@ -78,9 +82,14 @@ function AdminIncidentTable({ incidents, onViewDetails }) {
                   </span>
                 </td>
 
-              {/* Inline status dropdown */}
+                {/* Inline status dropdown */}
                 <td className="inc-table__td">
-                  <span className={`status-badge ${getStatusClass(inc.status)}`}>
+                  <span className={`status-badge ${getStatusClass(inc.status)}${isPriority ? " status-badge--priority" : ""}`}>
+                    {isPriority && (
+                      <span className="material-symbols-outlined" style={{ fontSize: "14px", marginRight: "2px" }} aria-hidden="true">
+                        priority_high
+                      </span>
+                    )}
                     {STATUS_METADATA[inc.status?.toLowerCase()]?.label || inc.status}
                   </span>
                 </td>

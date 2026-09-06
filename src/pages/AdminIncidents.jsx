@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { subscribeToAllIncidents, adminOverrideIncident, deleteIncidentReport } from "../firebase/services/incidentService";
+import { useLogFilters } from "../hooks/useLogFilters";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import AdminIncidentTable from "../components/common/AdminIncidentTable";
 import IncidentDetailsModal from "../components/common/IncidentDetailsModal";
@@ -8,20 +9,14 @@ import ConfirmationModal from "../components/common/ConfirmationModal";
 import ConfirmModal from "../components/common/ConfirmModal";
 import ExportModal from "../components/common/ExportModal";
 import StatPill from "../components/common/StatPill";
-import StatusFilterBar from "../components/common/StatusFilterBar";
-import { getStatusesByLabel } from "../utils/incidentConstants";
+import SearchFilterBar from "../components/common/SearchFilterBar";
 import "../styles/dashboard.css";
-
-// Filter tab options displayed above the table
-const STATUS_FILTERS = ["All", "Submitted", "Denied", "Open Assignment", "Pending Verification", "Pending Completion", "Completed"];
 
 function AdminIncidents() {
   const { currentUser } = useAuth();
 
   const [incidents, setIncidents]               = useState([]);
   const [selectedIncident, setSelectedIncident] = useState(null);
-  const [activeFilter, setActiveFilter]         = useState("All");
-  const [searchQuery, setSearchQuery]           = useState("");
   const [confirmDialog, setConfirmDialog]       = useState(null);
   const [deleteDialog, setDeleteDialog]         = useState(null);
   const [isExportOpen, setIsExportOpen]         = useState(false);
@@ -31,6 +26,9 @@ function AdminIncidents() {
     const unsubscribe = subscribeToAllIncidents(setIncidents);
     return unsubscribe;
   }, []);
+
+  /* Headless filter engine */
+  const filterHook = useLogFilters(incidents, { mode: "incident", isAdmin: true });
 
   /* Derived stat counters using single-pass reducer */
   const stats = useMemo(() => {
@@ -49,21 +47,6 @@ function AdminIncidents() {
       return acc;
     }, { total: 0, submitted: 0, active: 0, resolved: 0, approved: 0 });
   }, [incidents]);
-
-  /* Filtered + searched list shown in the table */
-  const filteredIncidents = useMemo(() => {
-    const byStatus = activeFilter === "All"
-      ? incidents
-      : incidents.filter((r) => getStatusesByLabel(activeFilter).includes(r.status?.toLowerCase()));
-    if (!searchQuery.trim()) return byStatus;
-    const q = searchQuery.toLowerCase();
-    return byStatus.filter((r) =>
-      r.incidentType?.toLowerCase().includes(q) ||
-      r.category?.toLowerCase().includes(q) ||
-      r.location?.toLowerCase().includes(q) ||
-      r.reporter?.name?.toLowerCase().includes(q)
-    );
-  }, [incidents, activeFilter, searchQuery]);
 
   const handleStatusChangeRequest = (incidentId, newStatus, remarks) => {
     return new Promise((resolve, reject) => {
@@ -115,7 +98,7 @@ function AdminIncidents() {
     }
   };
 
-  const incidentsWithDelete = filteredIncidents.map(inc => ({
+  const incidentsWithDelete = filterHook.filteredItems.map((inc) => ({
     ...inc,
     onDelete: handleDeleteRequest
   }));
@@ -146,27 +129,14 @@ function AdminIncidents() {
         <div className="inc-history-card card-base">
           <div className="inc-history-card__head">
             <h2 className="inc-history-card__title">All Incident Reports</h2>
-            {/* Search input */}
-            <div className="inc-search-wrap">
-              <span className="material-symbols-outlined inc-search-icon">search</span>
-              <input
-                id="admin-inc-search"
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search type, category, location, reporter…"
-                className="inc-search-input"
-              />
-            </div>
           </div>
 
-          {/* Status filter tabs & mobile dropdown */}
-          <StatusFilterBar
-            filters={STATUS_FILTERS}
-            activeFilter={activeFilter}
-            onSelectFilter={setActiveFilter}
-            ariaLabel="Filter incidents by status"
-            selectId="admin-incidents-filter-select"
+          {/* Comprehensive Search & Multi-Toggle Filter Bar */}
+          <SearchFilterBar
+            filterHook={filterHook}
+            placeholder="Search incident type, category, location, reporter, description..."
+            mode="incident"
+            isAdmin={true}
           />
 
           {/* Table */}

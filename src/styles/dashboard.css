@@ -3673,6 +3673,25 @@ button:disabled,
   background: rgba(0, 104, 74, 0.06);
 }
 
+/* Priority highlight — critical submissions elevated to top */
+.inc-table__row--priority {
+  background: rgba(254, 236, 238, 0.42);
+  border-left: 3px solid #ff3d57;
+}
+
+.inc-table__row--priority:hover {
+  background: rgba(254, 236, 238, 0.7);
+}
+
+.status-badge--priority {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 700;
+  border: 1px solid rgba(255, 61, 87, 0.35);
+  box-shadow: 0 1px 4px rgba(255, 61, 87, 0.15);
+}
+
 .inc-table__td {
   padding: 14px var(--sp-lg);
   border-bottom: 1px solid var(--c-hairline);

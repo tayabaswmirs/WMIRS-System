@@ -1,23 +1,20 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { subscribeToReporterIncidents } from "../firebase/services/incidentService";
+import { useLogFilters } from "../hooks/useLogFilters";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import IncidentDetailsModal from "../components/common/IncidentDetailsModal";
-import { CATEGORY_META, getSeverityClass, getStatusClass, getStatusLabel, getStatusesByLabel, formatIncidentDate } from "../utils/incidentConstants";
+import { CATEGORY_META, getSeverityClass, getStatusClass, getStatusLabel, formatIncidentDate } from "../utils/incidentConstants";
+import { isCriticalSubmitted } from "../utils/filterUtils";
 import StatPill from "../components/common/StatPill";
-import StatusFilterBar from "../components/common/StatusFilterBar";
+import SearchFilterBar from "../components/common/SearchFilterBar";
 import "../styles/dashboard.css";
-
-// Filter options rendered as tabs above the history table
-const STATUS_FILTERS = ["All", "Submitted", "Denied", "Open Assignment", "Pending Verification", "Pending Completion", "Completed"];
 
 function IncidentHistory() {
   const { currentUser } = useAuth();
   
   const [incidents, setIncidents] = useState([]);
   const [selectedIncident, setSelectedIncident] = useState(null);
-  const [activeFilter, setActiveFilter] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
 
   /* Live subscription to this reporter's incidents */
   useEffect(() => {
@@ -25,6 +22,9 @@ function IncidentHistory() {
     const unsubscribe = subscribeToReporterIncidents(currentUser.uid, setIncidents);
     return unsubscribe;
   }, [currentUser?.uid]);
+
+  /* Headless filter engine */
+  const filterHook = useLogFilters(incidents, { mode: "incident", isAdmin: false });
 
   /* Derived stats using a high-performance single pass reducer */
   const stats = useMemo(() => {
@@ -46,20 +46,6 @@ function IncidentHistory() {
       return acc;
     }, { submitted: 0, denied: 0, active: 0, resolved: 0, verified: 0, completed: 0 });
   }, [incidents]);
-
-  /* Filtered + searched slice of the incident list */
-  const filteredIncidents = useMemo(() => {
-    const byStatus = activeFilter === "All"
-      ? incidents
-      : incidents.filter((r) => getStatusesByLabel(activeFilter).includes(r.status?.toLowerCase()));
-    if (!searchQuery.trim()) return byStatus;
-    const q = searchQuery.toLowerCase();
-    return byStatus.filter((r) =>
-      r.incidentType?.toLowerCase().includes(q) ||
-      r.category?.toLowerCase().includes(q) ||
-      r.location?.toLowerCase().includes(q)
-    );
-  }, [incidents, activeFilter, searchQuery]);
 
   return (
     <DashboardLayout>
@@ -86,32 +72,18 @@ function IncidentHistory() {
         <div className="inc-history-card card-base">
           <div className="inc-history-card__head">
             <h2 className="inc-history-card__title">Incident History Log</h2>
-
-            {/* Search input */}
-            <div className="inc-search-wrap">
-              <span className="material-symbols-outlined inc-search-icon">search</span>
-              <input
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by type, category, or location…"
-                className="inc-search-input"
-                id="inc-search-input"
-              />
-            </div>
           </div>
 
-          {/* Status filter tabs & mobile dropdown */}
-          <StatusFilterBar
-            filters={STATUS_FILTERS}
-            activeFilter={activeFilter}
-            onSelectFilter={setActiveFilter}
-            ariaLabel="Filter incidents by status"
-            selectId="incident-history-filter-select"
+          {/* Comprehensive Search & Multi-Toggle Filter Bar */}
+          <SearchFilterBar
+            filterHook={filterHook}
+            placeholder="Search by type, category, location, description..."
+            mode="incident"
+            isAdmin={false}
           />
 
           {/* Table */}
-          {filteredIncidents.length === 0 ? (
+          {filterHook.filteredItems.length === 0 ? (
             <div className="inc-empty-state">
               <span className="material-symbols-outlined inc-empty-state__icon">assignment_late</span>
               <p className="inc-empty-state__text">
@@ -133,12 +105,13 @@ function IncidentHistory() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredIncidents.map((rep, idx) => {
+                  {filterHook.filteredItems.map((rep, idx) => {
                     const catMeta = CATEGORY_META[rep.category] ?? { icon: "report", color: "#00ed64" };
+                    const isPriority = isCriticalSubmitted(rep);
                     return (
                       <tr
                         key={rep.id}
-                        className={`inc-table__row${idx % 2 === 0 ? " inc-table__row--even" : ""}`}
+                        className={`inc-table__row${idx % 2 === 0 ? " inc-table__row--even" : ""}${isPriority ? " inc-table__row--priority" : ""}`}
                       >
                         {/* Category with color dot + icon */}
                         <td className="inc-table__td">
@@ -161,7 +134,14 @@ function IncidentHistory() {
                           <span className={`severity-badge ${getSeverityClass(rep.severity)}`}>{rep.severity}</span>
                         </td>
                         <td className="inc-table__td">
-                          <span className={`status-badge ${getStatusClass(rep.status)}`}>{getStatusLabel(rep.status)}</span>
+                          <span className={`status-badge ${getStatusClass(rep.status)}${isPriority ? " status-badge--priority" : ""}`}>
+                            {isPriority && (
+                              <span className="material-symbols-outlined" style={{ fontSize: "14px", marginRight: "2px" }} aria-hidden="true">
+                                priority_high
+                              </span>
+                            )}
+                            {getStatusLabel(rep.status)}
+                          </span>
                         </td>
                         <td className="inc-table__td inc-table__td--action">
                           <button

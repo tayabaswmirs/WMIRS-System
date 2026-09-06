@@ -1,23 +1,22 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { subscribeToReporterMonitoring } from "../firebase/services/monitoringService";
+import { useLogFilters } from "../hooks/useLogFilters";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import MonitoringTable from "../components/common/monitoring/MonitoringTable";
 import MonitoringDetailsModal from "../components/common/monitoring/MonitoringDetailsModal";
 import StatPill from "../components/common/StatPill";
-import StatusFilterBar from "../components/common/StatusFilterBar";
-import { getStatusesByLabel } from "../utils/incidentConstants";
-
-const STATUS_FILTERS = ["All", "Submitted", "Denied", "Open Assignment", "Pending Verification", "Pending Completion", "Completed"];
+import SearchFilterBar from "../components/common/SearchFilterBar";
 
 function MonitoringHistory() {
   const { currentUser } = useAuth();
   
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedLog, setSelectedLog] = useState(null);
+
+  /* Headless filter engine */
+  const filterHook = useLogFilters(logs, { mode: "monitoring", isAdmin: false });
 
   useEffect(() => {
     if (!currentUser?.uid) return;
@@ -49,24 +48,6 @@ function MonitoringHistory() {
     }, { submitted: 0, denied: 0, active: 0, resolved: 0, verified: 0, completed: 0 });
   }, [logs]);
 
-  const filteredLogs = useMemo(() => {
-    const byStatus = activeFilter === "All" 
-      ? logs 
-      : logs.filter((log) => getStatusesByLabel(activeFilter).includes(log.status?.toLowerCase()));
-
-    if (!searchQuery.trim()) return byStatus;
-    const q = searchQuery.toLowerCase();
-    
-    return byStatus.filter((log) => 
-      log.subcategory?.toLowerCase().includes(q) ||
-      log.category?.toLowerCase().includes(q) ||
-      (log.speciesName && log.speciesName.toLowerCase().includes(q)) ||
-      (log.avianSpecies && log.avianSpecies.toLowerCase().includes(q)) ||
-      (log.barangay && log.barangay.toLowerCase().includes(q)) ||
-      (log.waterBody && log.waterBody.toLowerCase().includes(q))
-    );
-  }, [logs, activeFilter, searchQuery]);
-
   return (
     <DashboardLayout>
       <div className="incidents-page">
@@ -91,27 +72,14 @@ function MonitoringHistory() {
         <div className="inc-history-card card-base">
           <div className="inc-history-card__head">
             <h2 className="inc-history-card__title">Your Submissions</h2>
-            
-            <div className="inc-search-wrap">
-              <span className="material-symbols-outlined inc-search-icon">search</span>
-              <input
-                id="mon-history-search"
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search subcategory, location, species..."
-                className="inc-search-input"
-              />
-            </div>
           </div>
 
-          {/* Status filter tabs & mobile dropdown */}
-          <StatusFilterBar
-            filters={STATUS_FILTERS}
-            activeFilter={activeFilter}
-            onSelectFilter={setActiveFilter}
-            ariaLabel="Filter monitoring by status"
-            selectId="monitoring-history-filter-select"
+          {/* Comprehensive Search & Multi-Toggle Filter Bar */}
+          <SearchFilterBar
+            filterHook={filterHook}
+            placeholder="Search subcategory, location, species, water body..."
+            mode="monitoring"
+            isAdmin={false}
           />
 
           {loading ? (
@@ -120,7 +88,7 @@ function MonitoringHistory() {
             </p>
           ) : (
             <MonitoringTable
-              logs={filteredLogs}
+              logs={filterHook.filteredItems}
               onViewDetails={setSelectedLog}
             />
           )}

@@ -6,8 +6,13 @@ import ChartCard from "../components/common/ChartCard";
 import StatusGauge from "../components/common/StatusGauge";
 import RecentLogsList from "../components/common/RecentLogsList";
 import { getAllUsers } from "../firebase/services/userService";
-import { subscribeToAllIncidents } from "../firebase/services/incidentService";
-import { subscribeToAllMonitoring } from "../firebase/services/monitoringService";
+import { subscribeToAllIncidents, adminOverrideIncident } from "../firebase/services/incidentService";
+import { subscribeToAllMonitoring, reviewMonitoringAtomic } from "../firebase/services/monitoringService";
+import { useAuth } from "../hooks/useAuth";
+import PendingCompletionQueue from "../components/common/PendingCompletionQueue";
+import IncidentDetailsModal from "../components/common/IncidentDetailsModal";
+import MonitoringDetailsModal from "../components/common/monitoring/MonitoringDetailsModal";
+import WorkflowActionModal from "../components/common/WorkflowActionModal";
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -56,11 +61,15 @@ const getStatusGroup = (status) => {
    Main Admin Dashboard Component
    ═══════════════════════════════════════════════════════════════ */
 function AdminDashboard() {
+  const { currentUser } = useAuth();
   const [counts, setCounts] = useState({ admin: 0, staff: 0, ranger: 0 });
   const [incidents, setIncidents] = useState([]);
   const [logs, setLogs] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [timeRange, setTimeRange] = useState("1M"); // "1D", "1W", "1M"
+  const [selectedIncident, setSelectedIncident] = useState(null);
+  const [selectedMonitoring, setSelectedMonitoring] = useState(null);
+  const [actionDialog, setActionDialog] = useState(null);
 
   /* ── Data Fetching ─────────────────────────────────────── */
   useEffect(() => {
@@ -88,6 +97,16 @@ function AdminDashboard() {
   }, []);
 
   /* ── Computed Analytics ─────────────────────────────────── */
+  const pendingCompletionCount = useMemo(() => {
+    const pendingInc = incidents.filter(
+      (i) => i.status === "verified" || i.status === "pending completion"
+    ).length;
+    const pendingMon = logs.filter(
+      (l) => l.status === "verified" || l.status === "pending completion"
+    ).length;
+    return pendingInc + pendingMon;
+  }, [incidents, logs]);
+
   const completedLogsCount = useMemo(() => {
     const compIncidents = incidents.filter(
       (i) => i.status === "completed" || i.status === "denied"
@@ -188,6 +207,59 @@ function AdminDashboard() {
     return buckets;
   }, [incidents, logs, timeRange]);
 
+  /* ── Action Handlers ────────────────────────────────────── */
+  const handleQuickAction = (item, actionType) => {
+    const isComplete = actionType === "complete";
+    setActionDialog({
+      item,
+      nextStatus: isComplete ? "completed" : "unresolved",
+      title: isComplete
+        ? `Mark ${item.domain === "incident" ? "Incident" : "Monitoring Log"} as Completed`
+        : `Dispute ${item.domain === "incident" ? "Incident" : "Monitoring Log"}`,
+      confirmLabel: isComplete ? "Complete Log" : "Confirm Dispute",
+      variant: isComplete ? "primary" : "danger"
+    });
+  };
+
+  const handleActionSubmit = async (remarks) => {
+    if (!actionDialog) return;
+    const { item, nextStatus } = actionDialog;
+    try {
+      const reviewerName = currentUser?.displayName || "Admin";
+      if (item.domain === "incident") {
+        await adminOverrideIncident(item.id, nextStatus, currentUser?.uid, reviewerName, remarks);
+        if (selectedIncident?.id === item.id) {
+          setSelectedIncident((prev) => (prev ? { ...prev, status: nextStatus } : null));
+        }
+      } else {
+        await reviewMonitoringAtomic(item.id, nextStatus, currentUser?.uid, reviewerName, remarks);
+        if (selectedMonitoring?.id === item.id) {
+          setSelectedMonitoring((prev) => (prev ? { ...prev, status: nextStatus } : null));
+        }
+      }
+    } catch (err) {
+      console.error("Failed to update status:", err);
+    } finally {
+      setActionDialog(null);
+    }
+  };
+
+  const handleDrawerIncidentStatusChange = async (incidentId, newStatus, remarks) => {
+    const reviewerName = currentUser?.displayName || "Admin";
+    await adminOverrideIncident(incidentId, newStatus, currentUser?.uid, reviewerName, remarks || "Admin status update");
+    if (selectedIncident?.id === incidentId) {
+      setSelectedIncident((prev) => (prev ? { ...prev, status: newStatus } : null));
+    }
+  };
+
+  const handleDrawerMonitoringStatusChange = async (logId, newStatus, remarks) => {
+    const reviewerName = currentUser?.displayName || "Admin";
+    await reviewMonitoringAtomic(logId, newStatus, currentUser?.uid, reviewerName, remarks || "Admin status update");
+    if (selectedMonitoring?.id === logId) {
+      setSelectedMonitoring((prev) => (prev ? { ...prev, status: newStatus } : null));
+    }
+  };
+
   /* ── Render ─────────────────────────────────────────────── */
   return (
     <DashboardLayout>
@@ -216,7 +288,7 @@ function AdminDashboard() {
         </div>
 
         {/* ══ TIER 1: Executive KPI Summary Cards ════════════════ */}
-        <div className="dash-kpi-grid dash-kpi-grid--three">
+        <div className="dash-kpi-grid dash-kpi-grid--four">
           <KpiCard
             variant="threat"
             icon="warning"
@@ -233,12 +305,28 @@ function AdminDashboard() {
           />
           <KpiCard
             variant="comply"
+            icon="pending_actions"
+            value={pendingCompletionCount}
+            label="Pending Validation"
+            sub="Awaiting Admin sign-off"
+          />
+          <KpiCard
+            variant="water"
             icon="verified_user"
             value={completedLogsCount}
             label="Completed Logs"
             sub="Combined completed & denied logs"
           />
         </div>
+
+        {/* ══ TIER 1.5: Pending Completion Work Queue ════════════ */}
+        <PendingCompletionQueue
+          incidents={incidents}
+          logs={logs}
+          onSelectIncident={setSelectedIncident}
+          onSelectMonitoring={setSelectedMonitoring}
+          onQuickAction={handleQuickAction}
+        />
 
         {/* ══ TIER 2 & 3: Overhauled Visual Grid ═════════════════ */}
         <div className="dash-row-70-30">
@@ -371,6 +459,30 @@ function AdminDashboard() {
             </div>
           </ChartCard>
         </div>
+
+        {/* Deep-dive Inspection Drawers */}
+        <IncidentDetailsModal
+          incident={selectedIncident}
+          onClose={() => setSelectedIncident(null)}
+          isAdmin
+          onStatusChange={handleDrawerIncidentStatusChange}
+        />
+
+        <MonitoringDetailsModal
+          log={selectedMonitoring}
+          onClose={() => setSelectedMonitoring(null)}
+          onStatusChange={handleDrawerMonitoringStatusChange}
+        />
+
+        {/* Quick Action Remarks & Confirmation Modal */}
+        <WorkflowActionModal
+          isOpen={Boolean(actionDialog)}
+          onClose={() => setActionDialog(null)}
+          title={actionDialog?.title || ""}
+          confirmLabel={actionDialog?.confirmLabel || ""}
+          variant={actionDialog?.variant || "primary"}
+          onSubmit={handleActionSubmit}
+        />
 
       </div>
     </DashboardLayout>
