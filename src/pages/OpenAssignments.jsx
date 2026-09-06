@@ -1,104 +1,88 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../hooks/useAuth";
 import DashboardLayout from "../components/layout/DashboardLayout";
-import RangerResolutionModal from "../components/common/RangerResolutionModal";
-import IncidentDetailsModal from "../components/common/IncidentDetailsModal";
-import MonitoringDetailsModal from "../components/common/monitoring/MonitoringDetailsModal";
-import { getSeverityClass } from "../utils/incidentConstants";
-import { subscribeToOpenAssignments, resolveAssignmentByRanger } from "../firebase/services/incidentService"; // Will implement next
-import StatPill from "../components/common/StatPill";
-import StatusFilterBar from "../components/common/StatusFilterBar";
+import AssignmentHero from "../components/common/AssignmentHero";
+import AssignmentFilterToolbar from "../components/common/AssignmentFilterToolbar";
+import AssignmentCard from "../components/common/AssignmentCard";
+import AssignmentModals from "../components/common/AssignmentModals";
+import { subscribeToOpenAssignments, resolveAssignmentByRanger } from "../firebase/services/incidentService";
 import "../styles/dashboard.css";
-import "../styles/workflow.css"; // ensure workflow styles are loaded
+import "../styles/workflow.css";
 
+/**
+ * OpenAssignments — Orchestration page for field patrol assignments.
+ */
 function OpenAssignments() {
   const { currentUser, userRole, staffScope } = useAuth();
-  
   const [assignments, setAssignments] = useState([]);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [resolutionModalOpen, setResolutionModalOpen] = useState(false);
-  
-  const [activeFilter, setActiveFilter] = useState("All");
+  const [roleFilter, setRoleFilter] = useState("All");
+  const [activeType, setActiveType] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isResolving, setIsResolving] = useState(false);
 
   useEffect(() => {
-    // Pass staffScope if user is staff to restrict query correctly
-    const scopeToPass = userRole === "staff" ? staffScope : null;
-    const unsubscribe = subscribeToOpenAssignments(setAssignments, scopeToPass);
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
+    const scope = userRole === "staff" ? staffScope : null;
+    const unsubscribe = subscribeToOpenAssignments(setAssignments, scope);
+    return () => unsubscribe && unsubscribe();
   }, [userRole, staffScope]);
+
+  const stats = useMemo(() => {
+    const total = assignments.length;
+    const incident = assignments.filter((r) => r.logType === "Incident").length;
+    const monitoring = assignments.filter((r) => r.logType === "Monitoring").length;
+    const leading = assignments.filter((r) => r.assignedTeam?.leader?.uid === currentUser?.uid).length;
+    const assisting = assignments.filter((r) => r.assignedTeam?.members?.some((m) => m.uid === currentUser?.uid)).length;
+    return { total, incident, monitoring, leading, assisting };
+  }, [assignments, currentUser]);
 
   const filteredAssignments = useMemo(() => {
     let list = assignments;
-    if (activeFilter !== "All") {
-      list = assignments.filter((a) => a.logType === activeFilter);
+    if (activeType !== "All") list = list.filter((a) => a.logType === activeType);
+    if (userRole === "ranger" && roleFilter === "Leading") {
+      list = list.filter((a) => a.assignedTeam?.leader?.uid === currentUser?.uid);
+    } else if (userRole === "ranger" && roleFilter === "Assisting") {
+      list = list.filter((a) => a.assignedTeam?.members?.some((m) => m.uid === currentUser?.uid));
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       list = list.filter((a) => 
-        a.category?.toLowerCase().includes(q) ||
-        a.subcategory?.toLowerCase().includes(q) ||
-        a.incidentType?.toLowerCase().includes(q) ||
-        a.location?.toLowerCase().includes(q) ||
+        a.category?.toLowerCase().includes(q) || a.subcategory?.toLowerCase().includes(q) ||
+        a.incidentType?.toLowerCase().includes(q) || a.location?.toLowerCase().includes(q) ||
         a.description?.toLowerCase().includes(q)
       );
     }
     return list;
-  }, [assignments, activeFilter, searchQuery]);
-
-  const stats = useMemo(() => ({
-    total:       assignments.length,
-    incident:    assignments.filter((r) => r.logType === "Incident").length,
-    monitoring:  assignments.filter((r) => r.logType === "Monitoring").length,
-  }), [assignments]);
+  }, [assignments, activeType, roleFilter, searchQuery, userRole, currentUser]);
 
   const handleResolveSubmit = async ({ resolutionNotes, evidenceFile }) => {
     if (!selectedAssignment) return;
     try {
-      // Pass the required fields to backend
-      await resolveAssignmentByRanger(selectedAssignment.id, selectedAssignment.logType, currentUser.uid, currentUser.displayName, resolutionNotes, evidenceFile);
+      setIsResolving(true);
+      await resolveAssignmentByRanger(
+        selectedAssignment.id, selectedAssignment.logType,
+        currentUser.uid, currentUser.displayName || "Ranger",
+        resolutionNotes, evidenceFile
+      );
       setResolutionModalOpen(false);
       setSelectedAssignment(null);
     } catch (error) {
       console.error("Failed to resolve assignment:", error);
-      alert("Failed to submit resolution. Check console.");
+      alert(error.message || "Failed to submit resolution. Check console.");
+    } finally {
+      setIsResolving(false);
     }
-  };
-
-  const getLatestStaffRemark = (history) => {
-    if (!history || !Array.isArray(history)) return "No specific instructions provided by Staff.";
-    const staffRemarks = history.filter(h => (h.notes || h.remarks) && ["assigned", "unresolved"].includes((h.toStatus || h.action)?.toLowerCase()));
-    if (staffRemarks.length === 0) return "No specific instructions provided by Staff.";
-    const last = staffRemarks[staffRemarks.length - 1];
-    return last.notes || last.remarks;
   };
 
   return (
     <DashboardLayout>
       <div className="incidents-page">
-        {/* ── Hero Header Band ─────────────────────────────────────────── */}
-        <div className="inc-hero">
-          <div className="inc-hero__left">
-            <span className="inc-hero__eyebrow">Field Operations</span>
-            <h1 className="inc-hero__title">Open Assignments</h1>
-            <p className="inc-hero__subtitle">
-              Claim and resolve field tasks assigned to rangers.
-            </p>
-          </div>
-          <div className="inc-hero__stats">
-            <StatPill icon="assignment"     label="Total Tasks" count={stats.total}       color="var(--brand-green, #00ed64)" />
-            <StatPill icon="warning" label="Incidents"  count={stats.incident}   color="#f5a524" />
-            <StatPill icon="visibility"  label="Monitoring" count={stats.monitoring} color="#3d8eff" />
-          </div>
-        </div>
+        <AssignmentHero stats={stats} userRole={userRole} />
 
-        {/* ── Assignments Card ──────────────────────────────── */}
         <div className="inc-history-card card-base">
           <div className="inc-history-card__head">
             <h2 className="inc-history-card__title">Available Assignments</h2>
-            {/* Search input */}
             <div className="inc-search-wrap">
               <span className="material-symbols-outlined inc-search-icon">search</span>
               <input
@@ -112,102 +96,47 @@ function OpenAssignments() {
             </div>
           </div>
 
-          {/* Status filter tabs & mobile dropdown */}
-          <StatusFilterBar
-            filters={["All", "Incident", "Monitoring"]}
-            activeFilter={activeFilter}
-            onSelectFilter={setActiveFilter}
-            ariaLabel="Filter assignments by type"
-            selectId="open-assignments-filter-select"
+          <AssignmentFilterToolbar
+            roleFilter={roleFilter}
+            onRoleFilterChange={setRoleFilter}
+            activeType={activeType}
+            onTypeFilterChange={setActiveType}
+            stats={stats}
+            userRole={userRole}
           />
 
-          <div className="assignments-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem', padding: '1.5rem', backgroundColor: 'var(--c-bg-subtle)' }}>
-        {filteredAssignments.length === 0 ? (
-          <div className="empty-state" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem', backgroundColor: '#fff', borderRadius: '8px' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#a8b3bc' }}>assignment_turned_in</span>
-            <p style={{ marginTop: '1rem', color: '#5c6c7a' }}>No open assignments at the moment.</p>
+          <div className="assignments-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1rem', padding: '1.5rem', backgroundColor: 'var(--c-bg-subtle)' }}>
+            {filteredAssignments.length === 0 ? (
+              <div className="empty-state" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem', backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #e1e5e8' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#a8b3bc' }}>assignment_turned_in</span>
+                <p style={{ marginTop: '0.75rem', color: '#5c6c7a', fontSize: '14px' }}>No field assignments match your current filters.</p>
+              </div>
+            ) : (
+              filteredAssignments.map((assignment) => (
+                <AssignmentCard
+                  key={assignment.id}
+                  assignment={assignment}
+                  currentUser={currentUser}
+                  userRole={userRole}
+                  onSelect={(item) => setSelectedAssignment(item)}
+                  onResolve={(item) => {
+                    setSelectedAssignment(item);
+                    setResolutionModalOpen(true);
+                  }}
+                />
+              ))
+            )}
           </div>
-        ) : (
-          filteredAssignments.map((assignment) => (
-            <div key={assignment.id} className="card assignment-card" style={{ padding: '1rem', border: '1px solid #e1e5e8', borderRadius: '8px', backgroundColor: '#fff', display: 'flex', flexDirection: 'column' }}>
-              <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-                <span className={`status-badge ${getSeverityClass(assignment.severity)}`} style={{ padding: '2px 8px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 600 }}>
-                  {assignment.severity || "Standard"}
-                </span>
-                <span style={{ fontSize: '0.75rem', color: '#5c6c7a' }}>
-                  {assignment.createdAt?.toDate 
-                    ? assignment.createdAt.toDate().toLocaleDateString()
-                    : assignment.createdAt?.seconds 
-                      ? new Date(assignment.createdAt.seconds * 1000).toLocaleDateString()
-                      : new Date(assignment.createdAt).toLocaleDateString()}
-                </span>
-              </div>
-              
-              <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', color: '#001e2b' }}>
-                {assignment.subcategory || assignment.incidentType || assignment.category}
-              </h3>
-              <p style={{ fontSize: '0.85rem', color: '#5c6c7a', display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.75rem' }}>
-                <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>location_on</span>
-                {assignment.location}
-              </p>
 
-              <div className="remarks-callout" style={{ padding: '0.75rem', marginTop: 'auto', marginBottom: '1rem' }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#001e2b', marginBottom: '0.25rem' }}>Task Instructions:</div>
-                <p style={{ fontSize: '0.8rem', color: '#1c2d38', margin: 0, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                  {getLatestStaffRemark(assignment.history || assignment.workflowHistory)}
-                </p>
-              </div>
-
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button 
-                  className="btn-secondary" 
-                  style={{ flex: 1 }}
-                  onClick={() => setSelectedAssignment(assignment)}
-                >
-                  View Details
-                </button>
-                {userRole === "ranger" && (
-                  <button 
-                    className="btn-primary" 
-                    style={{ flex: 1 }}
-                    onClick={() => {
-                      setSelectedAssignment(assignment);
-                      setResolutionModalOpen(true);
-                    }}
-                  >
-                    Resolve
-                  </button>
-                )}
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      <RangerResolutionModal 
-        isOpen={resolutionModalOpen}
-        onClose={() => {
-          setResolutionModalOpen(false);
-          setSelectedAssignment(null);
-        }}
-        onSubmit={handleResolveSubmit}
-      />
-
-      {/* For View Details, we use existing modal but need to wire it up properly based on logType */}
-      {selectedAssignment && !resolutionModalOpen && selectedAssignment.logType === "Incident" && (
-        <IncidentDetailsModal 
-          incident={selectedAssignment}
-          onClose={() => setSelectedAssignment(null)}
-          // we can pass down callbacks here if needed, but this page mainly views
-        />
-      )}
-      
-      {selectedAssignment && !resolutionModalOpen && selectedAssignment.logType === "Monitoring" && (
-        <MonitoringDetailsModal 
-          log={selectedAssignment}
-          onClose={() => setSelectedAssignment(null)}
-        />
-      )}
+          <AssignmentModals
+            selectedAssignment={selectedAssignment}
+            setSelectedAssignment={setSelectedAssignment}
+            resolutionModalOpen={resolutionModalOpen}
+            setResolutionModalOpen={setResolutionModalOpen}
+            onResolveSubmit={handleResolveSubmit}
+            currentUser={currentUser}
+            isResolving={isResolving}
+          />
         </div>
       </div>
     </DashboardLayout>

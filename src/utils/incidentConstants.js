@@ -204,7 +204,8 @@ export const LOG_STATUS = {
   VERIFIED: "verified",
   UNRESOLVED: "unresolved",
   PENDING_COMPLETION: "pending completion",
-  COMPLETED: "completed"
+  COMPLETED: "completed",
+  MERGED_DUPLICATE: "merged_duplicate"
 };
 
 export const STATUS_METADATA = {
@@ -215,12 +216,13 @@ export const STATUS_METADATA = {
   verified: { label: "Pending Completion", color: "purple", stepIndex: 3 },
   unresolved: { label: "Unresolved (Open Assignment)", color: "orange", stepIndex: 1 },
   "pending completion": { label: "Pending Completion", color: "purple", stepIndex: 3 }, // Added this to match the string
-  completed: { label: "Completed", color: "green", stepIndex: 4 }
+  completed: { label: "Completed", color: "green", stepIndex: 4 },
+  merged_duplicate: { label: "Merged Duplicate", color: "slate", stepIndex: -1 }
 };
 
 export const STATUS_GROUPS = {
   "Submitted": ["submitted", "under review"],
-  "Denied": ["denied"],
+  "Denied": ["denied", "merged_duplicate"],
   "Open Assignment": ["assigned", "unresolved"],
   "Pending Verification": ["resolved"],
   "Pending Completion": ["verified", "pending completion"],

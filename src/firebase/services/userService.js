@@ -384,4 +384,23 @@ export const getUserPublicProfile = async (uid, isViewerAdmin = false) => {
   return sanitizedProfile;
 };
 
+/**
+ * Fetches all active Forest Rangers for assignment selection.
+ *
+ * @returns {Promise<Array<{ uid: string, name: string, email: string }>>}
+ */
+export const getActiveRangers = async () => {
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, where("role", "==", "ranger"));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => {
+    const data = d.data();
+    return {
+      uid: d.id,
+      name: data.name || data.displayName || "Ranger",
+      email: data.email || ""
+    };
+  });
+};
+
 

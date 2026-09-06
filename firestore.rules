@@ -93,7 +93,11 @@ service cloud.firestore {
                       (isRanger() && resource.data.status in ['assigned', 'unresolved'] && request.resource.data.status == 'resolved')
                     ) &&
                     request.resource.data.diff(resource.data).affectedKeys()
-                      .hasOnly(['status', 'updatedAt', 'updatedBy', 'evidence', 'history', 'resolutionNotes', 'resolutionEvidence']);
+                      .hasOnly([
+                        'status', 'updatedAt', 'updatedBy', 'evidence', 'history', 
+                        'resolutionNotes', 'resolutionEvidence', 'assignedTeam', 
+                        'possibleDuplicate', 'mergedReports', 'mergedInto'
+                      ]);
 
       // Deleting incident reports is restricted to administrators
       allow delete: if isAdmin();
@@ -122,7 +126,11 @@ service cloud.firestore {
                       (isRanger() && resource.data.status in ['assigned', 'unresolved'] && request.resource.data.status == 'resolved')
                     ) &&
                     request.resource.data.diff(resource.data).affectedKeys()
-                      .hasOnly(['status', 'updatedAt', 'updatedBy', 'evidence', 'history', 'resolutionNotes', 'resolutionEvidence']);
+                      .hasOnly([
+                        'status', 'updatedAt', 'updatedBy', 'evidence', 'history', 
+                        'resolutionNotes', 'resolutionEvidence', 'assignedTeam', 
+                        'possibleDuplicate', 'mergedReports', 'mergedInto'
+                      ]);
 
       // Deleting monitoring logs is restricted to administrators
       allow delete: if isAdmin();

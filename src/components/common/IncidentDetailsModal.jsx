@@ -5,6 +5,9 @@ import WorkflowStepper from "./WorkflowStepper";
 import WorkflowActionModal from "./WorkflowActionModal";
 import UserProfileModal from "./UserProfileModal";
 import LocationDetailMap from "./LocationDetailMap";
+import DuplicateWarningBanner from "./DuplicateWarningBanner";
+import TeamAssignmentPicker from "./TeamAssignmentPicker";
+import { assignTeamToReport, smartMergeDuplicate, clearDuplicateFlag } from "../../firebase/services/incidentService";
 
 /**
  * IncidentDetailsModal — right-side sliding drawer showing full incident metadata,
@@ -51,11 +54,14 @@ function IncidentDetailsModal({ incident, onClose, onStatusChange }) {
 /* ─── Internal drawer content ───────────────────────────────────────────── */
 
 function DrawerContent({ incident, onClose, onStatusChange }) {
-  const { userRole } = useAuth();
+  const { userRole, currentUser } = useAuth();
   const catMeta = CATEGORY_META[incident.category] ?? { icon: "report", color: "#00ed64" };
   const [actionType, setActionType] = useState(null); // e.g. { type: 'approve', nextStatus: 'assigned', title: '...', confirmLabel: '...' }
   const [actionModalOpen, setActionModalOpen] = useState(false);
   const [inspectedUser, setInspectedUser] = useState(null);
+  const [teamPickerOpen, setTeamPickerOpen] = useState(false);
+  const [isProcessingDuplicate, setIsProcessingDuplicate] = useState(false);
+  const [duplicateDismissed, setDuplicateDismissed] = useState(false);
 
   const handleActionClick = (type, nextStatus, title, confirmLabel, variant = 'primary') => {
     setActionType({ type, nextStatus, title, confirmLabel, variant });
@@ -72,6 +78,46 @@ function DrawerContent({ incident, onClose, onStatusChange }) {
     } finally {
       setActionModalOpen(false);
       setActionType(null);
+    }
+  };
+
+  const handleTeamAssign = async ({ leader, members }) => {
+    try {
+      await assignTeamToReport(incident.id, "Incident", leader, members, currentUser);
+      setTeamPickerOpen(false);
+      if (onStatusChange) {
+        onStatusChange(incident.id, LOG_STATUS.ASSIGNED, `Assigned to team led by ${leader.name}`);
+      }
+    } catch (err) {
+      console.error("Team assignment failed:", err);
+      alert(err.message || "Failed to assign team.");
+    }
+  };
+
+  const handleMergeDuplicate = async () => {
+    if (!incident.possibleDuplicate?.matchedReportId) return;
+    if (!window.confirm(`Merge this report into master ticket #${incident.possibleDuplicate.matchedReportId}?`)) return;
+    try {
+      setIsProcessingDuplicate(true);
+      await smartMergeDuplicate(incident.id, incident.possibleDuplicate.matchedReportId, "Incident", currentUser);
+      onClose();
+    } catch (err) {
+      console.error("Merge failed:", err);
+      alert("Failed to merge duplicate report.");
+    } finally {
+      setIsProcessingDuplicate(false);
+    }
+  };
+
+  const handleClearDuplicateFlag = async () => {
+    try {
+      setIsProcessingDuplicate(true);
+      await clearDuplicateFlag(incident.id, "Incident", currentUser);
+      setDuplicateDismissed(true);
+    } catch (err) {
+      console.error("Clear flag failed:", err);
+    } finally {
+      setIsProcessingDuplicate(false);
     }
   };
 
@@ -121,6 +167,17 @@ function DrawerContent({ incident, onClose, onStatusChange }) {
 
       {/* Scrollable Body */}
       <div className="inc-drawer__body">
+        {/* Duplicate Warning Banner */}
+        {!duplicateDismissed && incident.possibleDuplicate?.isPossibleDuplicate && (
+          <DuplicateWarningBanner
+            duplicateInfo={incident.possibleDuplicate}
+            onMerge={handleMergeDuplicate}
+            onClearFlag={handleClearDuplicateFlag}
+            onReject={() => handleActionClick('deny', LOG_STATUS.DENIED, 'Reject Log', 'Reject', 'danger')}
+            isProcessing={isProcessingDuplicate}
+          />
+        )}
+
         <WorkflowStepper currentStatus={incident.status} />
 
         {latestRemark && (
@@ -133,6 +190,65 @@ function DrawerContent({ incident, onClose, onStatusChange }) {
               <span className="remarks-time">{formatIncidentDate(latestRemark.timestamp)}</span>
             </div>
             <p className="remarks-text">{latestRemark.remarks}</p>
+          </div>
+        )}
+
+        {/* Assigned Patrol Team Display */}
+        {incident.assignedTeam && (
+          <div className="inc-drawer__desc-section" style={{ backgroundColor: '#f0fbf5', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '12px' }}>
+            <span className="inc-drawer__section-label" style={{ color: '#00684a', fontWeight: 600 }}>
+              <span className="material-symbols-outlined inc-drawer__section-label-icon">groups</span>
+              Assigned Patrol Team
+            </span>
+            <div style={{ marginTop: '8px', fontSize: '13px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                <span style={{ padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 600, backgroundColor: '#00ed64', color: '#001e2b', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>stars</span>
+                  Team Leader
+                </span>
+                <strong>{incident.assignedTeam.leader?.name}</strong>
+              </div>
+              {incident.assignedTeam.members?.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
+                  <span style={{ color: '#5c6c7a', fontSize: '12px' }}>Members:</span>
+                  {incident.assignedTeam.members.map((m) => (
+                    <span key={m.uid} style={{ padding: '2px 8px', borderRadius: '12px', fontSize: '11px', backgroundColor: '#e1e5e8', color: '#001e2b' }}>
+                      {m.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Merged Duplicate Reports Display */}
+        {incident.mergedReports && incident.mergedReports.length > 0 && (
+          <div className="inc-drawer__desc-section" style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '12px' }}>
+            <span className="inc-drawer__section-label" style={{ color: '#334155' }}>
+              <span className="material-symbols-outlined inc-drawer__section-label-icon">merge</span>
+              Merged Evidence & Reports ({incident.mergedReports.length})
+            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+              {incident.mergedReports.map((mr, idx) => (
+                <div key={idx} style={{ padding: '8px', backgroundColor: '#fff', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 600, color: '#1e293b' }}>
+                    <span>From: {mr.reporterName}</span>
+                    <span style={{ color: '#64748b', fontSize: '11px' }}>{formatIncidentDate(mr.mergedAt)}</span>
+                  </div>
+                  {mr.description && <p style={{ margin: '4px 0', color: '#475569' }}>{mr.description}</p>}
+                  {mr.evidence?.length > 0 && (
+                    <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
+                      {mr.evidence.map((ev, eIdx) => (
+                        <a key={eIdx} href={ev.url} target="_blank" rel="noopener noreferrer" style={{ color: '#00684a', textDecoration: 'underline', fontSize: '11px' }}>
+                          Evidence #{eIdx + 1}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -323,20 +439,28 @@ function DrawerContent({ incident, onClose, onStatusChange }) {
           (userRole === "admin" && ["verified", "pending completion"].includes(incident.status?.toLowerCase()))) && (
           <div className="inc-drawer__admin-panel">
             {userRole === "staff" && ["submitted", "under review"].includes(incident.status?.toLowerCase()) && (
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button 
-                  className="btn-primary" style={{ flex: 1 }}
-                  onClick={() => handleActionClick('approve', LOG_STATUS.ASSIGNED, 'Open Assignment', 'Approve & Assign')}
-                >
-                  Open Assignment
-                </button>
-                <button 
-                  className="btn-danger" style={{ flex: 1 }}
-                  onClick={() => handleActionClick('deny', LOG_STATUS.DENIED, 'Deny Log', 'Deny', 'danger')}
-                >
-                  Deny Log
-                </button>
-              </div>
+              teamPickerOpen ? (
+                <TeamAssignmentPicker
+                  reporterUid={incident.reporter?.uid}
+                  onAssign={handleTeamAssign}
+                  onCancel={() => setTeamPickerOpen(false)}
+                />
+              ) : (
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button 
+                    className="btn-primary" style={{ flex: 1 }}
+                    onClick={() => setTeamPickerOpen(true)}
+                  >
+                    Dispatch Patrol Team
+                  </button>
+                  <button 
+                    className="btn-danger" style={{ flex: 1 }}
+                    onClick={() => handleActionClick('deny', LOG_STATUS.DENIED, 'Deny Log', 'Deny', 'danger')}
+                  >
+                    Deny Log
+                  </button>
+                </div>
+              )
             )}
             {userRole === "staff" && incident.status?.toLowerCase() === "resolved" && (
               <div style={{ display: 'flex', gap: '0.5rem' }}>
