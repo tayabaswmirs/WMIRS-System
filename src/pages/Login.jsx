@@ -2,37 +2,18 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import useLoadingLock from "../hooks/useLoadingLock";
-import PasswordInput from "../components/common/PasswordInput";
+import AuthHeroPanel from "../components/common/AuthHeroPanel";
+import AuthCardHeader from "../components/common/AuthCardHeader";
+import SignInForm from "../components/common/SignInForm";
 import RegisterWizard from "../components/common/RegisterWizard";
-import wmirsLogo from "../assets/wmirs-logo.png";
+import { formatAuthError } from "../utils/formatAuthError";
 import "../styles/login.css";
 
-const formatAuthError = (err) => {
-  const errorCode = err?.code;
-  switch (errorCode) {
-    case "auth/email-already-in-use":
-      return "An account with this email address already exists. Please sign in instead.";
-    case "auth/weak-password":
-      return "The password chosen is too weak. It must be at least 8 characters.";
-    case "auth/invalid-email":
-      return "Please enter a valid email address.";
-    case "auth/user-not-found":
-    case "auth/wrong-password":
-    case "auth/invalid-credential":
-      return "Invalid email or password. Please check your credentials and try again.";
-    case "auth/network-request-failed":
-      return "Network error. Please check your internet connection.";
-    default:
-      return err?.message || "Authentication process failed. Please try again.";
-  }
-};
-
-function Login() {
+export default function Login() {
   const formRef = useRef(null);
   const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [formLoading, setFormLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -42,19 +23,14 @@ function Login() {
 
   useLoadingLock(formRef, formLoading);
 
-  // Redirect authenticated users to their corresponding dashboard
   useEffect(() => {
     if (currentUser && !authLoading) {
-      if (userRole === "admin") {
-        navigate("/admin/dashboard");
-      } else {
-        navigate("/dashboard");
-      }
+      navigate(userRole === "admin" ? "/admin/dashboard" : "/dashboard");
     }
   }, [currentUser, userRole, authLoading, navigate]);
 
-  const handleToggleMode = () => {
-    setIsRegistering((prev) => !prev);
+  const handleToggleMode = (registerMode) => {
+    setIsRegistering(registerMode);
     setErrorMsg("");
     setSuccessMsg("");
     setEmail("");
@@ -63,16 +39,13 @@ function Login() {
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    setFormLoading(true);
     setErrorMsg("");
     setSuccessMsg("");
-
     if (!email.trim() || !password) {
       setErrorMsg("Please enter both your email and password.");
-      setFormLoading(false);
       return;
     }
-
+    setFormLoading(true);
     try {
       await login(email.trim(), password);
     } catch (err) {
@@ -98,13 +71,12 @@ function Login() {
     }
   };
 
-  // If initial authentication state is being retrieved, show a clean loading screen
   if (authLoading) {
     return (
       <div className="login-loading-screen" role="status" aria-live="polite">
         <div className="login-loading-inner">
           <div className="login-loading-spinner" aria-hidden="true" />
-          <p className="login-loading-text">Loading authentication status...</p>
+          <p className="login-loading-text">Connecting to WMIRS secure gateway...</p>
         </div>
       </div>
     );
@@ -112,115 +84,29 @@ function Login() {
 
   return (
     <div className="login-page">
+      <AuthHeroPanel />
 
-      {/* ── Left Hero Panel ───────────────────────────────── */}
-      <aside className="login-hero" aria-label="System branding">
-        <div className="login-hero__content">
-          <img
-            src={wmirsLogo}
-            alt="WMIRS Logo"
-            className="login-hero__logo"
+      <main className="login-form-panel">
+        <div className="login-card">
+          <AuthCardHeader
+            isRegistering={isRegistering}
+            onToggleMode={handleToggleMode}
           />
 
-          <h1 className="login-hero__wordmark">
-            WM<span>IRS</span>
-          </h1>
-
-          <p className="login-hero__tagline">
-            Web-Based Monitoring and Incident Reporting System
-          </p>
-
-          <div className="login-hero__divider" aria-hidden="true" />
-
-          <div className="login-hero__badge" role="status">
-            <div className="login-hero__badge-dot" aria-hidden="true" />
-            System Online
-          </div>
-
-          {/* Feature highlights */}
-          <div className="login-hero__features" aria-label="System features">
-            <div className="login-hero__feature-item">
-              <div className="login-hero__feature-icon" aria-hidden="true">
-                <span className="material-symbols-outlined">bar_chart</span>
-              </div>
-              <div className="login-hero__feature-text">
-                <strong>Monitoring Records</strong>
-                Track environmental data across all ENRO sections
-              </div>
-            </div>
-            <div className="login-hero__feature-item">
-              <div className="login-hero__feature-icon" aria-hidden="true">
-                <span className="material-symbols-outlined">emergency</span>
-              </div>
-              <div className="login-hero__feature-text">
-                <strong>Incident Reporting</strong>
-                Submit and manage incident reports in real-time
-              </div>
-            </div>
-            <div className="login-hero__feature-item">
-              <div className="login-hero__feature-icon" aria-hidden="true">
-                <span className="material-symbols-outlined">summarize</span>
-              </div>
-              <div className="login-hero__feature-text">
-                <strong>Reports &amp; Analytics</strong>
-                Generate reports for decision-making
-              </div>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      {/* ── Right Form Panel ──────────────────────────────── */}
-      <main className="login-form-panel">
-        <div className="login-form-wrapper">
-
-          {/* Form header */}
-          <div className="login-form-header">
-            <h2 className="login-form-header__title">
-              {isRegistering ? "Register Account" : "Welcome back"}
-            </h2>
-            <p className="login-form-header__subtitle">
-              {isRegistering
-                ? "Complete verification to request system access"
-                : "Sign in to access your WMIRS dashboard"}
-            </p>
-          </div>
-
-          {/* Tab toggle — Sign In / Register */}
-          <div className="login-tab-row" role="tablist" aria-label="Authentication mode">
-            <button
-              id="login-tab-signin"
-              role="tab"
-              type="button"
-              aria-selected={!isRegistering}
-              className={`login-tab${!isRegistering ? " login-tab--active" : ""}`}
-              onClick={() => isRegistering && handleToggleMode()}
-            >
-              Sign In
-            </button>
-            <button
-              id="login-tab-register"
-              role="tab"
-              type="button"
-              aria-selected={isRegistering}
-              className={`login-tab${isRegistering ? " login-tab--active" : ""}`}
-              onClick={() => !isRegistering && handleToggleMode()}
-            >
-              Register
-            </button>
-          </div>
-
-          {/* Feedback Alerts */}
           {errorMsg && (
             <div className="login-alert login-alert--error" role="alert" aria-live="assertive">
-              <span className="login-alert__icon" aria-hidden="true">⚠️</span>
-              <span><strong>Error:</strong> {errorMsg}</span>
+              <span className="material-symbols-outlined login-alert__icon" aria-hidden="true">
+                error
+              </span>
+              <span>{errorMsg}</span>
             </div>
           )}
 
           {successMsg && (
             <div className="login-alert login-alert--success" role="status" aria-live="polite">
-              <span className="login-alert__icon" aria-hidden="true">✅</span>
+              <span className="material-symbols-outlined login-alert__icon" aria-hidden="true">
+                check_circle
+              </span>
               <span>{successMsg}</span>
             </div>
           )}
@@ -229,56 +115,25 @@ function Login() {
             <RegisterWizard
               onRegister={handleRegisterSubmit}
               loading={formLoading}
-              errorMsg={errorMsg}
               setErrorMsg={setErrorMsg}
             />
           ) : (
-            <form id="login-auth-form" ref={formRef} onSubmit={handleLoginSubmit} noValidate>
-              <div className="login-field">
-                <label htmlFor="auth-email" className="login-label">Email Address</label>
-                <input
-                  id="auth-email"
-                  className="login-input"
-                  placeholder="example@domain.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  type="email"
-                  autoComplete="email"
-                  required
-                />
-              </div>
-
-              <div className="login-field">
-                <label htmlFor="auth-password" className="login-label">Password</label>
-                <PasswordInput
-                  id="auth-password"
-                  className="login-input"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
-                  required
-                />
-              </div>
-
-              <button
-                id="login-submit-btn"
-                type="submit"
-                className="login-btn-primary"
-                disabled={formLoading}
-              >
-                {formLoading ? "Signing in..." : "Sign In"}
-              </button>
-            </form>
+            <SignInForm
+              email={email}
+              setEmail={setEmail}
+              password={password}
+              setPassword={setPassword}
+              onSubmit={handleLoginSubmit}
+              loading={formLoading}
+              formRef={formRef}
+            />
           )}
 
           <p className="login-footer">
-            © WMIRS · City ENRO System
+            © WMIRS · City Environment and Natural Resources Office
           </p>
         </div>
       </main>
     </div>
   );
 }
-
-export default Login;
