@@ -1,8 +1,18 @@
 
+import LocationAddressPicker from "../LocationAddressPicker";
+
 function WasteTrackingForm({ formData, onChange, setFormData }) {
-
-
   const collectionTypes = ["Residential", "Commercial", "Institutional"];
+
+  const handleLocationChange = (locPayload) => {
+    setFormData((prev) => ({
+      ...prev,
+      barangay: locPayload.barangay,
+      sitioStreet: locPayload.sitioStreet,
+      coordinates: locPayload.coordinates,
+      location: locPayload.location,
+    }));
+  };
 
   const handleVolumeValueChange = (e) => {
     const value = e.target.value;
@@ -22,23 +32,17 @@ function WasteTrackingForm({ formData, onChange, setFormData }) {
 
   return (
     <>
-      {/* Collection Route / Barangay */}
-      <div className="inc-form__group">
-        <label className="inc-form__label" htmlFor="mon-barangay">
-          <span className="material-symbols-outlined inc-form__label-icon">map</span>
-          Collection Route / Barangay <span className="inc-form__required">*</span>
-        </label>
-        <div className="inc-form__input-wrap">
-          <input
-            id="mon-barangay"
-            type="text"
-            value={formData.barangay || ""}
-            onChange={(e) => onChange("barangay", e.target.value)}
-            className="inc-form__input"
-            placeholder="e.g. Barangay San Isidro"
-            required
-          />
-        </div>
+      {/* 3-Tier Collection Route / Barangay */}
+      <div className="inc-form__group inc-form__group--full" style={{ gridColumn: "1 / -1", marginBottom: "8px" }}>
+        <LocationAddressPicker
+          value={{
+            barangay: formData.barangay || "",
+            sitioStreet: formData.sitioStreet || "",
+            coordinates: formData.coordinates || null,
+          }}
+          onChange={handleLocationChange}
+          required
+        />
       </div>
 
       {/* Collection Type */}

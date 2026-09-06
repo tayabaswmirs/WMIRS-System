@@ -1,9 +1,27 @@
+import LocationAddressPicker from "../LocationAddressPicker";
+import WaterFieldKitFields from "./WaterFieldKitFields";
 
-function WaterMonitoringForm({ formData, onChange }) {
+function WaterMonitoringForm({ formData, onChange, setFormData }) {
+  const handleLocationChange = (locPayload) => {
+    if (setFormData) {
+      setFormData((prev) => ({
+        ...prev,
+        barangay: locPayload.barangay,
+        sitioStreet: locPayload.sitioStreet,
+        locationMarker: locPayload.location,
+        coordinates: locPayload.coordinates,
+        location: locPayload.location,
+      }));
+    } else {
+      onChange("barangay", locPayload.barangay);
+      onChange("sitioStreet", locPayload.sitioStreet);
+      onChange("locationMarker", locPayload.location);
+    }
+  };
+
   return (
-    <div style={{ gridColumn: "1 / -1", display: "flex", flexDirection: "column", gap: "24px" }}>
+    <div style={{ gridColumn: "1 / -1", display: "flex", flexDirection: "column", gap: "20px" }}>
       <div className="inc-form__row inc-form__row--two">
-        {/* Date and Time */}
         <div className="inc-form__group">
           <label className="inc-form__label" htmlFor="mon-water-datetime">
             <span className="material-symbols-outlined inc-form__label-icon">calendar_today</span>
@@ -19,7 +37,6 @@ function WaterMonitoringForm({ formData, onChange }) {
           />
         </div>
 
-        {/* Water Body Identifier */}
         <div className="inc-form__group">
           <label className="inc-form__label" htmlFor="mon-water-body">
             <span className="material-symbols-outlined inc-form__label-icon">water</span>
@@ -37,25 +54,18 @@ function WaterMonitoringForm({ formData, onChange }) {
         </div>
       </div>
 
-      <div className="inc-form__row inc-form__row--two">
-        {/* Specific Location Marker */}
-        <div className="inc-form__group">
-          <label className="inc-form__label" htmlFor="mon-water-location">
-            <span className="material-symbols-outlined inc-form__label-icon">location_on</span>
-            Location / Barangay <span className="inc-form__required">*</span>
-          </label>
-          <input
-            id="mon-water-location"
-            type="text"
-            value={formData.locationMarker || ""}
-            onChange={(e) => onChange("locationMarker", e.target.value)}
-            placeholder="e.g., Near San Roque Bridge"
-            className="inc-form__input"
-            required
-          />
-        </div>
+      {/* 3-Tier Address & Geolocation */}
+      <LocationAddressPicker
+        value={{
+          barangay: formData.barangay || "",
+          sitioStreet: formData.sitioStreet || formData.locationMarker || "",
+          coordinates: formData.coordinates || null,
+        }}
+        onChange={handleLocationChange}
+        required
+      />
 
-        {/* Source Type */}
+      <div className="inc-form__row inc-form__row--two">
         <div className="inc-form__group">
           <label className="inc-form__label" htmlFor="mon-water-source">
             <span className="material-symbols-outlined inc-form__label-icon">nature</span>
@@ -68,22 +78,18 @@ function WaterMonitoringForm({ formData, onChange }) {
             className="inc-form__input"
             required
           >
-            <option value="" disabled>Select source type</option>
-            <option value="River">River</option>
-            <option value="Stream">Stream</option>
+            <option value="">— Select Source Type —</option>
+            <option value="River / Stream">River / Stream</option>
             <option value="Spring">Spring</option>
-            <option value="Reservoir">Reservoir</option>
-            <option value="Coastal">Coastal</option>
-            <option value="Other">Other</option>
+            <option value="Lake / Pond">Lake / Pond</option>
+            <option value="Groundwater / Well">Groundwater / Well</option>
+            <option value="Watershed Reserve">Watershed Reserve</option>
           </select>
         </div>
-      </div>
 
-      <div className="inc-form__row inc-form__row--three">
-        {/* Water Clarity */}
         <div className="inc-form__group">
           <label className="inc-form__label" htmlFor="mon-water-clarity">
-            <span className="material-symbols-outlined inc-form__label-icon">visibility</span>
+            <span className="material-symbols-outlined inc-form__label-icon">opacity</span>
             Water Clarity <span className="inc-form__required">*</span>
           </label>
           <select
@@ -93,50 +99,51 @@ function WaterMonitoringForm({ formData, onChange }) {
             className="inc-form__input"
             required
           >
-            <option value="" disabled>Select clarity</option>
-            <option value="Clear">Clear</option>
+            <option value="">— Select Clarity —</option>
+            <option value="Crystal Clear">Crystal Clear</option>
             <option value="Slightly Turbid">Slightly Turbid</option>
-            <option value="Very Turbid">Very Turbid</option>
-            <option value="Opaque">Opaque</option>
+            <option value="Heavily Silted">Heavily Silted</option>
+            <option value="Discolored / Oily">Discolored / Oily</option>
           </select>
         </div>
+      </div>
 
-        {/* Flow Level */}
+      <div className="inc-form__row inc-form__row--two">
         <div className="inc-form__group">
           <label className="inc-form__label" htmlFor="mon-water-flow">
-            <span className="material-symbols-outlined inc-form__label-icon">tsunami</span>
-            Flow Level <span className="inc-form__required">*</span>
+            <span className="material-symbols-outlined inc-form__label-icon">speed</span>
+            Estimated Flow Rate <span className="inc-form__required">*</span>
           </label>
           <select
             id="mon-water-flow"
-            value={formData.flowLevel || ""}
-            onChange={(e) => onChange("flowLevel", e.target.value)}
+            value={formData.flowRate || ""}
+            onChange={(e) => onChange("flowRate", e.target.value)}
             className="inc-form__input"
             required
           >
-            <option value="" disabled>Select flow level</option>
-            <option value="Stagnant">Stagnant</option>
-            <option value="Slow/Sluggish">Slow/Sluggish</option>
+            <option value="">— Select Flow Rate —</option>
+            <option value="Stagnant / Dry">Stagnant / Dry</option>
+            <option value="Slow">Slow</option>
             <option value="Moderate">Moderate</option>
-            <option value="Fast/Rushing">Fast/Rushing</option>
+            <option value="Rapid">Rapid</option>
+            <option value="Torrential / Flooding">Torrential / Flooding</option>
           </select>
         </div>
 
-        {/* Primary Usage */}
         <div className="inc-form__group">
-          <label className="inc-form__label" htmlFor="mon-water-usage">
-            <span className="material-symbols-outlined inc-form__label-icon">settings_accessibility</span>
-            Primary Usage <span className="inc-form__required">*</span>
+          <label className="inc-form__label" htmlFor="mon-water-use">
+            <span className="material-symbols-outlined inc-form__label-icon">people</span>
+            Primary Community Usage <span className="inc-form__required">*</span>
           </label>
           <select
-            id="mon-water-usage"
+            id="mon-water-use"
             value={formData.primaryUsage || ""}
             onChange={(e) => onChange("primaryUsage", e.target.value)}
             className="inc-form__input"
             required
           >
-            <option value="" disabled>Select usage</option>
-            <option value="Drinking Water">Drinking Water</option>
+            <option value="">— Select Primary Usage —</option>
+            <option value="Potable / Domestic">Potable / Domestic</option>
             <option value="Irrigation">Irrigation</option>
             <option value="Fishing">Fishing</option>
             <option value="Recreation">Recreation</option>
@@ -146,61 +153,11 @@ function WaterMonitoringForm({ formData, onChange }) {
         </div>
       </div>
 
-      <div className="inc-form__section" style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--c-hairline)' }}>
-        <div className="inc-form__section-header">
-          <span className="material-symbols-outlined inc-form__section-icon">science</span>
-          <span className="inc-form__section-label">Field-Kit Testing <span className="inc-form__optional">(optional)</span></span>
-        </div>
-        <div className="inc-form__row inc-form__row--three">
-          <div className="inc-form__group">
-            <label className="inc-form__label" htmlFor="mon-water-ph">
-              pH Level
-            </label>
-            <input
-              id="mon-water-ph"
-              type="number"
-              step="0.1"
-              min="0"
-              max="14"
-              value={formData.phLevel || ""}
-              onChange={(e) => onChange("phLevel", e.target.value)}
-              placeholder="e.g., 7.2"
-              className="inc-form__input"
-            />
-          </div>
-          <div className="inc-form__group">
-            <label className="inc-form__label" htmlFor="mon-water-temp">
-              Temperature (°C)
-            </label>
-            <input
-              id="mon-water-temp"
-              type="number"
-              step="0.1"
-              value={formData.temperature || ""}
-              onChange={(e) => onChange("temperature", e.target.value)}
-              placeholder="e.g., 25.5"
-              className="inc-form__input"
-            />
-          </div>
-          <div className="inc-form__group">
-            <label className="inc-form__label" htmlFor="mon-water-do">
-              Dissolved Oxygen (mg/L)
-            </label>
-            <input
-              id="mon-water-do"
-              type="number"
-              step="0.1"
-              value={formData.dissolvedOxygen || ""}
-              onChange={(e) => onChange("dissolvedOxygen", e.target.value)}
-              placeholder="e.g., 6.5"
-              className="inc-form__input"
-            />
-          </div>
-        </div>
-      </div>
+      {/* Field-Kit Testing Sub-Component */}
+      <WaterFieldKitFields formData={formData} onChange={onChange} />
 
       {/* Physical Condition Log */}
-      <div className="inc-form__group inc-form__group--full" style={{ marginTop: '24px' }}>
+      <div className="inc-form__group inc-form__group--full">
         <label className="inc-form__label" htmlFor="mon-water-condition">
           <span className="material-symbols-outlined inc-form__label-icon">description</span>
           Physical Condition Log <span className="inc-form__required">*</span>
@@ -211,7 +168,7 @@ function WaterMonitoringForm({ formData, onChange }) {
           onChange={(e) => onChange("physicalCondition", e.target.value)}
           placeholder="Visual description (e.g., clear water, turbid, sluggish flow, excessive floating plant growth)..."
           className="inc-form__textarea"
-          rows={4}
+          rows={3}
           maxLength={1000}
           required
         />

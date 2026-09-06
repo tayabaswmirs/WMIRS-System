@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import SpeciesBreakdownCard from "../../components/common/analytics/SpeciesBreakdownCard";
 import { TIME_RANGES } from "../../utils/temporalBuckets";
+import { resolveBarangay } from "../../utils/tayabasBarangays";
 import "../../styles/dashboard.css";
 
 /* ΓöÇΓöÇ Color & Chart Config Tokens ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */
@@ -926,11 +927,8 @@ function StaffDashboard() {
           if (item.volumeUnit === "tons") amt = amt * 1000; // convert to kg
           totalWasteKg += amt;
 
-          if (item.barangay) {
-            let bName = item.barangay.trim();
-            if (bName.toLowerCase().startsWith("barangay ")) {
-              bName = bName.substring(9).trim();
-            }
+          const bName = resolveBarangay(item);
+          if (bName && bName !== "Unclassified") {
             if (barangayWasteMap[bName] === undefined) {
               barangayWasteMap[bName] = 0;
             }

@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { INCIDENT_MAP, SEVERITY_LEVELS, CATEGORY_META, INCIDENT_TYPE_META } from "../../utils/incidentConstants";
+import LocationAddressPicker from "./LocationAddressPicker";
 
 // Maximum allowed file size: 10 MB
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
@@ -17,7 +18,7 @@ function IncidentForm({ onSubmit, isSubmitting, uploadProgress, formFeedback, se
   const [step, setStep]                 = useState(1);
   const [category, setCategory]         = useState("");
   const [incidentType, setIncidentType] = useState("");
-  const [location, setLocation]         = useState("");
+  const [locationData, setLocationData] = useState({ barangay: "", sitioStreet: "", coordinates: null, location: "" });
   const [dateTime, setDateTime]         = useState("");
   const [description, setDescription]   = useState("");
   const [severity, setSeverity]         = useState("Medium");
@@ -91,17 +92,29 @@ function IncidentForm({ onSubmit, isSubmitting, uploadProgress, formFeedback, se
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!category || !incidentType || !location || !dateTime || !description) {
+    if (!category || !incidentType || !locationData.barangay || !locationData.sitioStreet || !dateTime || !description) {
       if (setFormFeedback) {
         setFormFeedback({ type: "error", message: "Please fill out all required fields before submitting." });
       }
       return;
     }
 
-    const formData = { category, incidentType, location, dateTime, description, severity, files: evidenceFiles };
+    const formData = {
+      category,
+      incidentType,
+      barangay: locationData.barangay,
+      sitioStreet: locationData.sitioStreet,
+      coordinates: locationData.coordinates,
+      location: locationData.location,
+      dateTime,
+      description,
+      severity,
+      files: evidenceFiles,
+    };
 
     onSubmit(formData, () => {
-      setCategory(""); setIncidentType(""); setLocation("");
+      setCategory(""); setIncidentType("");
+      setLocationData({ barangay: "", sitioStreet: "", coordinates: null, location: "" });
       setDateTime(""); setDescription(""); setSeverity("Medium");
       setEvidenceFiles([]);
       setStep(1);
@@ -267,24 +280,16 @@ function IncidentForm({ onSubmit, isSubmitting, uploadProgress, formFeedback, se
                   <span className="inc-form__section-label">Incident Details</span>
                 </div>
 
-                <div className="inc-form__row inc-form__row--three">
-                  {/* Location */}
-                  <div className="inc-form__group">
-                    <label className="inc-form__label" htmlFor="inc-location">
-                      <span className="material-symbols-outlined inc-form__label-icon">location_on</span>
-                      Location / Barangay <span className="inc-form__required">*</span>
-                    </label>
-                    <input
-                      id="inc-location"
-                      type="text"
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                      placeholder="e.g., Brgy. San Isidro, Tayabas"
-                      className="inc-form__input"
-                      required
-                    />
-                  </div>
+                {/* 3-Tier Address & Geolocation */}
+                <div style={{ marginBottom: "16px" }}>
+                  <LocationAddressPicker
+                    value={locationData}
+                    onChange={setLocationData}
+                    required
+                  />
+                </div>
 
+                <div className="inc-form__row inc-form__row--two">
                   {/* Date and Time */}
                   <div className="inc-form__group">
                     <label className="inc-form__label" htmlFor="inc-datetime">

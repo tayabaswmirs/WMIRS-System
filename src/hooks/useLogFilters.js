@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { STATUS_GROUPS } from "../utils/incidentConstants";
 import { parseLogDate, isDateInRange, sortIncidentsWithPriority } from "../utils/filterUtils";
+import { TAYABAS_BARANGAYS, resolveBarangay } from "../utils/tayabasBarangays";
 
 /**
  * Headless filter and priority ranking hook for Incident Reports & Monitoring Logs.
@@ -24,20 +25,17 @@ export function useLogFilters(items = [], options = {}) {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [prioritizeCritical, setPrioritizeCritical] = useState(mode === "incident" && stageId !== "completed-archive");
 
-
   const dynamicOptions = useMemo(() => {
-    const cats = new Set(), subcats = new Set(), brgys = new Set(), reps = new Set();
+    const cats = new Set(), subcats = new Set(), reps = new Set();
     items.forEach((item) => {
       if (item.category) cats.add(item.category);
       if (item.subcategory) subcats.add(item.subcategory);
-      if (item.barangay) brgys.add(item.barangay);
-      else if (item.location) brgys.add(item.location);
       if (item.reporter?.name) reps.add(item.reporter.name);
     });
     return {
       categories: Array.from(cats).sort(),
       subcategories: Array.from(subcats).sort(),
-      barangays: Array.from(brgys).sort(),
+      barangays: TAYABAS_BARANGAYS,
       reporters: Array.from(reps).sort()
     };
   }, [items]);
@@ -52,8 +50,8 @@ export function useLogFilters(items = [], options = {}) {
     const filtered = items.filter((item) => {
       if (q) {
         const itemText = mode === "incident"
-          ? `${item.incidentType || ""} ${item.category || ""} ${item.location || ""} ${item.reporter?.name || ""} ${item.description || ""}`
-          : `${item.category || ""} ${item.subcategory || ""} ${item.barangay || ""} ${item.reporter?.name || ""} ${item.speciesName || ""} ${item.waterBody || ""}`;
+          ? `${item.incidentType || ""} ${item.category || ""} ${item.barangay || ""} ${item.sitioStreet || ""} ${item.location || ""} ${item.reporter?.name || ""} ${item.description || ""}`
+          : `${item.category || ""} ${item.subcategory || ""} ${item.barangay || ""} ${item.sitioStreet || ""} ${item.location || ""} ${item.reporter?.name || ""} ${item.speciesName || ""} ${item.waterBody || ""}`;
         if (!itemText.toLowerCase().includes(q)) return false;
       }
 
@@ -63,7 +61,7 @@ export function useLogFilters(items = [], options = {}) {
       const activeCat = fixedCategory || selectedCategory;
       if (activeCat !== "All" && item.category !== activeCat) return false;
       if (selectedSubcategory !== "All" && item.subcategory !== selectedSubcategory) return false;
-      if (selectedBarangay !== "All" && item.barangay !== selectedBarangay && item.location !== selectedBarangay) return false;
+      if (selectedBarangay !== "All" && resolveBarangay(item) !== selectedBarangay) return false;
       if (isAdmin && selectedReporter !== "All" && item.reporter?.name !== selectedReporter) return false;
 
       return isDateInRange(parseLogDate(item.dateTime || item.createdAt), datePreset, customStartDate, customEndDate);

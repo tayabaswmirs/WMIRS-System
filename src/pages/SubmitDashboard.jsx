@@ -38,6 +38,9 @@ function SubmitDashboard() {
     const incidentData = {
       category: formData.category,
       incidentType: formData.incidentType,
+      barangay: formData.barangay || "",
+      sitioStreet: formData.sitioStreet || "",
+      coordinates: formData.coordinates || null,
       location: formData.location,
       dateTime: formData.dateTime,
       description: formData.description,

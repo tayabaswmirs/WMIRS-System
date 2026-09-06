@@ -8,6 +8,7 @@ import {
   Area, CartesianGrid, ComposedChart
 } from "recharts";
 import { TIME_RANGES, createTemporalBuckets, incrementTemporalBucket, extractTimestampMs } from "../../../utils/temporalBuckets";
+import { resolveBarangay } from "../../../utils/tayabasBarangays";
 
 const TOOLTIP_STYLE = {
   backgroundColor: "#001e2b",
@@ -89,9 +90,8 @@ export default function ComplianceAnalyticsView({ items = [] }) {
         if (item.volumeUnit === "tons") amt *= 1000;
         totalWasteKg += amt;
 
-        if (item.barangay) {
-          let bName = item.barangay.trim();
-          if (bName.toLowerCase().startsWith("barangay ")) bName = bName.substring(9).trim();
+        const bName = resolveBarangay(item);
+        if (bName && bName !== "Unclassified") {
           barangayWasteMap[bName] = (barangayWasteMap[bName] || 0) + amt;
         }
       } else if (item.subcategory === "Plastic Bag Ban Inspection Form") {
