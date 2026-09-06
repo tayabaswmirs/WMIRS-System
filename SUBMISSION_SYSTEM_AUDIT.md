@@ -11,6 +11,19 @@
 
 This document details an end-to-end architectural audit and code review of the WMIRS submission pipeline. The system coordinates environmental reporting and ecological monitoring across the Tayabas watershed, operating across three primary user roles: **Forest Rangers** (field reporters and incident resolvers), **Staff Officers** (sector-specific triage and verification agents), and **System Administrators** (overall authority and final sign-off).
 
+> [!NOTE]
+> ### Implementation & Resolution Status (Updated September 2026)
+> Several critical security, stability, and workflow items identified in this audit have been successfully resolved and deployed:
+> * **[x] Finding 1 (Runtime Crash on Resolution Evidence):** Resolved. DOM `File` is uploaded to Firebase Storage prior to Firestore write.
+> * **[x] Finding 5 & Section 4.1 (Notification Disconnect & Ping-Pong):** Resolved & Deployed. Resolution alerts route directly to assigning Staff Officers with action links to `/staff/workspace/verification`.
+> * **[x] Finding 7 (Status Casing Inconsistency):** Resolved. Standardized on `LOG_STATUS.SUBMITTED` (`"submitted"`).
+> * **[x] Section 4.2 ("Tragedy of the Commons" Broadcast Trap):** Resolved & Deployed. Replaced open blast with targeted Team Leader & Member dispatching with sole leader resolution authority.
+> * **[x] Section 4.5 (Self-Audit Conflict of Interest):** Resolved. Hard invariant in `incidentService.js` and UI exclusion in `TeamAssignmentPicker.jsx` preventing self-assignment.
+> * **[x] Pillar 1 - Idempotency Keys:** Resolved. Client UUID `clientSubmissionId` attached to all submissions to prevent duplicate creation on network retries.
+> * **[x] Pillar 2 - Duplicate Detection & Smart Merge:** Resolved. 0-to-1 read duplicate detector + `DuplicateWarningBanner` + `smartMergeDuplicate` + `LOG_STATUS.MERGED_DUPLICATE`.
+> * **[x] Security Rules Hardening:** Resolved & Deployed. `firestore.rules` updated and deployed to allow `assignedTeam`, `possibleDuplicate`, `mergedReports`, and `mergedInto`.
+> * **[x] UI Overhaul:** Resolved. Open Assignments redesigned with zero emojis (Material Symbols exclusively), responsive unified toolbar, and strict SRP compliance (<150 lines).
+
 While the system possesses strong foundational capabilities—including an IndexedDB offline outbox, raster tile preloading, and real-time Firestore listeners—the audit identified **critical runtime bugs**, **security permission gaps**, **broken notification routes**, and **architectural anti-patterns** that impede reliability and operational scalability.
 
 ---
@@ -77,9 +90,11 @@ flowchart TD
 
 ## 3. Comprehensive Code Review Audit (`code-review-ai-ai-review`)
 
-### Finding 1: Unhandled DOM `File` Object Passed to Firestore (Runtime Crash)
+### Finding 1: Unhandled DOM `File` Object Passed to Firestore (Runtime Crash) — **[x] RESOLVED**
 * **File:** [`src/components/common/RangerResolutionModal.jsx`](file:///d:/repos/WMIRS-SYSTEM-main/src/components/common/RangerResolutionModal.jsx#L32) & [`src/firebase/services/incidentService.js`](file:///d:/repos/WMIRS-SYSTEM-main/src/firebase/services/incidentService.js#L328)
 * **Severity:** <span style="color: #ef4444; font-weight: bold;">CRITICAL</span>
+* **Status:** <span style="color: #00ed64; font-weight: bold;">[x] RESOLVED</span>
+* **Resolution Notes:** Implemented storage pre-upload in `resolveAssignmentByRanger` in `incidentService.js` via `uploadEvidenceFile(uid, id, evidenceFile)`. Stored metadata `{ name, url, type }` in Firestore rather than raw DOM `File`. Added progress indicator and leader-only guard in `RangerResolutionModal.jsx`.
 * **Category:** Bug / Data Integrity
 * **Impact:** Prevents rangers from submitting photo-verified field resolutions.
 * **Description:** When a Forest Ranger resolves an assignment and selects a photo or document attachment, `RangerResolutionModal.jsx` takes the raw browser `File` object from `e.target.files[0]` and passes it directly to `resolveAssignmentByRanger()`. In `incidentService.js`, `updateLogWorkflowStatus` sets `historyEntry.evidenceFile = evidenceFile` and `updatePayload.resolutionEvidence = evidenceFile`, passing the raw DOM `File` object directly into `updateDoc()`. **Firestore rejects custom browser `File` objects with an unhandled exception**, crashing the submission and preventing rangers from submitting photo-verified resolutions.
@@ -161,9 +176,11 @@ allow create: if isAuthenticated() &&
 
 ---
 
-### Finding 5: Notification Recipient Disconnect (Staff vs Admin Verification)
+### Finding 5: Notification Recipient Disconnect (Staff vs Admin Verification) — **[x] RESOLVED**
 * **File:** [`functions/src/triggers/db/onWorkflowStatusUpdated.js`](file:///d:/repos/WMIRS-SYSTEM-main/functions/src/triggers/db/onWorkflowStatusUpdated.js#L87-L112)
 * **Severity:** <span style="color: #f59e0b; font-weight: bold;">MEDIUM</span>
+* **Status:** <span style="color: #00ed64; font-weight: bold;">[x] RESOLVED & DEPLOYED</span>
+* **Resolution Notes:** Refactored Cloud Function trigger `onWorkflowStatusUpdated.js` to dispatch notification directly to `assignedTeam.assignedBy.uid` with direct deep link `/staff/workspace/verification`. Deployed to Firebase.
 * **Category:** Workflow Orchestration
 * **Impact:** Staff members are not alerted when rangers complete field assignments in their sector.
 * **Description:** When a ranger resolves an assignment (moving status to `resolved`), `onWorkflowStatusUpdated.js` dispatches alerts exclusively to **Admins**. However, the UI workflow dictates that **Staff Officers** review and verify `resolved` logs (advancing them to `verified` or bouncing them to `unresolved`). Staff officers receive no notification when field tasks in their category are completed.
@@ -179,9 +196,11 @@ allow create: if isAuthenticated() &&
 
 ---
 
-### Finding 7: Status Casing Inconsistency
+### Finding 7: Status Casing Inconsistency — **[x] RESOLVED**
 * **File:** [`src/firebase/services/incidentService.js`](file:///d:/repos/WMIRS-SYSTEM-main/src/firebase/services/incidentService.js#L105) vs [`src/firebase/services/monitoringService.js`](file:///d:/repos/WMIRS-SYSTEM-main/src/firebase/services/monitoringService.js#L89)
 * **Severity:** <span style="color: #3b82f6; font-weight: bold;">LOW</span>
+* **Status:** <span style="color: #00ed64; font-weight: bold;">[x] RESOLVED</span>
+* **Resolution Notes:** Standardized status assignment in `createIncidentReport` on `LOG_STATUS.SUBMITTED` (`"submitted"` lowercase), matching `monitoringService.js` and `incidentConstants.js`.
 * **Category:** Code Quality / Database Consistency
 * **Impact:** Inconsistent indexing, potential missed results during composite queries.
 * **Description:** Incident reports are created with `status: "Submitted"` (capitalized), whereas monitoring logs use `LOG_STATUS.SUBMITTED` (`"submitted"`, lowercase). All status values should standardize on lowercase string enums matching `LOG_STATUS`.
@@ -192,22 +211,29 @@ allow create: if isAuthenticated() &&
 
 Beyond isolated code bugs, an analysis of the end-to-end data lifecycle reveals seven critical logical bottlenecks in how records transition between field officers, desk staff, and leadership:
 
-### 4.1 The Inverted Alert Logic ("Notification Ping-Pong")
+### 4.1 The Inverted Alert Logic ("Notification Ping-Pong") — **[x] RESOLVED**
+* **Status:** <span style="color: #00ed64; font-weight: bold;">[x] RESOLVED & DEPLOYED</span>
+* **Resolution:** In `onWorkflowStatusUpdated.js`, resolution notifications now route directly to the assigning Staff Officer (`assignedTeam.assignedBy.uid`) and sector staff with deep-link `/staff/workspace/verification`.
 ```
 [Ranger Resolves Field Assignment] 
                │
                ▼ (onWorkflowStatusUpdated fires)
-       [Alert Dispatched to: ADMIN] 
+       [Alert Dispatched to: ASSIGNING STAFF OFFICER] 
                │
-               ├──❌── Admin opens drawer, but has NO "Verify" button!
-               └──❌── Sector Staff (meant to verify) receives ZERO alert!
+               └──✅── Staff clicks link directly to /staff/workspace/verification!
 ```
 * **The Disconnect:** When a Ranger marks an assignment `resolved`, `onWorkflowStatusUpdated.js` lines 86–112 dispatches alerts exclusively to **Admins**. However, in `IncidentDetailsModal.jsx` line 322, the action button to "Verify Resolution" is conditioned strictly on `userRole === "staff"`.
 * **Consequence:** Admins receive alerts for actions they cannot take from the modal, while the Staff officer in charge of that ecological sector remains unaware that field inspection proof has arrived.
 
 ---
 
-### 4.2 The "Tragedy of the Commons" Broadcast Trap
+### 4.2 The "Tragedy of the Commons" Broadcast Trap — **[x] RESOLVED**
+* **Status:** <span style="color: #00ed64; font-weight: bold;">[x] RESOLVED & DEPLOYED</span>
+* **Resolution:**
+  1. Built `TeamAssignmentPicker.jsx` for Staff review drawer allowing selection of a designated **Team Leader** and optional **Team Members**.
+  2. Implemented `assignTeamToReport` in `incidentService.js` recording `assignedTeam: { leader, members, assignedAt, assignedBy }`.
+  3. Replaced open broadcast in `onWorkflowStatusUpdated.js` with targeted alerts to the Team Leader (`"New Field Assignment: Team Leader"`) and individual members (`"New Field Assignment: Team Member"`).
+  4. Restricted resolution submission authority strictly to the designated Team Leader in `resolveAssignmentByRanger` and UI cards.
 * **The Disconnect:** When Staff marks a report as `assigned`, the system queries every user in the entire system with `role: "ranger"` and broadcasts a generic notification (`onWorkflowStatusUpdated.js:59`).
 * **Consequence:**
   1. **Zero Personal Ownership:** An open broadcast to 20+ rangers means no specific officer is accountable.
@@ -228,7 +254,11 @@ Beyond isolated code bugs, an analysis of the end-to-end data lifecycle reveals 
 
 ---
 
-### 4.5 Self-Audit & Conflict of Interest Loophole
+### 4.5 Self-Audit & Conflict of Interest Loophole — **[x] RESOLVED**
+* **Status:** <span style="color: #00ed64; font-weight: bold;">[x] RESOLVED</span>
+* **Resolution:**
+  1. In `TeamAssignmentPicker.jsx`, the reporting ranger (`reporterUid`) is filtered out of both the Team Leader and Team Member selection lists.
+  2. In `assignTeamToReport` (`incidentService.js`), a hard invariant check verifies `leader.uid !== reporterUid` and `members.every(m => m.uid !== reporterUid)`, rejecting any conflict of interest with an explicit error.
 * **The Disconnect:** Rangers both report field incidents (e.g. tree cutting) and resolve field assignments.
 * **Consequence:** The system lacks an invariant check (`reporter.uid !== resolver.uid`). A ranger who files an incident can claim the assignment from the open pool and verify/resolve their own report without independent peer inspection.
 
@@ -296,16 +326,16 @@ PROPOSED ROBUST FLOW:
 ```
 
 ### Pillar 1: Robust Field Capture & Resilient Offline Sync
-1. **Idempotency Keys:** Assign a client-generated UUID to every outbox entry before sync. If an upload completes but the acknowledgment drops, the server deduplicates rather than creating two reports.
+1. **[x] Idempotency Keys:** Assign a client-generated UUID (`clientSubmissionId`) to every submission before sync. Implemented in `createIncidentReport` (`incidentService.js`) using `crypto.randomUUID()` and document keyed writes (`setDoc(doc(db, "incidents", id))`), preventing duplicate creation on network retry.
 2. **GPS Accuracy Validation:** Reject or flag coordinate captures with excessive horizontal inaccuracy (>30 meters) to ensure rangers do not submit inaccurate field tags.
 3. **Exponential Backoff & Dead-Letter Queue:** If an outbox entry fails to sync due to a corrupt payload, quarantine it to an outbox error drawer rather than stalling the sync queue.
 
 ### Pillar 2: Smart Triage & Automated SLA Escalation
 1. **Critical Incident Escalation:** If a "Critical" or "High" severity incident remains in "Submitted" status for more than 4 hours without staff review, automatically escalate it directly to the Administrator.
-2. **Spatial Deduplication Warning:** When staff opens a report, show a banner if another incident was filed in the same barangay within the past 48 hours for the same incident category.
+2. **[x] Spatial Deduplication Warning & Smart Merge:** Implemented 1-read composite index query (`detectActiveDuplicate`) detecting matching category and location in active states. Built `DuplicateWarningBanner.jsx` in staff review drawer with `smartMergeDuplicate` action to incorporate notes/evidence into active master ticket and assign `LOG_STATUS.MERGED_DUPLICATE`.
 
 ### Pillar 3: Targeted Field Dispatch vs. "Open Grab"
-1. **Direct Ranger Assignment:** Allow Staff to dispatch an assignment directly to a specific ranger based on their assigned sector or proximity, while retaining an open pool for general assignments.
+1. **[x] Direct Ranger Team Assignment:** Built `TeamAssignmentPicker.jsx` allowing Staff to designate a Team Leader and assisting Members with role badges and targeted notifications, eliminating the broadcast trap.
 2. **Assignment Acknowledgment:** Add an "Accepted" or "In-Route" micro-state so staff know when a ranger is actively en route to inspect an illegal logging or water contamination site.
 
 ### Pillar 4: High-Trust Verification & Before/After Proof
@@ -320,13 +350,13 @@ PROPOSED ROBUST FLOW:
 
 ## 6. Recommended Phased Implementation Plan
 
-| Phase | Focus Area | Deliverables | Risk Level |
+| Phase | Focus Area | Deliverables | Status |
 | :--- | :--- | :--- | :--- |
-| **Phase 1** | **Core Bug & Security Fixes** | Fix resolution evidence upload crash; secure `storage.rules` and `firestore.rules`; fix broken notification links and notification routing. | High Priority / Quick Fix |
-| **Phase 2** | **Workflow State Machine & Handshake** | Fix notification ping-pong (notify staff on resolution, notify admin on verification); add `authorRole` to history; enforce self-resolution guard. | High Priority |
-| **Phase 3** | **Verification Engine Upgrade** | Implement Before/After photo resolution comparator in staff/admin drawers; allow direct ranger dispatching and claim lock. | Medium |
-| **Phase 4** | **Field Sync & Mobile Resilience** | Add outbox idempotency tokens, coordinate accuracy checks, and retry quarantine logic. | Low / High Value |
-| **Phase 5** | **Architectural Refactoring** | Decompose `StaffDashboard.jsx` (2,389 lines) into modular domain components complying with the 150-line SRP rule. | Architectural Hygiene |
+| **Phase 1** | **Core Bug & Security Fixes** | Fix resolution evidence upload crash; secure `storage.rules` and `firestore.rules`; fix broken notification links and notification routing. | **[IN PROGRESS]**<br>• Finding 1: Done<br>• Finding 7: Done<br>• `firestore.rules` whitelist: Done<br>• Finding 2 (`storage.rules`) & Finding 3 (`create` roles): Pending |
+| **Phase 2** | **Workflow State Machine & Handshake** | Fix notification ping-pong (notify staff on resolution, notify admin on verification); add `authorRole` to history; enforce self-resolution guard. | **[IN PROGRESS]**<br>• 4.1 & Finding 5: Done<br>• 4.5 Self-Audit Guard: Done<br>• 4.3 Verified Handoff: Pending |
+| **Phase 3** | **Verification Engine Upgrade** | Implement Before/After photo resolution comparator in staff/admin drawers; allow direct ranger dispatching and claim lock. | **[IN PROGRESS]**<br>• 4.2 Direct Team Dispatch & Leader Authority: Done<br>• Duplicate Banner & Smart Merge: Done<br>• Open Assignments UI Overhaul: Done<br>• Side-by-side comparator: Pending |
+| **Phase 4** | **Field Sync & Mobile Resilience** | Add outbox idempotency tokens, coordinate accuracy checks, and retry quarantine logic. | **[IN PROGRESS]**<br>• Client UUID Idempotency: Done<br>• Accuracy validation: Pending |
+| **Phase 5** | **Architectural Refactoring** | Decompose `StaffDashboard.jsx` (2,389 lines) into modular domain components complying with the 150-line SRP rule. | **[IN PROGRESS]**<br>• `OpenAssignments.jsx` decomposed to <150 lines: Done<br>• `StaffDashboard.jsx` decomposition: Pending |
 
 ---
 *Document generated as part of the WMIRS Architectural Review & Continuous Quality Engineering initiative.*
