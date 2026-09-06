@@ -4,6 +4,7 @@ import { formatLogDate, getStatusClass } from "../../../utils/monitoringUtils";
 import { LOG_STATUS } from "../../../utils/incidentConstants";
 import WorkflowStepper from "../WorkflowStepper";
 import WorkflowActionModal from "../WorkflowActionModal";
+import UserProfileModal from "../UserProfileModal";
 
 const CATEGORY_MAP = {
   "BMS":        { icon: "forest",        color: "#00b545", label: "Biodiversity" },
@@ -46,6 +47,7 @@ function DrawerContent({ log, onClose, onStatusChange }) {
   const catMeta = CATEGORY_MAP[log.category] ?? { icon: "report", color: "#00ed64", label: log.category };
   const [actionModalOpen, setActionModalOpen] = useState(false);
   const [actionType, setActionType] = useState(null);
+  const [inspectedUser, setInspectedUser] = useState(null);
 
   const handleActionClick = (type, nextStatus, title, confirmLabel, variant = 'primary') => {
     setActionType({ type, nextStatus, title, confirmLabel, variant });
@@ -124,7 +126,25 @@ function DrawerContent({ log, onClose, onStatusChange }) {
         )}
         {/* Reporter info */}
         <div className="inc-drawer__meta-grid">
-          <MetaCell label="Reported By" icon="person" value={`${log.reporter?.name ?? "Unknown"} (${log.reporter?.email ?? ""})`} />
+          <div className="inc-drawer__meta-cell">
+            <span className="inc-drawer__meta-label">
+              <span className="material-symbols-outlined inc-drawer__meta-label-icon">person</span>
+              Reported By
+            </span>
+            <div className="flex items-center justify-between gap-1 mt-0.5">
+              <span className="inc-drawer__meta-val truncate">{`${log.reporter?.name ?? "Unknown"} (${log.reporter?.email ?? ""})`}</span>
+              {log.reporter?.uid && (
+                <button
+                  type="button"
+                  onClick={() => setInspectedUser({ uid: log.reporter.uid, name: log.reporter.name, email: log.reporter.email, role: log.reporter.role })}
+                  className="text-xs text-[#00684a] font-semibold underline hover:text-[#001e2b] shrink-0"
+                  title="View reporter profile"
+                >
+                  Profile ↗
+                </button>
+              )}
+            </div>
+          </div>
           <MetaCell label="Date Logged" icon="calendar_today" value={formatLogDate(log.createdAt)} />
         </div>
 
@@ -241,8 +261,18 @@ function DrawerContent({ log, onClose, onStatusChange }) {
                       </span>
                       <span className="remarks-time">{formatLogDate(hist.timestamp)}</span>
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: '#5c6c7a', marginBottom: '0.25rem' }}>
-                      By: {authorName} {authorRole !== 'User' ? `(${authorRole})` : ''}
+                    <div style={{ fontSize: '0.75rem', color: '#5c6c7a', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '4px' }}>
+                      <span>By: {authorName} {authorRole !== 'User' ? `(${authorRole})` : ''}</span>
+                      {hist.uid && (
+                        <button
+                          type="button"
+                          onClick={() => setInspectedUser({ uid: hist.uid, name: authorName, role: authorRole })}
+                          className="text-[11px] text-[#00684a] font-semibold underline hover:text-[#001e2b]"
+                          title={`View profile of ${authorName}`}
+                        >
+                          View Profile ↗
+                        </button>
+                      )}
                     </div>
                     {notesText && <div className="timeline-body">{notesText}</div>}
                     {hist.evidenceFile && (
@@ -329,6 +359,15 @@ function DrawerContent({ log, onClose, onStatusChange }) {
         confirmLabel={actionType?.confirmLabel || ''}
         variant={actionType?.variant || 'primary'}
         onSubmit={handleActionSubmit}
+      />
+
+      <UserProfileModal
+        key={`mon-prof-${inspectedUser?.uid || 'none'}`}
+        isOpen={Boolean(inspectedUser)}
+        user={inspectedUser}
+        userId={inspectedUser?.uid}
+        onClose={() => setInspectedUser(null)}
+        viewerRole={userRole}
       />
     </>
   );

@@ -3,6 +3,7 @@ import DashboardLayout from "../components/layout/DashboardLayout";
 import RoleEditModal from "../components/common/RoleEditModal";
 import ApplicationReviewModal from "../components/common/ApplicationReviewModal";
 import ConfirmModal from "../components/common/ConfirmModal";
+import Avatar from "../components/common/Avatar";
 import { getPendingUsers, setUserRoleAdmin, deleteUserAdmin } from "../firebase/services/userService";
 
 const buildRejectConfirm = (user) => ({
@@ -176,9 +177,12 @@ export default function AdminVetting() {
                     <tr key={user.uid} className={`um-table__row${index % 2 === 1 ? " um-table__row--even" : ""}`} role="row">
                       <td className="um-table__cell um-table__cell--name">
                         <div className="um-table__name-cell">
-                          <div className="um-table__avatar um-table__avatar--staff" aria-hidden="true">
-                            {(user.name || "U").split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()}
-                          </div>
+                          <Avatar
+                            src={user.photoURL}
+                            name={user.name || "Unknown"}
+                            role="ranger"
+                            size="sm"
+                          />
                           <div className="um-table__name-text">
                             {user.name || "Unknown"}
                           </div>

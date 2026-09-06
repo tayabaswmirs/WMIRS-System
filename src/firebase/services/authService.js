@@ -130,8 +130,12 @@ export const subscribeToAuthChanges = (callback) => {
  */
 export const updateUserAuthProfile = async (user, updates) => {
   const promises = [];
-  if (updates.name) {
-    promises.push(updateProfile(user, { displayName: updates.name }));
+  const profileUpdates = {};
+  if (updates.name !== undefined) profileUpdates.displayName = updates.name;
+  if (updates.photoURL !== undefined) profileUpdates.photoURL = updates.photoURL;
+
+  if (Object.keys(profileUpdates).length > 0) {
+    promises.push(updateProfile(user, profileUpdates));
   }
   if (updates.password) {
     promises.push(updatePassword(user, updates.password));

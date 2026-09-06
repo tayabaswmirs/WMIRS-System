@@ -5,6 +5,7 @@ import UserTable from "../components/common/UserTable";
 import UserEditModal from "../components/common/UserEditModal";
 import RoleEditModal from "../components/common/RoleEditModal";
 import ConfirmModal from "../components/common/ConfirmModal";
+import UserProfileModal from "../components/common/UserProfileModal";
 import {
   getAllUsers,
   updateUserAdmin,
@@ -42,6 +43,10 @@ export default function UserManagement() {
   const [selectedRoleUser, setSelectedRoleUser] = useState(null);
   const [isRoleSaving, setIsRoleSaving] = useState(false);
 
+  // Profile view modal state
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [inspectedUser, setInspectedUser] = useState(null);
+
   // Confirm modal — single shared dialog driven by a config object
   const [confirmConfig,  setConfirmConfig]  = useState(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
@@ -75,6 +80,12 @@ export default function UserManagement() {
       });
     return () => { active = false; };
   }, []);
+
+  // ── Profile view handler ──────────────────────────────────────
+  const handleViewProfile = (user) => {
+    setInspectedUser(user);
+    setProfileModalOpen(true);
+  };
 
   // ── Edit handler ──────────────────────────────────────────────
   const handleEditClick = (user) => {
@@ -232,6 +243,7 @@ export default function UserManagement() {
           <UserTable
             users={filteredUsers}
             currentAdminUid={currentUser?.uid}
+            onViewProfile={handleViewProfile}
             onEdit={handleEditClick}
             onToggleRole={handleToggleRole}
             onDelete={handleDeleteUser}
@@ -271,6 +283,15 @@ export default function UserManagement() {
             isLoading={confirmLoading}
           />
         )}
+
+        {/* ── View User Profile Modal ────────────────────────────── */}
+        <UserProfileModal
+          key={`profile-${inspectedUser?.uid || "none"}`}
+          isOpen={profileModalOpen}
+          user={inspectedUser}
+          onClose={() => setProfileModalOpen(false)}
+          viewerRole="admin"
+        />
 
       </div>
     </DashboardLayout>

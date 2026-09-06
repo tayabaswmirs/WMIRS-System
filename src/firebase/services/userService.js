@@ -70,6 +70,71 @@ export const deleteUserIdCard = async (storagePath) => {
 };
 
 /**
+ * Uploads a user's profile avatar to Firebase Storage.
+ *
+ * @param {string} uid - Target User ID
+ * @param {File} file - Profile picture file
+ * @param {function} [onProgress] - Upload progress callback (0-100)
+ * @returns {Promise<{ url: string, path: string }>}
+ */
+export const uploadUserProfilePicture = (uid, file, onProgress) => {
+  return new Promise((resolve, reject) => {
+    if (!file) {
+      return reject(new Error("No file provided for profile picture upload."));
+    }
+    const validMimes = ["image/jpeg", "image/png", "image/webp"];
+    if (!validMimes.includes(file.type)) {
+      return reject(new Error("Invalid image format. Only JPG, PNG, and WebP images are allowed."));
+    }
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB limit
+    if (file.size > MAX_SIZE) {
+      return reject(new Error("Profile image exceeds the 5MB size limit."));
+    }
+
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+    const storagePath = `users/${uid}/avatar/${Date.now()}_${sanitizedName}`;
+    const storageRef = ref(storage, storagePath);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        if (onProgress) onProgress(Math.round(progress));
+      },
+      (error) => {
+        console.error("Profile picture upload error:", error);
+        reject(error);
+      },
+      async () => {
+        try {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          resolve({ url: downloadURL, path: storagePath });
+        } catch (err) {
+          reject(err);
+        }
+      }
+    );
+  });
+};
+
+/**
+ * Deletes an avatar file from Firebase Storage.
+ *
+ * @param {string} storagePath - Object path in Firebase Storage
+ * @returns {Promise<void>}
+ */
+export const deleteUserProfilePicture = async (storagePath) => {
+  if (!storagePath) return;
+  try {
+    const fileRef = ref(storage, storagePath);
+    await deleteObject(fileRef);
+  } catch (err) {
+    console.warn(`Failed to delete profile avatar at ${storagePath}:`, err);
+  }
+};
+
+/**
  * Creates a user profile document in Firestore.
  * Supports legacy signature (uid, name, email) and full vetting object.
  * 
@@ -102,6 +167,8 @@ export const createUserProfile = async (uid, dataOrName, emailParam) => {
     idNumber: (profileData.idNumber || "").trim(),
     idCardUrl: profileData.idCardUrl || "",
     idCardPath: profileData.idCardPath || "",
+    photoURL: profileData.photoURL || "",
+    profilePicturePath: profileData.profilePicturePath || "",
     role: "pending",
     staffScope: null,
     createdAt: serverTimestamp()
@@ -290,4 +357,32 @@ export const deleteSelfAccount = async () => {
   const res = await deleteFn();
   return res.data;
 };
+
+/**
+ * Fetches a user profile and sanitizes private vetting documents/credentials
+ * if the requester is not an Administrator or the profile owner.
+ *
+ * @param {string} uid - Target User ID
+ * @param {boolean} [isViewerAdmin=false] - Whether the viewer has admin privileges
+ * @returns {Promise<object|null>}
+ */
+export const getUserPublicProfile = async (uid, isViewerAdmin = false) => {
+  if (!uid) return null;
+  const userRef = doc(db, "users", uid);
+  const snap = await getDoc(userRef);
+  if (!snap.exists()) return null;
+
+  const data = snap.data();
+  if (isViewerAdmin) {
+    return data;
+  }
+
+  // Zero-Trust field sanitization for non-admin viewers: omit private ID scans and numbers
+  const sanitizedProfile = { ...data };
+  delete sanitizedProfile.idNumber;
+  delete sanitizedProfile.idCardUrl;
+  delete sanitizedProfile.idCardPath;
+  return sanitizedProfile;
+};
+
 

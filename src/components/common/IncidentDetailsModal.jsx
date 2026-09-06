@@ -3,6 +3,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { CATEGORY_META, LOG_STATUS, getSeverityClass, getStatusClass, formatIncidentDate } from "../../utils/incidentConstants";
 import WorkflowStepper from "./WorkflowStepper";
 import WorkflowActionModal from "./WorkflowActionModal";
+import UserProfileModal from "./UserProfileModal";
 
 /**
  * IncidentDetailsModal — right-side sliding drawer showing full incident metadata,
@@ -53,6 +54,7 @@ function DrawerContent({ incident, onClose, onStatusChange }) {
   const catMeta = CATEGORY_META[incident.category] ?? { icon: "report", color: "#00ed64" };
   const [actionType, setActionType] = useState(null); // e.g. { type: 'approve', nextStatus: 'assigned', title: '...', confirmLabel: '...' }
   const [actionModalOpen, setActionModalOpen] = useState(false);
+  const [inspectedUser, setInspectedUser] = useState(null);
 
   const handleActionClick = (type, nextStatus, title, confirmLabel, variant = 'primary') => {
     setActionType({ type, nextStatus, title, confirmLabel, variant });
@@ -137,7 +139,25 @@ function DrawerContent({ incident, onClose, onStatusChange }) {
         <div className="inc-drawer__meta-grid">
           <MetaCell label="Location / Site" icon="location_on" value={incident.location} />
           <MetaCell label="Date & Time" icon="calendar_today" value={formatIncidentDate(incident.dateTime)} />
-          <MetaCell label="Reported By" icon="person" value={`${incident.reporter?.name ?? "Unknown"} (${incident.reporter?.email ?? ""})`} />
+          <div className="inc-drawer__meta-cell">
+            <span className="inc-drawer__meta-label">
+              <span className="material-symbols-outlined inc-drawer__meta-label-icon">person</span>
+              Reported By
+            </span>
+            <div className="flex items-center justify-between gap-1 mt-0.5">
+              <span className="inc-drawer__meta-val truncate">{`${incident.reporter?.name ?? "Unknown"} (${incident.reporter?.email ?? ""})`}</span>
+              {incident.reporter?.uid && (
+                <button
+                  type="button"
+                  onClick={() => setInspectedUser({ uid: incident.reporter.uid, name: incident.reporter.name, email: incident.reporter.email, role: incident.reporter.role })}
+                  className="text-xs text-[#00684a] font-semibold underline hover:text-[#001e2b] shrink-0"
+                  title="View reporter profile"
+                >
+                  Profile ↗
+                </button>
+              )}
+            </div>
+          </div>
           <MetaCell label="Reporter Role" icon="badge" value={incident.reporter?.role ?? "—"} />
         </div>
 
@@ -255,8 +275,18 @@ function DrawerContent({ incident, onClose, onStatusChange }) {
                       </span>
                       <span className="remarks-time">{formatIncidentDate(hist.timestamp)}</span>
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: '#5c6c7a', marginBottom: '0.25rem' }}>
-                      By: {authorName} {authorRole !== 'User' ? `(${authorRole})` : ''}
+                    <div style={{ fontSize: '0.75rem', color: '#5c6c7a', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '4px' }}>
+                      <span>By: {authorName} {authorRole !== 'User' ? `(${authorRole})` : ''}</span>
+                      {hist.uid && (
+                        <button
+                          type="button"
+                          onClick={() => setInspectedUser({ uid: hist.uid, name: authorName, role: authorRole })}
+                          className="text-[11px] text-[#00684a] font-semibold underline hover:text-[#001e2b]"
+                          title={`View profile of ${authorName}`}
+                        >
+                          View Profile ↗
+                        </button>
+                      )}
                     </div>
                     {notesText && <div className="timeline-body">{notesText}</div>}
                     {hist.evidenceFile && (
@@ -343,6 +373,15 @@ function DrawerContent({ incident, onClose, onStatusChange }) {
         confirmLabel={actionType?.confirmLabel || ''}
         variant={actionType?.variant || 'primary'}
         onSubmit={handleActionSubmit}
+      />
+
+      <UserProfileModal
+        key={`inc-prof-${inspectedUser?.uid || 'none'}`}
+        isOpen={Boolean(inspectedUser)}
+        user={inspectedUser}
+        userId={inspectedUser?.uid}
+        onClose={() => setInspectedUser(null)}
+        viewerRole={userRole}
       />
     </>
   );

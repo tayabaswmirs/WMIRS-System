@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Avatar from "./Avatar";
 
 /** Number of rows to show per page. */
 const PAGE_SIZE = 5;
@@ -24,19 +25,6 @@ const formatDate = (timestamp) => {
   }
 };
 
-/**
- * Derives up to 2 uppercase initials from a display name.
- * @param {string} name
- * @returns {string}
- */
-const getInitials = (name) =>
-  (name || "U")
-    .split(" ")
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-
 // ─── Empty State ──────────────────────────────────────────────────────────────
 
 function EmptyState() {
@@ -57,12 +45,11 @@ function EmptyState() {
 
 // ─── Single Table Row ─────────────────────────────────────────────────────────
 
-function UserRow({ user, currentAdminUid, onEdit, onToggleRole, onDelete, isEven }) {
+function UserRow({ user, currentAdminUid, onEdit, onToggleRole, onDelete, onViewProfile, isEven }) {
   const isAdmin     = user.role === "admin";
   const isSelf      = user.uid === currentAdminUid;
   const isHistorical = user.isHistorical === true;
   const displayName = user.name || user.displayName || "User";
-  const initials    = getInitials(displayName);
   const cannotModifyRole = isSelf || isAdmin || isHistorical;
   const cannotDelete = isSelf || isAdmin || isHistorical;
   const cannotEdit = isHistorical;
@@ -75,12 +62,12 @@ function UserRow({ user, currentAdminUid, onEdit, onToggleRole, onDelete, isEven
       {/* ── Staff Member: avatar + name ──────────────────────── */}
       <td className="um-table__cell um-table__cell--name">
         <div className="um-table__name-cell">
-          <div
-            className={`um-table__avatar ${isAdmin ? "um-table__avatar--admin" : "um-table__avatar--staff"}`}
-            aria-hidden="true"
-          >
-            {initials}
-          </div>
+          <Avatar
+            src={user.photoURL}
+            name={displayName}
+            role={user.role}
+            size="sm"
+          />
           <div className="um-table__name-text">
             {displayName}
             {isSelf && (
@@ -133,6 +120,19 @@ function UserRow({ user, currentAdminUid, onEdit, onToggleRole, onDelete, isEven
       {/* ── Actions ──────────────────────────────────────────── */}
       <td className="um-table__cell um-table__cell--actions">
         <div className="um-table__actions">
+
+          {onViewProfile && (
+            <button
+              id={`um-view-btn-${user.uid}`}
+              type="button"
+              className="um-action-btn um-action-btn--view"
+              onClick={() => onViewProfile(user)}
+              title="View profile details"
+            >
+              <span className="material-symbols-outlined um-action-btn__icon" aria-hidden="true">visibility</span>
+              <span className="um-action-btn__label">View</span>
+            </button>
+          )}
 
           <button
             id={`um-edit-btn-${user.uid}`}
@@ -264,7 +264,7 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
  * the total exceeds PAGE_SIZE.
  * Stateless regarding data — all actions are lifted to UserManagement.
  */
-export default function UserTable({ users, currentAdminUid, onEdit, onToggleRole, onDelete }) {
+export default function UserTable({ users, currentAdminUid, onEdit, onToggleRole, onDelete, onViewProfile }) {
   const [prevUsers, setPrevUsers] = useState(users);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -305,6 +305,7 @@ export default function UserTable({ users, currentAdminUid, onEdit, onToggleRole
                 onEdit={onEdit}
                 onToggleRole={onToggleRole}
                 onDelete={onDelete}
+                onViewProfile={onViewProfile}
                 /* Preserve visual stripe continuity relative to the page start */
                 isEven={index % 2 === 1}
               />

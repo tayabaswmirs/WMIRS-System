@@ -1499,6 +1499,17 @@
   line-height: 1;
 }
 
+.um-action-btn--view {
+  background: var(--c-surface);
+  color: var(--c-teal-deep);
+  border-color: var(--c-hairline-strong);
+}
+.um-action-btn--view:hover {
+  background: var(--c-surface-feature);
+  color: var(--c-green-dark);
+  border-color: var(--c-green-mid);
+}
+
 .um-action-btn--edit {
   background: transparent;
   color: var(--c-slate);
@@ -2033,6 +2044,454 @@ button:disabled,
   margin-top: var(--sp-xs);
   align-self: flex-start;
 }
+
+/* ── Profile Avatar Customization Card ── */
+.prof-avatar-card {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xl);
+  padding-bottom: var(--sp-lg);
+  border-bottom: 1px solid var(--c-hairline-soft);
+}
+
+@media (max-width: 640px) {
+  .prof-avatar-card {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--sp-md);
+  }
+}
+
+.prof-avatar-preview {
+  position: relative;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.prof-avatar-preview:hover {
+  transform: translateY(-2px);
+}
+
+.prof-avatar-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--c-green, #00ed64);
+  color: var(--c-teal-deep, #001e2b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 30, 43, 0.25);
+  border: 2px solid #fff;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.15s ease;
+}
+
+.prof-avatar-badge:hover {
+  background: #00b545;
+  transform: scale(1.05);
+}
+
+.prof-avatar-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.prof-avatar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.prof-avatar-hint {
+  font-size: 12px;
+  color: var(--c-steel, #5c6c7a);
+}
+
+/* ── Modal Slim Scrollbar ── */
+.modal-slim-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+.modal-slim-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.modal-slim-scroll::-webkit-scrollbar-thumb {
+  background: #c1ccd6;
+  border-radius: 4px;
+}
+.modal-slim-scroll::-webkit-scrollbar-thumb:hover {
+  background: #7c8c9a;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   INSTITUTIONAL DOSSIER & AVATAR MODAL ARCHITECTURE
+   ═══════════════════════════════════════════════════════════════ */
+
+.dossier-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 30, 43, 0.75);
+  backdrop-filter: blur(6px);
+  padding: 16px;
+}
+
+.dossier-modal {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 24px 64px -12px rgba(0, 30, 43, 0.35), 0 0 0 1px #e1e5e8;
+  max-width: 460px;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dossier-banner {
+  height: 105px;
+  background: linear-gradient(135deg, #001e2b 0%, #003d4f 100%);
+  padding: 16px 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  position: relative;
+  user-select: none;
+}
+
+.dossier-badge-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: rgba(0, 237, 100, 0.15);
+  border: 1px solid rgba(0, 237, 100, 0.35);
+  color: #00ed64;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.dossier-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.dossier-close-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+.dossier-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: -50px;
+  padding: 0 24px 8px 24px;
+}
+
+.dossier-avatar-ring {
+  padding: 4px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 30, 43, 0.16);
+  display: inline-flex;
+  margin-bottom: 10px;
+}
+
+.dossier-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: #001e2b !important;
+  letter-spacing: -0.5px;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.dossier-role-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 5px 14px;
+  border-radius: 9999px;
+  background: #e3fcef;
+  border: 1px solid rgba(0, 163, 92, 0.3);
+  color: #00684a;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dossier-body {
+  padding: 8px 20px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.dossier-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #f9fbfa;
+  border: 1px solid #e1e5e8;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dossier-card:hover {
+  border-color: rgba(0, 163, 92, 0.4);
+  box-shadow: 0 2px 8px rgba(0, 30, 43, 0.04);
+}
+
+.dossier-card__icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #e3fcef;
+  color: #00684a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dossier-card__content {
+  margin-left: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.dossier-card__title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #7c8c9a;
+  margin-bottom: 2px;
+}
+
+.dossier-card__value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #001e2b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dossier-card__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 1px solid #e1e5e8;
+  font-size: 11px;
+  font-weight: 600;
+  color: #5c6c7a;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.dossier-card__btn:hover {
+  background: #f4f7f6;
+  color: #001e2b;
+  border-color: #c1ccd6;
+}
+
+.dossier-footer {
+  padding: 14px 24px;
+  background: #f9fbfa;
+  border-top: 1px solid #e1e5e8;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.dossier-footer-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 24px;
+  border-radius: 9999px;
+  background: #00ed64;
+  color: #001e2b;
+  font-weight: 700;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 237, 100, 0.25);
+  transition: all 0.15s ease;
+}
+
+.dossier-footer-btn:hover {
+  background: #00b545;
+  box-shadow: 0 4px 12px rgba(0, 237, 100, 0.35);
+  transform: translateY(-1px);
+}
+
+/* ── Avatar Upload Modal Architecture ── */
+.avatar-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 230;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 30, 43, 0.75);
+  backdrop-filter: blur(6px);
+  padding: 16px;
+}
+
+.avatar-modal-card {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 24px 64px -12px rgba(0, 30, 43, 0.35), 0 0 0 1px #e1e5e8;
+  max-width: 460px;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.avatar-modal-header {
+  background: #001e2b;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.avatar-modal-title {
+  color: #ffffff !important;
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.avatar-modal-sub {
+  color: #a8b3bc;
+  font-size: 11px;
+  margin: 2px 0 0 0;
+}
+
+.avatar-modal-body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.avatar-dropzone-box {
+  border: 2px dashed #c1ccd6;
+  border-radius: 16px;
+  padding: 32px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  background: #f9fbfa;
+  transition: all 0.15s ease;
+}
+
+.avatar-dropzone-box:hover {
+  border-color: #00a35c;
+  background: #f4f7f6;
+}
+
+.avatar-dropzone-box.drag-over {
+  border-color: #00ed64;
+  background: rgba(227, 252, 239, 0.5);
+  transform: scale(1.01);
+}
+
+.avatar-modal-footer {
+  padding: 14px 24px;
+  background: #f9fbfa;
+  border-top: 1px solid #e1e5e8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.avatar-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 22px;
+  border-radius: 9999px;
+  background: #00ed64;
+  color: #001e2b;
+  font-weight: 700;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 237, 100, 0.25);
+  transition: all 0.15s ease;
+}
+
+.avatar-btn-primary:hover:not(:disabled) {
+  background: #00b545;
+  box-shadow: 0 4px 12px rgba(0, 237, 100, 0.35);
+  transform: translateY(-1px);
+}
+
+.avatar-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.avatar-btn-secondary {
+  padding: 8px 16px;
+  border-radius: 9999px;
+  background: transparent;
+  color: #5c6c7a;
+  font-weight: 600;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.avatar-btn-secondary:hover {
+  background: #e1e5e8;
+  color: #001e2b;
+}
+
+
 
 /* ═══════════════════════════════════════════════════════════════
    DASHBOARD VIEW & INCIDENT REPORTING STYLES

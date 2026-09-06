@@ -42,8 +42,8 @@ service cloud.firestore {
 
     // Rules for the users collection
     match /users/{userId} {
-      // Anyone authenticated can read their own profile, admins can read all profiles
-      allow read: if isOwner(userId) || isAdmin();
+      // Anyone authenticated can read user profiles (directory, reporters, workflow reviewers/validators)
+      allow read: if isAuthenticated();
       
       // When creating a profile, the user must be authenticated as that UID and must register with role 'pending'
       allow create: if isAuthenticated() && 

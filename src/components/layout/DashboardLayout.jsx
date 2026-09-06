@@ -5,6 +5,7 @@ import Sidebar from "./Sidebar";
 import NotificationBell from "./NotificationBell";
 import NotificationToast from "../common/NotificationToast";
 import { useNotifications } from "../../hooks/useNotifications";
+import Avatar from "../common/Avatar";
 import "../../styles/dashboard.css";
 
 /**
@@ -24,8 +25,6 @@ function DashboardLayout({ children }) {
   const { toastNotification, dismissToast } = useNotifications();
 
   const displayName = currentUser?.displayName || profileData?.name || "User";
-  // Generate initials for the avatar placeholder
-  const initials    = displayName.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
 
   const handleSidebarClose = () => setSidebarOpen(false);
 
@@ -97,9 +96,12 @@ function DashboardLayout({ children }) {
             <div className="topbar-desktop-actions">
               {/* User Profile Info (Unpressable) */}
               <div className="topbar-user-profile-static">
-                <div className="topbar-user-avatar" aria-hidden="true">
-                  {initials}
-                </div>
+                <Avatar
+                  src={profileData?.photoURL || currentUser?.photoURL}
+                  name={displayName}
+                  role={userRole}
+                  size="sm"
+                />
                 <div className="topbar-user-meta">
                   <span className="topbar-user-name">
                     {displayName}
@@ -144,9 +146,12 @@ function DashboardLayout({ children }) {
                 aria-haspopup="true"
                 type="button"
               >
-                <div className="topbar-user-avatar" aria-hidden="true">
-                  {initials}
-                </div>
+                <Avatar
+                  src={profileData?.photoURL || currentUser?.photoURL}
+                  name={displayName}
+                  role={userRole}
+                  size="sm"
+                />
                 <span className="material-symbols-outlined topbar-mobile-avatar-chevron" aria-hidden="true">
                   {profileMenuOpen ? "expand_less" : "expand_more"}
                 </span>
@@ -156,9 +161,12 @@ function DashboardLayout({ children }) {
               {profileMenuOpen && (
                 <div className="topbar-account-menu" role="menu" aria-label="User options">
                   <div className="topbar-account-menu__header">
-                    <div className="topbar-user-avatar topbar-user-avatar--large" aria-hidden="true">
-                      {initials}
-                    </div>
+                    <Avatar
+                      src={profileData?.photoURL || currentUser?.photoURL}
+                      name={displayName}
+                      role={userRole}
+                      size="md"
+                    />
                     <div className="topbar-account-menu__user-info">
                       <span className="topbar-account-menu__name">{displayName}</span>
                       <span className="topbar-account-menu__role">{roleLabel}</span>

@@ -100,6 +100,22 @@ export function AuthProvider({ children }) {
     return logoutUser();
   };
 
+  const refreshProfile = async () => {
+    if (!currentUser?.uid) return null;
+    try {
+      const profile = await getUserProfile(currentUser.uid);
+      if (profile) {
+        setProfileData(profile);
+        setUserRole(normalizeRole(profile.role));
+        setStaffScope(profile.staffScope || null);
+      }
+      return profile;
+    } catch (err) {
+      console.error("Failed to refresh user profile:", err);
+      return null;
+    }
+  };
+
   const value = {
     currentUser,
     userRole,
@@ -108,7 +124,8 @@ export function AuthProvider({ children }) {
     loading,
     login,
     register,
-    logout
+    logout,
+    refreshProfile
   };
 
   return (
