@@ -100,7 +100,7 @@ function IncidentHistory() {
                     <th className="inc-table__th">Location</th>
                     <th className="inc-table__th">Date Reported</th>
                     <th className="inc-table__th">Severity</th>
-                    <th className="inc-table__th">Status</th>
+                    <th className="inc-table__th inc-table__th--status">Status</th>
                     <th className="inc-table__th inc-table__th--action">Details</th>
                   </tr>
                 </thead>
@@ -133,7 +133,7 @@ function IncidentHistory() {
                         <td className="inc-table__td">
                           <span className={`severity-badge ${getSeverityClass(rep.severity)}`}>{rep.severity}</span>
                         </td>
-                        <td className="inc-table__td">
+                        <td className="inc-table__td inc-table__td--status">
                           <span className={`status-badge ${getStatusClass(rep.status)}${isPriority ? " status-badge--priority" : ""}`}>
                             {isPriority && (
                               <span className="material-symbols-outlined" style={{ fontSize: "14px", marginRight: "2px" }} aria-hidden="true">
@@ -144,15 +144,17 @@ function IncidentHistory() {
                           </span>
                         </td>
                         <td className="inc-table__td inc-table__td--action">
-                          <button
-                            onClick={() => setSelectedIncident(rep)}
-                            className="inc-table__view-btn"
-                            type="button"
-                            aria-label={`View details for ${rep.incidentType}`}
-                            title="View details"
-                          >
-                            <span className="material-symbols-outlined">visibility</span>
-                          </button>
+                          <div className="inc-table__actions">
+                            <button
+                              onClick={() => setSelectedIncident(rep)}
+                              className="inc-table__view-btn"
+                              type="button"
+                              aria-label={`View details for ${rep.incidentType}`}
+                              title="View details"
+                            >
+                              <span className="material-symbols-outlined">visibility</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );

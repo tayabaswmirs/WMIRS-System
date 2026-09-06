@@ -30,7 +30,7 @@ function AdminIncidentTable({ incidents, onViewDetails, stageId = null }) {
             <th className="inc-table__th">Location</th>
             <th className="inc-table__th">Date Reported</th>
             <th className="inc-table__th">Severity</th>
-            <th className="inc-table__th">Status</th>
+            <th className="inc-table__th inc-table__th--status">Status</th>
             <th className="inc-table__th inc-table__th--action">Details</th>
           </tr>
         </thead>
@@ -83,7 +83,7 @@ function AdminIncidentTable({ incidents, onViewDetails, stageId = null }) {
                 </td>
 
                 {/* Inline status dropdown */}
-                <td className="inc-table__td">
+                <td className="inc-table__td inc-table__td--status">
                   <span className={`status-badge ${getStatusClass(inc.status)}${isPriority ? " status-badge--priority" : ""}`}>
                     {isPriority && (
                       <span className="material-symbols-outlined" style={{ fontSize: "14px", marginRight: "2px" }} aria-hidden="true">
@@ -95,27 +95,29 @@ function AdminIncidentTable({ incidents, onViewDetails, stageId = null }) {
                 </td>
 
                 {/* Icon-only view button */}
-                <td className="inc-table__td inc-table__td--action" style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                  <button
-                    type="button"
-                    onClick={() => onViewDetails(inc)}
-                    className="inc-table__view-btn"
-                    aria-label={`View details for ${inc.incidentType}`}
-                    title="View full details"
-                  >
-                    <span className="material-symbols-outlined">visibility</span>
-                  </button>
-                  {inc.onDelete && (
+                <td className="inc-table__td inc-table__td--action">
+                  <div className="inc-table__actions">
                     <button
                       type="button"
-                      onClick={() => inc.onDelete(inc)}
-                      className="inc-table__view-btn text-red-500 hover:bg-red-500/10"
-                      aria-label={`Delete ${inc.incidentType}`}
-                      title="Permanently Delete"
+                      onClick={() => onViewDetails(inc)}
+                      className="inc-table__view-btn"
+                      aria-label={`View details for ${inc.incidentType}`}
+                      title="View full details"
                     >
-                      <span className="material-symbols-outlined text-red-500">delete</span>
+                      <span className="material-symbols-outlined">visibility</span>
                     </button>
-                  )}
+                    {inc.onDelete && (
+                      <button
+                        type="button"
+                        onClick={() => inc.onDelete(inc)}
+                        className="inc-table__view-btn inc-table__view-btn--delete"
+                        aria-label={`Delete ${inc.incidentType}`}
+                        title="Permanently Delete"
+                      >
+                        <span className="material-symbols-outlined">delete</span>
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             );

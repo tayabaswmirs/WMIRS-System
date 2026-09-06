@@ -27,7 +27,7 @@ function MonitoringTable({ logs, isAdmin, onViewDetails }) {
             <th className="inc-table__th">Subcategory</th>
             {isAdmin && <th className="inc-table__th">Reporter</th>}
             <th className="inc-table__th">Date Sighted</th>
-            <th className="inc-table__th">Status</th>
+            <th className="inc-table__th inc-table__th--status">Status</th>
             <th className="inc-table__th inc-table__th--action">Details</th>
           </tr>
         </thead>
@@ -70,34 +70,36 @@ function MonitoringTable({ logs, isAdmin, onViewDetails }) {
                 </td>
 
                 {/* Status Badge */}
-                <td className="inc-table__td">
+                <td className="inc-table__td inc-table__td--status">
                   <span className={`status-badge ${getStatusClass(log.status)}`}>
                     {getStatusLabel(log.status)}
                   </span>
                 </td>
 
                 {/* View Details Button */}
-                <td className="inc-table__td inc-table__td--action" style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                  <button
-                    type="button"
-                    onClick={() => onViewDetails(log)}
-                    className="inc-table__view-btn"
-                    aria-label={`View details for log ${log.id}`}
-                    title="View details"
-                  >
-                    <span className="material-symbols-outlined">visibility</span>
-                  </button>
-                  {isAdmin && log.onDelete && (
+                <td className="inc-table__td inc-table__td--action">
+                  <div className="inc-table__actions">
                     <button
                       type="button"
-                      onClick={() => log.onDelete(log)}
-                      className="inc-table__view-btn text-red-500 hover:bg-red-500/10"
-                      aria-label={`Delete ${log.id}`}
-                      title="Permanently Delete"
+                      onClick={() => onViewDetails(log)}
+                      className="inc-table__view-btn"
+                      aria-label={`View details for log ${log.id}`}
+                      title="View details"
                     >
-                      <span className="material-symbols-outlined text-red-500">delete</span>
+                      <span className="material-symbols-outlined">visibility</span>
                     </button>
-                  )}
+                    {isAdmin && log.onDelete && (
+                      <button
+                        type="button"
+                        onClick={() => log.onDelete(log)}
+                        className="inc-table__view-btn inc-table__view-btn--delete"
+                        aria-label={`Delete ${log.id}`}
+                        title="Permanently Delete"
+                      >
+                        <span className="material-symbols-outlined">delete</span>
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             );
