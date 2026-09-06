@@ -1,24 +1,107 @@
 import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, getDocs, query, orderBy, where, serverTimestamp } from "firebase/firestore";
+import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import { httpsCallable } from "firebase/functions";
-import { db, functions } from "../firebase";
+import { db, storage, functions } from "../firebase";
 import { sendNotification, sendRoleNotification } from "./notificationService";
 
 /**
- * Creates a user profile document in Firestore.
- * Defaults the user's role to 'ranger' (field reporter).
+ * Uploads a user's ID card photo/scan to Firebase Storage under their protected folder.
  * 
- * @param {string} uid - Unique User ID from Firebase Auth
- * @param {string} name - The user's full name
- * @param {string} email - The user's registered email address
+ * @param {string} uid - User ID
+ * @param {File} file - ID card image file
+ * @param {function} [onProgress] - Optional progress callback
+ * @returns {Promise<{ url: string, path: string }>}
+ */
+export const uploadUserIdCard = (uid, file, onProgress) => {
+  return new Promise((resolve, reject) => {
+    if (!file) {
+      return reject(new Error("No file provided for ID card upload."));
+    }
+    const validMimes = ["image/jpeg", "image/png", "image/webp"];
+    if (!validMimes.includes(file.type)) {
+      return reject(new Error("Invalid file format. Only JPG, PNG, and WebP images are allowed."));
+    }
+    const MAX_SIZE = 5 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      return reject(new Error("ID card image size exceeds 5MB limit."));
+    }
+
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+    const storagePath = `users/${uid}/id_card/${Date.now()}_${sanitizedName}`;
+    const storageRef = ref(storage, storagePath);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        if (onProgress) onProgress(Math.round(progress));
+      },
+      (error) => {
+        console.error("ID card upload error:", error);
+        reject(error);
+      },
+      async () => {
+        try {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          resolve({ url: downloadURL, path: storagePath });
+        } catch (err) {
+          reject(err);
+        }
+      }
+    );
+  });
+};
+
+/**
+ * Deletes an ID card file from Firebase Storage.
+ * 
+ * @param {string} storagePath - Object path in Firebase Storage
  * @returns {Promise<void>}
  */
-export const createUserProfile = async (uid, name, email) => {
+export const deleteUserIdCard = async (storagePath) => {
+  if (!storagePath) return;
+  try {
+    const fileRef = ref(storage, storagePath);
+    await deleteObject(fileRef);
+  } catch (err) {
+    console.warn(`Failed to delete ID card at ${storagePath}:`, err);
+  }
+};
+
+/**
+ * Creates a user profile document in Firestore.
+ * Supports legacy signature (uid, name, email) and full vetting object.
+ * 
+ * @param {string} uid - Unique User ID from Firebase Auth
+ * @param {object|string} dataOrName - Profile object or legacy full name string
+ * @param {string} [emailParam] - Legacy email string if dataOrName was string
+ * @returns {Promise<void>}
+ */
+export const createUserProfile = async (uid, dataOrName, emailParam) => {
   if (!uid) throw new Error("Cannot create user profile: missing UID");
   const userRef = doc(db, "users", uid);
+
+  const profileData = (typeof dataOrName === "object" && dataOrName !== null)
+    ? dataOrName
+    : { name: dataOrName || "", email: emailParam || "" };
+
+  const firstName = (profileData.firstName || "").trim();
+  const lastName = (profileData.lastName || "").trim();
+  const name = (profileData.name || (firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName || "")).trim();
+  const email = (profileData.email || "").trim();
+
   await setDoc(userRef, {
     uid,
-    name: name || "",
-    email: email || "",
+    firstName,
+    lastName,
+    name,
+    email,
+    phone: (profileData.phone || "").trim(),
+    address: (profileData.address || "").trim(),
+    idNumber: (profileData.idNumber || "").trim(),
+    idCardUrl: profileData.idCardUrl || "",
+    idCardPath: profileData.idCardPath || "",
     role: "pending",
     staffScope: null,
     createdAt: serverTimestamp()
@@ -159,6 +242,20 @@ export const setUserRoleAdmin = async (uid, role, staffScope = null) => {
  * @returns {Promise<object>}
  */
 export const deleteUserAdmin = async (uid) => {
+  // Clean up uploaded ID card from Firebase Storage if present
+  try {
+    const userRef = doc(db, "users", uid);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      const userData = userSnap.data();
+      if (userData.idCardPath) {
+        await deleteUserIdCard(userData.idCardPath);
+      }
+    }
+  } catch (storageErr) {
+    console.warn(`Failed to cleanup ID card for user ${uid} from storage:`, storageErr);
+  }
+
   try {
     const deleteFn = httpsCallable(functions, "adminDeleteUser");
     const res = await deleteFn({ uid });

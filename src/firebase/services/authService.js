@@ -5,31 +5,93 @@ import {
   onAuthStateChanged, 
   updateProfile,
   updatePassword,
-  updateEmail
+  updateEmail,
+  deleteUser
 } from "firebase/auth";
 import { auth } from "../firebase";
-import { createUserProfile } from "./userService";
+import { createUserProfile, uploadUserIdCard, deleteUserIdCard } from "./userService";
 
 /**
- * Registers a new user, updates their Auth display name, and writes their default 'user' profile to Firestore.
+ * Registers a new user, uploads their ID card, and creates their pending profile in Firestore.
+ * Supports both object payload and legacy positional arguments with atomic rollback on failure.
  * 
- * @param {string} name 
- * @param {string} email 
- * @param {string} password 
+ * @param {object|string} dataOrName - Registration object or legacy full name string
+ * @param {string} [emailParam] - Email if dataOrName was string
+ * @param {string} [passwordParam] - Password if dataOrName was string
+ * @param {object} [vettingParam] - Vetting data if dataOrName was string
  * @returns {Promise<import("firebase/auth").User>}
  */
-export const registerWithEmail = async (name, email, password) => {
+export const registerWithEmail = async (dataOrName, emailParam, passwordParam, vettingParam = {}) => {
+  const registrationData = (typeof dataOrName === "object" && dataOrName !== null)
+    ? dataOrName
+    : {
+        name: dataOrName,
+        email: emailParam,
+        password: passwordParam,
+        ...vettingParam
+      };
+
+  const {
+    firstName = "",
+    lastName = "",
+    email = "",
+    password = "",
+    phone = "",
+    address = "",
+    idNumber = "",
+    idCardFile = null
+  } = registrationData;
+
+  const resolvedName = (registrationData.name || (firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName || "")).trim();
+
   // 1. Create account inside Firebase Authentication
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
   const user = userCredential.user;
 
-  // 2. Add the user's name to the auth profile
-  await updateProfile(user, { displayName: name });
+  let uploadedCardPath = null;
 
-  // 3. Store user record and role inside Firestore
-  await createUserProfile(user.uid, name, email);
+  try {
+    // 2. Add the user's name to the auth profile
+    if (resolvedName) {
+      await updateProfile(user, { displayName: resolvedName });
+    }
 
-  return user;
+    // 3. Upload ID card image if provided
+    let idCardUrl = "";
+    if (idCardFile) {
+      const uploadRes = await uploadUserIdCard(user.uid, idCardFile);
+      idCardUrl = uploadRes.url;
+      uploadedCardPath = uploadRes.path;
+    }
+
+    // 4. Store complete user record and pending role inside Firestore
+    await createUserProfile(user.uid, {
+      firstName,
+      lastName,
+      name: resolvedName,
+      email: email.trim(),
+      phone,
+      address,
+      idNumber,
+      idCardUrl,
+      idCardPath: uploadedCardPath || ""
+    });
+
+    return user;
+  } catch (err) {
+    console.error("Registration post-auth step failed. Rolling back created account:", err);
+    // Rollback: clean up any uploaded storage file
+    if (uploadedCardPath) {
+      await deleteUserIdCard(uploadedCardPath).catch((e) => console.warn("Rollback file delete failed:", e));
+    }
+    // Rollback: delete the created auth user so no orphaned account is left
+    try {
+      await deleteUser(user);
+    } catch (deleteErr) {
+      console.warn("Rollback auth delete failed:", deleteErr);
+    }
+    throw err;
+  }
 };
 
 /**

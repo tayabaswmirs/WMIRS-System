@@ -3,16 +3,35 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import useLoadingLock from "../hooks/useLoadingLock";
 import PasswordInput from "../components/common/PasswordInput";
+import RegisterWizard from "../components/common/RegisterWizard";
 import wmirsLogo from "../assets/wmirs-logo.png";
 import "../styles/login.css";
+
+const formatAuthError = (err) => {
+  const errorCode = err?.code;
+  switch (errorCode) {
+    case "auth/email-already-in-use":
+      return "An account with this email address already exists. Please sign in instead.";
+    case "auth/weak-password":
+      return "The password chosen is too weak. It must be at least 8 characters.";
+    case "auth/invalid-email":
+      return "Please enter a valid email address.";
+    case "auth/user-not-found":
+    case "auth/wrong-password":
+    case "auth/invalid-credential":
+      return "Invalid email or password. Please check your credentials and try again.";
+    case "auth/network-request-failed":
+      return "Network error. Please check your internet connection.";
+    default:
+      return err?.message || "Authentication process failed. Please try again.";
+  }
+};
 
 function Login() {
   const formRef = useRef(null);
   const [isRegistering, setIsRegistering] = useState(false);
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [formLoading, setFormLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -38,73 +57,42 @@ function Login() {
     setIsRegistering((prev) => !prev);
     setErrorMsg("");
     setSuccessMsg("");
-    setName("");
     setEmail("");
     setPassword("");
-    setConfirmPassword("");
   };
 
-  const handleSubmit = async (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setFormLoading(true);
     setErrorMsg("");
     setSuccessMsg("");
 
-    // Client-side validations for registration
-    if (isRegistering) {
-      if (!name.trim()) {
-        setErrorMsg("Please enter your full name.");
-        setFormLoading(false);
-        return;
-      }
-
-      if (password.length < 8) {
-        setErrorMsg("Password security requirement: must be at least 8 characters long.");
-        setFormLoading(false);
-        return;
-      }
-
-      if (password !== confirmPassword) {
-        setErrorMsg("Password confirmation mismatch. Please verify passwords match.");
-        setFormLoading(false);
-        return;
-      }
+    if (!email.trim() || !password) {
+      setErrorMsg("Please enter both your email and password.");
+      setFormLoading(false);
+      return;
     }
 
     try {
-      if (isRegistering) {
-        await register(name.trim(), email.trim(), password);
-        setSuccessMsg("Account registered successfully! Redirecting to your dashboard...");
-        // Redirect happens automatically due to useEffect tracking currentUser
-      } else {
-        await login(email.trim(), password);
-        // Redirect happens automatically due to useEffect tracking currentUser
-      }
+      await login(email.trim(), password);
     } catch (err) {
-      console.error("Auth action failure:", err);
-      // Map technical auth codes to friendly human-readable alerts
-      const errorCode = err.code;
-      switch (errorCode) {
-        case "auth/email-already-in-use":
-          setErrorMsg("An account with this email address already exists. Please sign in instead.");
-          break;
-        case "auth/weak-password":
-          setErrorMsg("The password chosen is too weak. It must be at least 8 characters.");
-          break;
-        case "auth/invalid-email":
-          setErrorMsg("Please enter a valid email address.");
-          break;
-        case "auth/user-not-found":
-        case "auth/wrong-password":
-        case "auth/invalid-credential":
-          setErrorMsg("Invalid email or password. Please check your credentials and try again.");
-          break;
-        case "auth/network-request-failed":
-          setErrorMsg("Network error. Please check your internet connection.");
-          break;
-        default:
-          setErrorMsg(err.message || "Authentication process failed. Please try again.");
-      }
+      console.error("Login failure:", err);
+      setErrorMsg(formatAuthError(err));
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  const handleRegisterSubmit = async (formData) => {
+    setFormLoading(true);
+    setErrorMsg("");
+    setSuccessMsg("");
+    try {
+      await register(formData);
+      setSuccessMsg("Account registered successfully! Redirecting to pending approval...");
+    } catch (err) {
+      console.error("Registration failure:", err);
+      setErrorMsg(formatAuthError(err));
     } finally {
       setFormLoading(false);
     }
@@ -189,11 +177,11 @@ function Login() {
           {/* Form header */}
           <div className="login-form-header">
             <h2 className="login-form-header__title">
-              {isRegistering ? "Create your account" : "Welcome back"}
+              {isRegistering ? "Register Account" : "Welcome back"}
             </h2>
             <p className="login-form-header__subtitle">
               {isRegistering
-                ? "Register to access your WMIRS modules"
+                ? "Complete verification to request system access"
                 : "Sign in to access your WMIRS dashboard"}
             </p>
           </div>
@@ -222,99 +210,67 @@ function Login() {
             </button>
           </div>
 
-          {/* Auth Form */}
-          <form id="login-auth-form" ref={formRef} onSubmit={handleSubmit} noValidate>
+          {/* Feedback Alerts */}
+          {errorMsg && (
+            <div className="login-alert login-alert--error" role="alert" aria-live="assertive">
+              <span className="login-alert__icon" aria-hidden="true">⚠️</span>
+              <span><strong>Error:</strong> {errorMsg}</span>
+            </div>
+          )}
 
-            {isRegistering && (
+          {successMsg && (
+            <div className="login-alert login-alert--success" role="status" aria-live="polite">
+              <span className="login-alert__icon" aria-hidden="true">✅</span>
+              <span>{successMsg}</span>
+            </div>
+          )}
+
+          {isRegistering ? (
+            <RegisterWizard
+              onRegister={handleRegisterSubmit}
+              loading={formLoading}
+              errorMsg={errorMsg}
+              setErrorMsg={setErrorMsg}
+            />
+          ) : (
+            <form id="login-auth-form" ref={formRef} onSubmit={handleLoginSubmit} noValidate>
               <div className="login-field">
-                <label htmlFor="auth-name" className="login-label">Full Name</label>
+                <label htmlFor="auth-email" className="login-label">Email Address</label>
                 <input
-                  id="auth-name"
+                  id="auth-email"
                   className="login-input"
-                  placeholder="e.g. Juan Dela Cruz"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  type="text"
-                  autoComplete="name"
+                  placeholder="example@domain.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  type="email"
+                  autoComplete="email"
                   required
                 />
               </div>
-            )}
 
-            <div className="login-field">
-              <label htmlFor="auth-email" className="login-label">Email Address</label>
-              <input
-                id="auth-email"
-                className="login-input"
-                placeholder="example@domain.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                type="email"
-                autoComplete="email"
-                required
-              />
-            </div>
-
-            <div className="login-field">
-              <label htmlFor="auth-password" className="login-label">Password</label>
-              <PasswordInput
-                id="auth-password"
-                className="login-input"
-                placeholder="Minimum 8 characters"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete={isRegistering ? "new-password" : "current-password"}
-                required
-              />
-              {isRegistering && password.length > 0 && password.length < 8 && (
-                <span className="login-input-hint" role="alert">
-                  ⚠️ Password must be at least 8 characters long.
-                </span>
-              )}
-            </div>
-
-            {isRegistering && (
               <div className="login-field">
-                <label htmlFor="auth-confirm-password" className="login-label">Confirm Password</label>
+                <label htmlFor="auth-password" className="login-label">Password</label>
                 <PasswordInput
-                  id="auth-confirm-password"
+                  id="auth-password"
                   className="login-input"
-                  placeholder="Re-enter your password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  autoComplete="new-password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
                   required
                 />
               </div>
-            )}
 
-            <button
-              id="login-submit-btn"
-              type="submit"
-              className="login-btn-primary"
-              disabled={formLoading}
-            >
-              {formLoading
-                ? (isRegistering ? "Creating account..." : "Signing in...")
-                : (isRegistering ? "Create Account" : "Sign In")}
-            </button>
-
-            {/* Feedback Alerts */}
-            {errorMsg && (
-              <div className="login-alert login-alert--error" role="alert" aria-live="assertive">
-                <span className="login-alert__icon" aria-hidden="true">⚠️</span>
-                <span><strong>Error:</strong> {errorMsg}</span>
-              </div>
-            )}
-
-            {successMsg && (
-              <div className="login-alert login-alert--success" role="status" aria-live="polite">
-                <span className="login-alert__icon" aria-hidden="true">✅</span>
-                <span>{successMsg}</span>
-              </div>
-            )}
-
-          </form>
+              <button
+                id="login-submit-btn"
+                type="submit"
+                className="login-btn-primary"
+                disabled={formLoading}
+              >
+                {formLoading ? "Signing in..." : "Sign In"}
+              </button>
+            </form>
+          )}
 
           <p className="login-footer">
             © WMIRS · City ENRO System

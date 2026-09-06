@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import RoleEditModal from "../components/common/RoleEditModal";
+import ApplicationReviewModal from "../components/common/ApplicationReviewModal";
 import ConfirmModal from "../components/common/ConfirmModal";
 import { getPendingUsers, setUserRoleAdmin, deleteUserAdmin } from "../firebase/services/userService";
 
@@ -17,6 +18,7 @@ export default function AdminVetting() {
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [roleModalOpen, setRoleModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [isRoleSaving, setIsRoleSaving] = useState(false);
@@ -56,6 +58,13 @@ export default function AdminVetting() {
       });
     return () => { active = false; };
   }, []);
+
+  const handleReviewClick = (user) => {
+    setErrorMsg("");
+    setSuccessMsg("");
+    setSelectedUser(user);
+    setReviewModalOpen(true);
+  };
 
   const handleApproveClick = (user) => {
     setErrorMsg("");
@@ -191,6 +200,14 @@ export default function AdminVetting() {
                         <div className="um-table__actions">
                           <button 
                             className="um-action-btn um-action-btn--promote" 
+                            onClick={() => handleReviewClick(user)}
+                            title="Review application details and ID card"
+                          >
+                            <span className="material-symbols-outlined um-action-btn__icon" aria-hidden="true">visibility</span>
+                            <span className="um-action-btn__label">Review</span>
+                          </button>
+                          <button 
+                            className="um-action-btn um-action-btn--promote" 
                             onClick={() => handleApproveClick(user)}
                             title="Approve user"
                           >
@@ -214,6 +231,20 @@ export default function AdminVetting() {
             </div>
           </div>
         )}
+
+        <ApplicationReviewModal
+          isOpen={reviewModalOpen}
+          user={selectedUser}
+          onClose={() => setReviewModalOpen(false)}
+          onApprove={(user) => {
+            setReviewModalOpen(false);
+            handleApproveClick(user);
+          }}
+          onReject={(user) => {
+            setReviewModalOpen(false);
+            handleRejectClick(user);
+          }}
+        />
 
         <RoleEditModal
           key={`role-${selectedUser?.uid || "none"}`}

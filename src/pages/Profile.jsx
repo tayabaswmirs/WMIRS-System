@@ -13,6 +13,8 @@ export default function Profile() {
   // Local form states (initialized directly from authenticated context)
   const [name, setName] = useState(() => profileData?.name || currentUser?.displayName || "");
   const [email, setEmail] = useState(() => currentUser?.email || "");
+  const [phone, setPhone] = useState(() => profileData?.phone || "");
+  const [address, setAddress] = useState(() => profileData?.address || "");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -81,6 +83,8 @@ export default function Profile() {
       // 1. Update Firestore user details
       await updateUserProfile(currentUser.uid, {
         name: name.trim(),
+        phone: phone.trim(),
+        address: address.trim(),
       });
 
       // 2. Update Auth display name
@@ -122,7 +126,11 @@ export default function Profile() {
         await updateUserAuthProfile(currentUser, authUpdates);
 
         // 2. Update Firestore profile details
-        const dbUpdates = { name: name.trim() };
+        const dbUpdates = { 
+          name: name.trim(),
+          phone: phone.trim(),
+          address: address.trim(),
+        };
         if (email.trim() !== currentUser.email) dbUpdates.email = email.trim();
 
         await updateUserProfile(currentUser.uid, dbUpdates);
@@ -229,6 +237,34 @@ export default function Profile() {
                     placeholder="juan@email.com"
                   />
                 </div>
+
+                {/* Phone Number */}
+                <div className="um-form-group">
+                  <label htmlFor="prof-phone" className="um-form-label">Contact Number</label>
+                  <input
+                    id="prof-phone"
+                    type="tel"
+                    disabled={isSaving || isDeleting}
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="um-form-input"
+                    placeholder="e.g. 09123456789"
+                  />
+                </div>
+
+                {/* Complete Address */}
+                <div className="um-form-group">
+                  <label htmlFor="prof-address" className="um-form-label">Address / Barangay</label>
+                  <input
+                    id="prof-address"
+                    type="text"
+                    disabled={isSaving || isDeleting}
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    className="um-form-input"
+                    placeholder="e.g. Brgy. San Diego, Tayabas City"
+                  />
+                </div>
               </div>
 
               <div className="prof-card__title" style={{ marginTop: "var(--sp-md)", borderBottom: "1px solid var(--c-hairline-soft)" }}>
@@ -288,6 +324,70 @@ export default function Profile() {
                 </button>
               </div>
             </form>
+          </div>
+
+          {/* Identity Verification Card (Locked/Read-Only) */}
+          <div className="prof-card">
+            <div className="flex items-center justify-between border-b border-[var(--c-hairline-soft)] pb-3 mb-4">
+              <div>
+                <h2 className="prof-card__title" style={{ margin: 0 }}>Identity Verification</h2>
+                <p className="um-edit-desc" style={{ textAlign: "left", fontSize: "12px", margin: "4px 0 0" }}>
+                  Verified identification credentials recorded during account vetting.
+                </p>
+              </div>
+              <span className="um-role-badge" style={{ backgroundColor: "rgba(0, 237, 100, 0.12)", color: "var(--c-green, #00ed64)" }}>
+                <span className="material-symbols-outlined text-[14px]">lock</span>
+                Verified Credential
+              </span>
+            </div>
+
+            <div className="prof-grid">
+              <div className="um-form-group">
+                <label className="um-form-label">Official ID Number</label>
+                <input
+                  type="text"
+                  disabled
+                  value={profileData?.idNumber || "Not recorded (Legacy Account)"}
+                  className="um-form-input"
+                  style={{ backgroundColor: "rgba(0, 30, 43, 0.05)", cursor: "not-allowed", fontFamily: "monospace" }}
+                />
+              </div>
+              <div className="um-form-group">
+                <label className="um-form-label">System Role &amp; Scope</label>
+                <input
+                  type="text"
+                  disabled
+                  value={`${(profileData?.role || "user").toUpperCase()}${profileData?.staffScope ? ` (${profileData.staffScope})` : ""}`}
+                  className="um-form-input"
+                  style={{ backgroundColor: "rgba(0, 30, 43, 0.05)", cursor: "not-allowed" }}
+                />
+              </div>
+            </div>
+
+            {profileData?.idCardUrl && (
+              <div style={{ marginTop: 16 }}>
+                <label className="um-form-label" style={{ display: "block", marginBottom: 6 }}>Verified ID Document</label>
+                <div 
+                  style={{ 
+                    maxWidth: 280, 
+                    maxHeight: 180, 
+                    overflow: "hidden", 
+                    borderRadius: 8, 
+                    border: "1px solid var(--c-hairline-soft)",
+                    backgroundColor: "#001e2b",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}
+                >
+                  <img 
+                    src={profileData.idCardUrl} 
+                    alt="Verified ID Document" 
+                    style={{ maxWidth: "100%", maxHeight: 170, objectFit: "contain" }} 
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Danger Zone Card */}

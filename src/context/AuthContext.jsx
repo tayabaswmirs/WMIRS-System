@@ -92,8 +92,8 @@ export function AuthProvider({ children }) {
     return loginWithEmail(email, password);
   };
 
-  const register = (name, email, password) => {
-    return registerWithEmail(name, email, password);
+  const register = (dataOrName, email, password, vettingData) => {
+    return registerWithEmail(dataOrName, email, password, vettingData);
   };
 
   const logout = () => {
