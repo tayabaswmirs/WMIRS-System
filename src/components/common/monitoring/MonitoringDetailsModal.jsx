@@ -5,6 +5,7 @@ import { LOG_STATUS } from "../../../utils/incidentConstants";
 import WorkflowStepper from "../WorkflowStepper";
 import WorkflowActionModal from "../WorkflowActionModal";
 import UserProfileModal from "../UserProfileModal";
+import LocationDetailMap from "../LocationDetailMap";
 
 const CATEGORY_MAP = {
   "BMS":        { icon: "forest",        color: "#00b545", label: "Biodiversity" },
@@ -147,6 +148,13 @@ function DrawerContent({ log, onClose, onStatusChange }) {
           </div>
           <MetaCell label="Date Logged" icon="calendar_today" value={formatLogDate(log.createdAt)} />
         </div>
+
+        {/* Site Geolocation & Map */}
+        <LocationDetailMap
+          location={log.location || log.locationMarker || log.stationId}
+          coordinates={log.coordinates}
+          barangay={log.barangay}
+        />
 
         {/* Specific Form Fields */}
         <div className="inc-drawer__desc-section" style={{ borderBottom: "1px solid var(--c-hairline)", paddingBottom: "16px" }}>

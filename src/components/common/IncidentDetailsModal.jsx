@@ -4,6 +4,7 @@ import { CATEGORY_META, LOG_STATUS, getSeverityClass, getStatusClass, formatInci
 import WorkflowStepper from "./WorkflowStepper";
 import WorkflowActionModal from "./WorkflowActionModal";
 import UserProfileModal from "./UserProfileModal";
+import LocationDetailMap from "./LocationDetailMap";
 
 /**
  * IncidentDetailsModal — right-side sliding drawer showing full incident metadata,
@@ -160,6 +161,13 @@ function DrawerContent({ incident, onClose, onStatusChange }) {
           </div>
           <MetaCell label="Reporter Role" icon="badge" value={incident.reporter?.role ?? "—"} />
         </div>
+
+        {/* Site Geolocation & Map */}
+        <LocationDetailMap
+          location={incident.location}
+          coordinates={incident.coordinates}
+          barangay={incident.barangay}
+        />
 
         {/* Full description */}
         <div className="inc-drawer__desc-section">
