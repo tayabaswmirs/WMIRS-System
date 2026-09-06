@@ -132,7 +132,7 @@ function DrawerContent({ log, onClose, onStatusChange }) {
               Reported By
             </span>
             <div className="flex items-center justify-between gap-1 mt-0.5">
-              <span className="inc-drawer__meta-val truncate">{`${log.reporter?.name ?? "Unknown"} (${log.reporter?.email ?? ""})`}</span>
+              <span className="inc-drawer__meta-val truncate">{log.reporter?.name ?? "Unknown"}</span>
               {log.reporter?.uid && (
                 <button
                   type="button"

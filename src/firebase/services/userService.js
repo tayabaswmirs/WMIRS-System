@@ -377,9 +377,8 @@ export const getUserPublicProfile = async (uid, isViewerAdmin = false) => {
     return data;
   }
 
-  // Zero-Trust field sanitization for non-admin viewers: omit private ID scans and numbers
+  // Field sanitization for non-admin viewers: omit private ID card scans
   const sanitizedProfile = { ...data };
-  delete sanitizedProfile.idNumber;
   delete sanitizedProfile.idCardUrl;
   delete sanitizedProfile.idCardPath;
   return sanitizedProfile;
