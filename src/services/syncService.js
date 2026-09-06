@@ -1,6 +1,7 @@
 import { getOutboxItems, deleteOutboxItem, getOutboxCount } from "./outboxDb";
 import { createIncidentReport } from "../firebase/services/incidentService";
 import { createMonitoringLog } from "../firebase/services/monitoringService";
+import { preloadTayabasTiles } from "../utils/mapTilePreloader";
 
 let isSyncing = false;
 const listeners = new Set();
@@ -102,6 +103,7 @@ export const initSyncListeners = () => {
   window.addEventListener("online", () => {
     notifySubscribers({ isSyncing: false, pendingCount: 0, isOnline: true });
     syncPendingOutbox();
+    preloadTayabasTiles();
   });
 
   window.addEventListener("offline", async () => {
@@ -112,5 +114,6 @@ export const initSyncListeners = () => {
   // Check on boot if connected
   if (navigator.onLine) {
     syncPendingOutbox();
+    preloadTayabasTiles();
   }
 };

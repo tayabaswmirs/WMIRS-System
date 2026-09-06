@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import L from "leaflet";
 import { TAYABAS_CENTER, TAYABAS_BOUNDS, isWithinTayabas, getBarangayCoordinates } from "../../utils/tayabasBarangays";
+import { preloadTayabasTiles } from "../../utils/mapTilePreloader";
 import useTayabasGeolocation from "../../hooks/useTayabasGeolocation";
 import MapToolbar from "./MapToolbar";
 import MapCoordinateInputs from "./MapCoordinateInputs";
@@ -53,13 +54,16 @@ export default function LeafletMapPicker({ coordinates, onChange, barangay }) {
       maxBoundsViscosity: 1.0,
       attributionControl: false,
     });
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
     map.on("click", (e) => handleCoordinateUpdate(e.latlng.lat, e.latlng.lng));
     mapInstanceRef.current = map;
 
     const resizeTimer = setTimeout(() => map.invalidateSize(), 150);
+    const idleTimer = setTimeout(() => preloadTayabasTiles(), 1200);
+
     return () => {
       clearTimeout(resizeTimer);
+      clearTimeout(idleTimer);
       map.remove();
       mapInstanceRef.current = null;
       markerRef.current = null;
