@@ -903,7 +903,7 @@ function StaffDashboard() {
           });
           if (item.subcategory === "Waste Collection Tracking Form") {
             temporalBuckets[bestIdx].wasteLogs++;
-          } else if (item.subcategory === "Plastic Bag Ban Inspection Form") {
+          } else if (item.subcategory === "Plastic Bag Regulation Inspection Form" || item.subcategory === "Plastic Bag Ban Inspection Form") {
             temporalBuckets[bestIdx].inspections++;
           }
         }
@@ -934,7 +934,7 @@ function StaffDashboard() {
             }
             barangayWasteMap[bName] += amt;
           }
-        } else if (item.subcategory === "Plastic Bag Ban Inspection Form") {
+        } else if (item.subcategory === "Plastic Bag Regulation Inspection Form" || item.subcategory === "Plastic Bag Ban Inspection Form") {
           let bType = item.businessType || "Commercial Establishment";
           if (bType.toLowerCase() === "establishment") bType = "Commercial Establishment";
 
@@ -1162,7 +1162,7 @@ function StaffDashboard() {
             <ChartCard 
               icon="insights" 
               title="Temporal Compliance & Logistics Activity" 
-              subtitle="Comparison of Waste Tracking vs Plastic Ban Inspections over time" 
+              subtitle="Comparison of Waste Tracking vs Plastic Regulation Inspections over time" 
               variant="transparent"
               extraHeader={
                 <div className="time-tabs">

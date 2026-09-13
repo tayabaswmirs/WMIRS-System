@@ -7123,3 +7123,112 @@ button:disabled,
   box-shadow: 0 2px 8px rgba(0, 237, 100, 0.3) !important;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   WMIRS UNIFIED TABLE PAGINATION (MongoDB Visual System)
+   ══════════════════════════════════════════════════════════════ */
+.wmirs-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-top: 1px solid var(--c-hairline);
+  background-color: var(--c-surface);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.wmirs-pagination__info {
+  display: flex;
+  align-items: center;
+}
+
+.wmirs-pagination__count {
+  font-size: 13px;
+  color: var(--c-stone);
+  font-family: var(--font-display);
+}
+
+.wmirs-pagination__count strong {
+  color: var(--c-ink);
+  font-weight: 600;
+}
+
+.wmirs-pagination__controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.wmirs-pagination__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 6px;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-display);
+  color: var(--c-slate);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+  user-select: none;
+  line-height: 1;
+}
+
+.wmirs-pagination__btn:hover:not(:disabled) {
+  background: var(--c-surface-soft);
+  color: var(--c-ink);
+  border-color: var(--c-hairline-strong);
+}
+
+.wmirs-pagination__btn--active {
+  background: var(--c-ink);
+  color: var(--c-on-dark);
+  border-color: var(--c-ink);
+  cursor: default;
+  font-weight: 700;
+}
+
+.wmirs-pagination__btn--active:hover {
+  background: var(--c-ink);
+  color: var(--c-on-dark);
+  border-color: var(--c-ink);
+}
+
+.wmirs-pagination__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.wmirs-pagination__btn--arrow .material-symbols-outlined {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.wmirs-pagination__ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 32px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-stone);
+  user-select: none;
+}
+
+@media (max-width: 640px) {
+  .wmirs-pagination {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+}
+
+

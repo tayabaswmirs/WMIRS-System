@@ -76,7 +76,7 @@ export default function ComplianceAnalyticsView({ items = [] }) {
       if (ts) {
         incrementTemporalBucket(temporalBuckets, timeRange, ts, (bucket) => {
           if (item.subcategory === "Waste Collection Tracking Form") bucket.wasteLogs++;
-          else if (item.subcategory === "Plastic Bag Ban Inspection Form") bucket.inspections++;
+          else if (item.subcategory === "Plastic Bag Regulation Inspection Form" || item.subcategory === "Plastic Bag Ban Inspection Form") bucket.inspections++;
         });
       }
     });
@@ -94,7 +94,7 @@ export default function ComplianceAnalyticsView({ items = [] }) {
         if (bName && bName !== "Unclassified") {
           barangayWasteMap[bName] = (barangayWasteMap[bName] || 0) + amt;
         }
-      } else if (item.subcategory === "Plastic Bag Ban Inspection Form") {
+      } else if (item.subcategory === "Plastic Bag Regulation Inspection Form" || item.subcategory === "Plastic Bag Ban Inspection Form") {
         let bType = item.businessType || "Commercial Establishment";
         if (bType.toLowerCase() === "establishment") bType = "Commercial Establishment";
 
@@ -214,7 +214,7 @@ export default function ComplianceAnalyticsView({ items = [] }) {
         <ChartCard
           icon="insights"
           title="Temporal Compliance & Logistics Activity"
-          subtitle="Comparison of Waste Tracking vs Plastic Ban Inspections over time"
+          subtitle="Comparison of Waste Tracking vs Plastic Regulation Inspections over time"
           variant="transparent"
           extraHeader={
             <div className="time-tabs">

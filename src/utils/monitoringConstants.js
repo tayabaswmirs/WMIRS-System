@@ -15,7 +15,7 @@ export const CATEGORIES = [
     id: "Compliance",
     icon: "verified_user",
     label: "Compliance Audits",
-    desc: "Waste collection tracking and plastic bag ban audits."
+    desc: "Waste collection tracking and plastic bag regulation audits."
   }
 ];
 
@@ -40,14 +40,19 @@ export const SUBCATEGORY_META = {
     icon: "delete_sweep",
     desc: "Waste volume and collection route tracking by barangay."
   },
+  "Plastic Bag Regulation Inspection Form": {
+    icon: "block",
+    desc: "Establishment compliance checks for plastic bag regulations."
+  },
+  // Backward compatibility alias for legacy data
   "Plastic Bag Ban Inspection Form": {
     icon: "block",
-    desc: "Establishment compliance checks for the plastic bag ban."
+    desc: "Establishment compliance checks for plastic bag regulations."
   }
 };
 
 export const SUBCATEGORIES = {
   BMS: ["Avian Tracking Form", "Wildlife Observations Form"],
   Water: ["Local Water Source Monitoring Form", "Ecosystem Conservation Log"],
-  Compliance: ["Waste Collection Tracking Form", "Plastic Bag Ban Inspection Form"]
+  Compliance: ["Waste Collection Tracking Form", "Plastic Bag Regulation Inspection Form"]
 };

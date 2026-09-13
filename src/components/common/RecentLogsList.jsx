@@ -58,7 +58,7 @@ export default function RecentLogsList({ items = [], type, emptyMessage }) {
                   : type === "water"
                     ? `${item.sourceType || "Water Source"} at ${item.barangay || "Field Station"} • ${item.waterClarity || item.flowRate || "Status logged"}`
                     : type === "compliance"
-                      ? (item.subcategory === "Plastic Bag Ban Inspection Form" 
+                      ? ((item.subcategory === "Plastic Bag Regulation Inspection Form" || item.subcategory === "Plastic Bag Ban Inspection Form")
                           ? `${item.establishmentName || "Establishment"} (${item.businessType || "Retail"}) • ${item.compliant !== false ? "Compliant" : (item.actionToken || "Non-Compliant")}`
                           : item.subcategory === "Waste Collection Tracking Form"
                             ? `${item.barangay || "Route"} (${item.collectionType || "Collection"}) • ${item.volumeValue || 0} ${item.volumeUnit || "kg"} logged`

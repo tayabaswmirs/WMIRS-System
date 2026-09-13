@@ -101,6 +101,21 @@ export const createMonitoringLog = async (logData, files, onFileProgress) => {
 };
 
 /**
+ * Formats and normalizes a monitoring document snapshot for UI consistency.
+ * Seamlessly maps legacy subcategory strings to the standardized name.
+ */
+const formatMonitoringDoc = (docSnap) => {
+  const data = docSnap.data();
+  return {
+    id: docSnap.id,
+    ...data,
+    subcategory: data.subcategory === "Plastic Bag Ban Inspection Form"
+      ? "Plastic Bag Regulation Inspection Form"
+      : data.subcategory
+  };
+};
+
+/**
  * Subscribes to real-time monitoring logs submitted by a specific user.
  */
 export const subscribeToReporterMonitoring = (uid, callback) => {
@@ -112,10 +127,7 @@ export const subscribeToReporterMonitoring = (uid, callback) => {
   return onSnapshot(
     q,
     (snapshot) => {
-      const logs = snapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...docSnap.data()
-      }));
+      const logs = snapshot.docs.map(formatMonitoringDoc);
       
       // Sort client-side by createdAt descending
       logs.sort((a, b) => {
@@ -144,10 +156,7 @@ export const subscribeToCategoryMonitoring = (category, callback) => {
   return onSnapshot(
     q,
     (snapshot) => {
-      const logs = snapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...docSnap.data()
-      }));
+      const logs = snapshot.docs.map(formatMonitoringDoc);
       
       // Sort client-side by createdAt descending
       logs.sort((a, b) => {
@@ -176,10 +185,7 @@ export const subscribeToAllMonitoring = (callback) => {
   return onSnapshot(
     q,
     (snapshot) => {
-      const logs = snapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...docSnap.data()
-      }));
+      const logs = snapshot.docs.map(formatMonitoringDoc);
       callback(logs);
     },
     (error) => {

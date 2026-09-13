@@ -20,7 +20,7 @@ const ENRO_PILLARS = [
     id: "compliance",
     icon: "policy",
     title: "Solid Waste & City Ordinance Compliance",
-    desc: "Rigorous enforcement of City Ordinances 21-10 and 17-01, inspecting commercial establishments for plastic bag bans and waste segregation."
+    desc: "Rigorous enforcement of City Ordinances 21-10 and 17-01, inspecting commercial establishments for plastic bag regulations and waste segregation."
   }
 ];
 

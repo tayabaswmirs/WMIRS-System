@@ -14,7 +14,7 @@ const SUBCATEGORY_MAP = {
   ],
   Compliance: [
     { label: "All Compliance Subcategories", value: "all" },
-    { label: "Plastic Bag Ban Inspection", value: "Plastic Bag Ban Inspection Form" },
+    { label: "Plastic Bag Regulation Inspection", value: "Plastic Bag Regulation Inspection Form" },
     { label: "Waste Collection Tracking", value: "Waste Collection Tracking Form" }
   ],
   Incidents: [
@@ -119,7 +119,9 @@ function ExportModalDialog({
             return false;
           }
         } else {
-          if (item.subcategory !== selectedSubcategory) {
+          const isTargetPlastic = selectedSubcategory === "Plastic Bag Regulation Inspection Form" || selectedSubcategory === "Plastic Bag Ban Inspection Form";
+          const isItemPlastic = item.subcategory === "Plastic Bag Regulation Inspection Form" || item.subcategory === "Plastic Bag Ban Inspection Form";
+          if (isTargetPlastic ? !isItemPlastic : item.subcategory !== selectedSubcategory) {
             return false;
           }
         }

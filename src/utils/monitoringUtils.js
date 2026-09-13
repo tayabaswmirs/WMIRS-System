@@ -16,3 +16,10 @@ export const formatLogDate = (timestamp) => {
     return "N/A";
   }
 };
+
+export const normalizeSubcategory = (subcat) => {
+  if (subcat === "Plastic Bag Ban Inspection Form") {
+    return "Plastic Bag Regulation Inspection Form";
+  }
+  return subcat || "";
+};

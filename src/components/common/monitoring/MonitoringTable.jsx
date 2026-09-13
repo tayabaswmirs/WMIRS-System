@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { getStatusClass, getStatusLabel, formatLogDate } from "../../../utils/monitoringUtils";
+import Pagination from "../Pagination";
 
 const CATEGORY_MAP = {
   "BMS":        { icon: "forest",        color: "#00b545", label: "Biodiversity" },
@@ -6,7 +8,17 @@ const CATEGORY_MAP = {
   "Compliance": { icon: "verified_user", color: "#fa6e39", label: "Compliance" }
 };
 
+const PAGE_SIZE = 10;
+
 function MonitoringTable({ logs, isAdmin, onViewDetails }) {
+  const [prevLogs, setPrevLogs] = useState(logs);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  if (logs !== prevLogs) {
+    setPrevLogs(logs);
+    setCurrentPage(1);
+  }
+
   if (logs.length === 0) {
     return (
       <div className="inc-empty-state">
@@ -16,7 +28,8 @@ function MonitoringTable({ logs, isAdmin, onViewDetails }) {
     );
   }
 
-  // statuses are fetched from LOG_STATUS for consistency
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
+  const paginatedLogs = logs.slice(startIndex, startIndex + PAGE_SIZE);
 
   return (
     <div className="inc-table-wrap">
@@ -32,7 +45,7 @@ function MonitoringTable({ logs, isAdmin, onViewDetails }) {
           </tr>
         </thead>
         <tbody>
-          {logs.map((log, idx) => {
+          {paginatedLogs.map((log, idx) => {
             const catMeta = CATEGORY_MAP[log.category] ?? { icon: "report", color: "#00ed64", label: log.category };
             return (
               <tr
@@ -106,6 +119,15 @@ function MonitoringTable({ logs, isAdmin, onViewDetails }) {
           })}
         </tbody>
       </table>
+
+      {/* ── Table Footer Pagination ────────────────────── */}
+      <Pagination
+        currentPage={currentPage}
+        totalItems={logs.length}
+        pageSize={PAGE_SIZE}
+        onPageChange={setCurrentPage}
+        itemLabel="logs"
+      />
     </div>
   );
 }

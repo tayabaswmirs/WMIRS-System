@@ -173,7 +173,9 @@ function MonitoringFormContainer({ category, subcategory, onBack, onSubmitSucces
             {subcategory === "Local Water Source Monitoring Form" && <WaterMonitoringForm formData={formFields} onChange={handleFieldChange} setFormData={setFormFields} />}
             {subcategory === "Ecosystem Conservation Log" && <WaterConservationForm formData={formFields} onChange={handleFieldChange} setFormData={setFormFields} />}
             {subcategory === "Waste Collection Tracking Form" && <WasteTrackingForm formData={formFields} onChange={handleFieldChange} setFormData={setFormFields} />}
-            {subcategory === "Plastic Bag Ban Inspection Form" && <PlasticBanForm formData={formFields} onChange={handleFieldChange} setFormData={setFormFields} />}
+            {(subcategory === "Plastic Bag Regulation Inspection Form" || subcategory === "Plastic Bag Ban Inspection Form") && (
+              <PlasticBanForm formData={formFields} onChange={handleFieldChange} setFormData={setFormFields} />
+            )}
           </div>
         </div>
 

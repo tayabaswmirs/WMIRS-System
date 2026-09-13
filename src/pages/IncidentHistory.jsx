@@ -8,7 +8,10 @@ import { CATEGORY_META, getSeverityClass, getStatusClass, getStatusLabel, format
 import { isCriticalSubmitted } from "../utils/filterUtils";
 import StatPill from "../components/common/StatPill";
 import SearchFilterBar from "../components/common/SearchFilterBar";
+import Pagination from "../components/common/Pagination";
 import "../styles/dashboard.css";
+
+const PAGE_SIZE = 10;
 
 function IncidentHistory() {
   const { currentUser } = useAuth();
@@ -25,6 +28,19 @@ function IncidentHistory() {
 
   /* Headless filter engine */
   const filterHook = useLogFilters(incidents, { mode: "incident", isAdmin: false });
+
+  const [prevItems, setPrevItems] = useState(filterHook.filteredItems);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  if (filterHook.filteredItems !== prevItems) {
+    setPrevItems(filterHook.filteredItems);
+    setCurrentPage(1);
+  }
+
+  const paginatedItems = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filterHook.filteredItems.slice(start, start + PAGE_SIZE);
+  }, [filterHook.filteredItems, currentPage]);
 
   /* Derived stats using a high-performance single pass reducer */
   const stats = useMemo(() => {
@@ -105,7 +121,7 @@ function IncidentHistory() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filterHook.filteredItems.map((rep, idx) => {
+                  {paginatedItems.map((rep, idx) => {
                     const catMeta = CATEGORY_META[rep.category] ?? { icon: "report", color: "#00ed64" };
                     const isPriority = isCriticalSubmitted(rep);
                     return (
@@ -161,6 +177,13 @@ function IncidentHistory() {
                   })}
                 </tbody>
               </table>
+              <Pagination
+                currentPage={currentPage}
+                totalItems={filterHook.filteredItems.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setCurrentPage}
+                itemLabel="incidents"
+              />
             </div>
           )}
         </div>

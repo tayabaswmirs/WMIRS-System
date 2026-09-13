@@ -449,7 +449,17 @@ export const subscribeToOpenAssignments = (callback, staffScope = null) => {
   let unsubMon;
   if (qMon) {
     unsubMon = onSnapshot(qMon, (snapshot) => {
-      monitoringList = snapshot.docs.map((d) => ({ id: d.id, logType: "Monitoring", ...d.data() }));
+      monitoringList = snapshot.docs.map((d) => {
+        const data = d.data();
+        return {
+          id: d.id,
+          logType: "Monitoring",
+          ...data,
+          subcategory: data.subcategory === "Plastic Bag Ban Inspection Form"
+            ? "Plastic Bag Regulation Inspection Form"
+            : data.subcategory
+        };
+      });
       updateCombined();
     });
   }

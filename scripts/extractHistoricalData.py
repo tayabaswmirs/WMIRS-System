@@ -85,7 +85,7 @@ def parse_citations():
         
         records.append({
             "category": "Compliance",
-            "subcategory": "Plastic Bag Ban Inspection Form",
+            "subcategory": "Plastic Bag Regulation Inspection Form",
             "date": formatted_date,
             "dateTime": iso_date,
             "establishmentName": f"Commercial Stall / Ticket #{ticket_no}",
@@ -128,7 +128,7 @@ def parse_warnings():
         
         records.append({
             "category": "Compliance",
-            "subcategory": "Plastic Bag Ban Inspection Form",
+            "subcategory": "Plastic Bag Regulation Inspection Form",
             "date": formatted_date,
             "dateTime": iso_date,
             "establishmentName": f"Commercial Establishment #{raw_num}",

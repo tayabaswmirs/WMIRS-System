@@ -1,8 +1,12 @@
+import { useState } from "react";
 import { CATEGORY_META, STATUS_METADATA, getSeverityClass, getStatusClass, formatIncidentDate } from "../../utils/incidentConstants";
 import { isCriticalActive } from "../../utils/filterUtils";
+import Pagination from "./Pagination";
+
+const PAGE_SIZE = 10;
 
 /**
- * AdminIncidentTable — renders the full incident list with priority highlighting.
+ * AdminIncidentTable — renders the full incident list with priority highlighting and pagination.
  *
  * Props:
  *   incidents      {Array}    — filtered list of incident objects
@@ -10,6 +14,14 @@ import { isCriticalActive } from "../../utils/filterUtils";
  *   stageId        {string}   — optional stage identifier for contextual priority evaluation
  */
 function AdminIncidentTable({ incidents, onViewDetails, stageId = null }) {
+  const [prevIncidents, setPrevIncidents] = useState(incidents);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  if (incidents !== prevIncidents) {
+    setPrevIncidents(incidents);
+    setCurrentPage(1);
+  }
+
   if (incidents.length === 0) {
     return (
       <div className="inc-empty-state">
@@ -18,6 +30,9 @@ function AdminIncidentTable({ incidents, onViewDetails, stageId = null }) {
       </div>
     );
   }
+
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
+  const paginatedIncidents = incidents.slice(startIndex, startIndex + PAGE_SIZE);
 
   return (
     <div className="inc-table-wrap">
@@ -35,7 +50,7 @@ function AdminIncidentTable({ incidents, onViewDetails, stageId = null }) {
           </tr>
         </thead>
         <tbody>
-          {incidents.map((inc, idx) => {
+          {paginatedIncidents.map((inc, idx) => {
             const catMeta = CATEGORY_META[inc.category] ?? { icon: "report", color: "#00ed64" };
             const isPriority = isCriticalActive(inc, stageId);
 
@@ -124,6 +139,15 @@ function AdminIncidentTable({ incidents, onViewDetails, stageId = null }) {
           })}
         </tbody>
       </table>
+
+      {/* ── Table Footer Pagination ────────────────────── */}
+      <Pagination
+        currentPage={currentPage}
+        totalItems={incidents.length}
+        pageSize={PAGE_SIZE}
+        onPageChange={setCurrentPage}
+        itemLabel="incidents"
+      />
     </div>
   );
 }

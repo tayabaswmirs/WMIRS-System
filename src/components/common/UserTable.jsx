@@ -1,8 +1,9 @@
 import { useState } from "react";
 import Avatar from "./Avatar";
+import Pagination from "./Pagination";
 
 /** Number of rows to show per page. */
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 /**
  * Formats a Firestore Timestamp or general Date object into a readable string.
@@ -203,67 +204,6 @@ function UserRow({ user, currentAdminUid, onEdit, onToggleRole, onDelete, onView
   );
 }
 
-// ─── Pagination Controls ──────────────────────────────────────────────────────
-
-/**
- * Renders the page-number strip + prev/next arrows.
- * Kept separate so the layout logic is easy to follow.
- */
-function Pagination({ currentPage, totalPages, onPageChange }) {
-  if (totalPages <= 1) return null;
-
-  return (
-    <nav className="um-pagination" aria-label="Table pagination">
-      {/* Prev arrow */}
-      <button
-        id="um-pagination-prev"
-        type="button"
-        className="um-pagination__arrow"
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        aria-label="Previous page"
-      >
-        <span className="material-symbols-outlined" aria-hidden="true">chevron_left</span>
-      </button>
-
-      {/* Numbered page buttons */}
-      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-        <button
-          key={page}
-          id={`um-pagination-page-${page}`}
-          type="button"
-          className={`um-pagination__page${page === currentPage ? " um-pagination__page--active" : ""}`}
-          onClick={() => onPageChange(page)}
-          aria-label={`Go to page ${page}`}
-          aria-current={page === currentPage ? "page" : undefined}
-        >
-          {page}
-        </button>
-      ))}
-
-      {/* Next arrow */}
-      <button
-        id="um-pagination-next"
-        type="button"
-        className="um-pagination__arrow"
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        aria-label="Next page"
-      >
-        <span className="material-symbols-outlined" aria-hidden="true">chevron_right</span>
-      </button>
-    </nav>
-  );
-}
-
-// ─── UserTable ────────────────────────────────────────────────────────────────
-
-/**
- * UserTable — renders a clean striped data table with client-side pagination.
- * PAGE_SIZE rows are shown per page; a page strip appears in the footer once
- * the total exceeds PAGE_SIZE.
- * Stateless regarding data — all actions are lifted to UserManagement.
- */
 export default function UserTable({ users, currentAdminUid, onEdit, onToggleRole, onDelete, onViewProfile }) {
   const [prevUsers, setPrevUsers] = useState(users);
   const [currentPage, setCurrentPage] = useState(1);
@@ -275,13 +215,8 @@ export default function UserTable({ users, currentAdminUid, onEdit, onToggleRole
 
   if (users.length === 0) return <EmptyState />;
 
-  const totalPages  = Math.ceil(users.length / PAGE_SIZE);
   const startIndex  = (currentPage - 1) * PAGE_SIZE;
   const pageUsers   = users.slice(startIndex, startIndex + PAGE_SIZE);
-
-  // Range label: "1–5 of 12"
-  const rangeStart  = startIndex + 1;
-  const rangeEnd    = Math.min(startIndex + PAGE_SIZE, users.length);
 
   return (
     <div className="um-table-wrap">
@@ -314,20 +249,13 @@ export default function UserTable({ users, currentAdminUid, onEdit, onToggleRole
         </table>
       </div>
 
-      {/* ── Footer: count + pagination ──────────────────── */}
-      <div className="um-table__footer">
-        <span className="um-table__count" aria-live="polite">
-          {totalPages > 1
-            ? `${rangeStart}–${rangeEnd} of ${users.length} members`
-            : `${users.length} ${users.length === 1 ? "member" : "members"}`}
-        </span>
-
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
-      </div>
+      <Pagination
+        currentPage={currentPage}
+        totalItems={users.length}
+        pageSize={PAGE_SIZE}
+        onPageChange={setCurrentPage}
+        itemLabel="members"
+      />
     </div>
   );
 }

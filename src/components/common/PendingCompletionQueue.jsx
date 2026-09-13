@@ -2,9 +2,9 @@ import { useState, useMemo } from "react";
 import ChartCard from "./ChartCard";
 import PendingQueueHeader from "./PendingQueueHeader";
 import PendingQueueTable from "./PendingQueueTable";
-import PendingQueuePagination from "./PendingQueuePagination";
+import Pagination from "./Pagination";
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 /**
  * Normalizes an incident into a uniform queue item shape.
@@ -90,7 +90,6 @@ export default function PendingCompletionQueue({
     ));
   }, [allPending, pendingIncidents, pendingLogs, activeTab, searchQuery]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE));
   const paginatedItems = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
     return filteredItems.slice(start, start + PAGE_SIZE);
@@ -131,12 +130,12 @@ export default function PendingCompletionQueue({
           onQuickAction={onQuickAction}
           searchQuery={searchQuery}
         />
-        <PendingQueuePagination
+        <Pagination
           currentPage={currentPage}
-          totalPages={totalPages}
           totalItems={filteredItems.length}
           pageSize={PAGE_SIZE}
           onPageChange={setCurrentPage}
+          itemLabel="pending logs"
         />
       </ChartCard>
     </div>

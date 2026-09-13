@@ -461,6 +461,7 @@ function LogSpecificDetails({ log }) {
           <DetailRow label="Operational Issues" value={log.operationalIssues} isParagraph />
         </div>
       );
+    case "Plastic Bag Regulation Inspection Form":
     case "Plastic Bag Ban Inspection Form":
       return (
         <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "8px" }}>

@@ -1,10 +1,13 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import RoleEditModal from "../components/common/RoleEditModal";
 import ApplicationReviewModal from "../components/common/ApplicationReviewModal";
 import ConfirmModal from "../components/common/ConfirmModal";
 import Avatar from "../components/common/Avatar";
+import Pagination from "../components/common/Pagination";
 import { getPendingUsers, setUserRoleAdmin, deleteUserAdmin } from "../firebase/services/userService";
+
+const PAGE_SIZE = 10;
 
 const buildRejectConfirm = (user) => ({
   variant:      "danger",
@@ -15,9 +18,11 @@ const buildRejectConfirm = (user) => ({
 
 export default function AdminVetting() {
   const [users, setUsers] = useState([]);
+  const [prevUsers, setPrevUsers] = useState(users);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [roleModalOpen, setRoleModalOpen] = useState(false);
@@ -27,6 +32,16 @@ export default function AdminVetting() {
   const [confirmConfig, setConfirmConfig] = useState(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
+
+  if (users !== prevUsers) {
+    setPrevUsers(users);
+    setCurrentPage(1);
+  }
+
+  const paginatedUsers = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return users.slice(start, start + PAGE_SIZE);
+  }, [users, currentPage]);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -173,7 +188,7 @@ export default function AdminVetting() {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((user, index) => (
+                  {paginatedUsers.map((user, index) => (
                     <tr key={user.uid} className={`um-table__row${index % 2 === 1 ? " um-table__row--even" : ""}`} role="row">
                       <td className="um-table__cell um-table__cell--name">
                         <div className="um-table__name-cell">
@@ -233,6 +248,13 @@ export default function AdminVetting() {
                 </tbody>
               </table>
             </div>
+            <Pagination
+              currentPage={currentPage}
+              totalItems={users.length}
+              pageSize={PAGE_SIZE}
+              onPageChange={setCurrentPage}
+              itemLabel="registrations"
+            />
           </div>
         )}
 

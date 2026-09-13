@@ -2,7 +2,7 @@
 import LocationAddressPicker from "../LocationAddressPicker";
 
 function WasteTrackingForm({ formData, onChange, setFormData }) {
-  const collectionTypes = ["Residential", "Commercial", "Institutional"];
+  const collectionTypes = ["Residential", "Commercial", "Institutional", "Industrial"];
 
   const handleLocationChange = (locPayload) => {
     setFormData((prev) => ({
@@ -51,7 +51,7 @@ function WasteTrackingForm({ formData, onChange, setFormData }) {
           <span className="material-symbols-outlined inc-form__label-icon">home_repair_service</span>
           Collection Type <span className="inc-form__required">*</span>
         </label>
-        <div style={{ display: "flex", gap: "16px", marginTop: "8px" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", marginTop: "8px" }}>
           {collectionTypes.map((type) => {
             const isChecked = formData.collectionType === type;
             return (

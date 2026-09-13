@@ -6,7 +6,7 @@ const CAPABILITY_STEPS = [
     icon: "add_location_alt",
     title: "Field Logging & Evidence",
     role: "Forest Rangers",
-    desc: "Field rangers submit geolocated incident reports with photo uploads, or encode scheduled BMS avian censuses, water telemetry, and plastic ban inspections."
+    desc: "Field rangers submit geolocated incident reports with photo uploads, or encode scheduled BMS avian censuses, water telemetry, and plastic regulation inspections."
   },
   {
     step: "02",
