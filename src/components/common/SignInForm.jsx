@@ -8,6 +8,7 @@ import PasswordInput from "./PasswordInput";
  * @param {function} props.setEmail - Email updater
  * @param {string} props.password - Controlled password state
  * @param {function} props.setPassword - Password updater
+ * @param {function} [props.onForgotPassword] - Callback to trigger password reset modal
  * @param {function} props.onSubmit - Submission handler
  * @param {boolean} props.loading - Form processing status
  * @param {React.RefObject} props.formRef - DOM ref for loading lock
@@ -17,6 +18,7 @@ export default function SignInForm({
   setEmail,
   password,
   setPassword,
+  onForgotPassword,
   onSubmit,
   loading,
   formRef,
@@ -55,6 +57,16 @@ export default function SignInForm({
             </span>
             <span>Password</span>
           </label>
+          {onForgotPassword && (
+            <button
+              type="button"
+              className="login-forgot-link"
+              onClick={onForgotPassword}
+              disabled={loading}
+            >
+              Forgot password?
+            </button>
+          )}
         </div>
         <div className="login-input-container">
           <PasswordInput

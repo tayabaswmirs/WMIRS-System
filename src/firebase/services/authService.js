@@ -6,7 +6,8 @@ import {
   updateProfile,
   updatePassword,
   updateEmail,
-  deleteUser
+  deleteUser,
+  sendPasswordResetEmail
 } from "firebase/auth";
 import { auth } from "../firebase";
 import { createUserProfile, uploadUserIdCard, deleteUserIdCard } from "./userService";
@@ -113,6 +114,15 @@ export const logoutUser = () => {
 };
 
 /**
+ * Sends a password reset email to the specified email address.
+ * @param {string} email - Target email address
+ * @returns {Promise<void>}
+ */
+export const resetPasswordWithEmail = (email) => {
+  return sendPasswordResetEmail(auth, email.trim());
+};
+
+/**
  * Subscribes to changes in the user's authentication state.
  * @param {function} callback 
  * @returns {import("firebase/auth").Unsubscribe}
@@ -145,4 +155,5 @@ export const updateUserAuthProfile = async (user, updates) => {
   }
   await Promise.all(promises);
 };
+
 

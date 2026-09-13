@@ -6,12 +6,14 @@ import AuthHeroPanel from "../components/common/AuthHeroPanel";
 import AuthCardHeader from "../components/common/AuthCardHeader";
 import SignInForm from "../components/common/SignInForm";
 import RegisterWizard from "../components/common/RegisterWizard";
+import ForgotPasswordModal from "../components/common/ForgotPasswordModal";
 import { formatAuthError } from "../utils/formatAuthError";
 import "../styles/login.css";
 
 export default function Login() {
   const formRef = useRef(null);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [formLoading, setFormLoading] = useState(false);
@@ -123,6 +125,7 @@ export default function Login() {
               setEmail={setEmail}
               password={password}
               setPassword={setPassword}
+              onForgotPassword={() => setIsForgotModalOpen(true)}
               onSubmit={handleLoginSubmit}
               loading={formLoading}
               formRef={formRef}
@@ -134,6 +137,14 @@ export default function Login() {
           </p>
         </div>
       </main>
+
+      {isForgotModalOpen && (
+        <ForgotPasswordModal
+          isOpen={isForgotModalOpen}
+          onClose={() => setIsForgotModalOpen(false)}
+          initialEmail={email}
+        />
+      )}
     </div>
   );
 }
