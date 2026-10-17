@@ -1,0 +1,67 @@
+[
+  {
+    "uid": "officer_kevin_morales",
+    "name": "Kevin King F. Morales",
+    "displayName": "Kevin King F. Morales",
+    "email": "kevin.morales@tayabasenro.gov.ph",
+    "role": "envi_enforcer",
+    "accountType": "envi_enforcer",
+    "designation": "AAIII - Environmental Enforcer",
+    "staffScope": "Waste",
+    "status": "active",
+    "isHistorical": true,
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "uid": "officer_carlo_sabornido",
+    "name": "Carlo S. Sabornido",
+    "displayName": "Carlo S. Sabornido",
+    "email": "carlo.sabornido@tayabasenro.gov.ph",
+    "role": "envi_enforcer",
+    "accountType": "envi_enforcer",
+    "designation": "AAIII - Environmental Enforcer",
+    "staffScope": "Waste",
+    "status": "active",
+    "isHistorical": true,
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "uid": "officer_blessbelle_durante",
+    "name": "Blessbelle Claire A. Durante",
+    "displayName": "Blessbelle Claire A. Durante",
+    "email": "blessbelle.durante@tayabasenro.gov.ph",
+    "role": "envi_enforcer",
+    "accountType": "envi_enforcer",
+    "designation": "AAIII - Environmental Enforcer",
+    "staffScope": "Compliance",
+    "status": "active",
+    "isHistorical": true,
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "uid": "officer_jerdylene_tabi",
+    "name": "Jerdylene C. Tabi",
+    "displayName": "Jerdylene C. Tabi",
+    "email": "jerdylene.tabi@tayabasenro.gov.ph",
+    "role": "supervisor",
+    "accountType": "supervisor",
+    "designation": "Supervising EMS, OIC-ESWMU",
+    "staffScope": "Compliance",
+    "status": "active",
+    "isHistorical": true,
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "uid": "officer_melvin_rada",
+    "name": "Melvin C. Rada",
+    "displayName": "Melvin C. Rada",
+    "email": "melvin.rada@tayabasenro.gov.ph",
+    "role": "admin",
+    "accountType": "admin",
+    "designation": "CGDH1 - City ENRO Head",
+    "staffScope": "All",
+    "status": "active",
+    "isHistorical": true,
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  }
+]
