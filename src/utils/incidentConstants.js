@@ -4,20 +4,36 @@
  */
 export const INCIDENT_MAP = {
   "Forest Incidents": [
-    "Illegal Logging", "Illegal Tree Cutting", "Kaingin / Slash-and-Burn",
-    "Forest Fire", "Illegal Charcoal Production", "Timber Smuggling",
-    "Encroachment in Protected Area", "Unauthorized Land Clearing",
-    "Deforestation", "Illegal Gathering of Forest Products"
+    "Illegal Logging",
+    "Slash-and-Burn Farming (Kaingin)",
+    "Forest Fire",
+    "Illegal Charcoal Making",
+    "Timber Smuggling",
+    "Forest Encroachment",
+    "Unauthorized Land Clearing",
+    "Forest Product Extraction",
+    "Illegal Agricultural Activities"
   ],
   "Wildlife Incidents": [
-    "Wildlife Hunting", "Wildlife Capture", "Wildlife Trafficking",
-    "Habitat Destruction", "Killing of Endangered Species",
-    "Illegal Wildlife Possession", "Disturbance of Wildlife Habitat"
+    "Wildlife Poaching",
+    "Wildlife Capture",
+    "Wildlife Trafficking",
+    "Habitat Destruction",
+    "Killing of Endangered Species",
+    "Illegal Wildlife Possession",
+    "Disturbance of Wildlife Habitat"
   ],
   "Water Resource Incidents": [
-    "Water Pollution", "River Contamination", "Illegal Waste Disposal in Waterways",
-    "Fish Kill Incident", "Oil Spill", "Illegal Quarrying Near Rivers",
-    "Sewage Discharge", "Water Obstruction", "Chemical Contamination"
+    "Illegal Water Use",
+    "Water Pollution",
+    "River Contamination",
+    "Illegal Waste Disposal in Waterways",
+    "Fish Kill Incident",
+    "Oil Spill",
+    "Illegal Quarrying Near Rivers",
+    "Sewage Discharge",
+    "Water Obstruction",
+    "Chemical Contamination"
   ],
   "Waste Incidents": [
     "Illegal Dumping", "Open Burning of Waste", "Improper Waste Disposal",
@@ -45,17 +61,17 @@ export const CATEGORY_META = {
   "Forest Incidents": {
     icon: "forest",
     color: "#00a35c",
-    desc: "Tree cutting, illegal logging, slash-and-burn, forest fire, and timber smuggling."
+    desc: "Trees, land clearing, and unauthorized settlements or farming."
   },
   "Wildlife Incidents": {
     icon: "pets",
     color: "#7b3ff2",
-    desc: "Wildlife hunting, illegal capture, trafficking, and habitat destruction."
+    desc: "Wildlife poaching, illegal capture, trafficking, and habitat destruction."
   },
   "Water Resource Incidents": {
     icon: "water_drop",
     color: "#3d4f9f",
-    desc: "Water pollution, river contamination, fish kills, oil spills, and illegal quarrying."
+    desc: "Violations of the water code, water pollution, contamination, and illegal extraction."
   },
   "Waste Incidents": {
     icon: "delete_sweep",
@@ -133,25 +149,28 @@ export const CATEGORY_META = {
  * @type {Record<string, { icon: string, desc: string }>}
  */
 export const INCIDENT_TYPE_META = {
-  "Illegal Logging": { icon: "park", desc: "Unauthorized timber extraction and forest clearing." },
-  "Illegal Tree Cutting": { icon: "content_cut", desc: "Cutting of trees without necessary permits." },
-  "Kaingin / Slash-and-Burn": { icon: "local_fire_department", desc: "Slash-and-burn clearing of forest lands for agriculture." },
-  "Forest Fire": { icon: "fire_truck", desc: "Uncontrolled wildland fire spreading in forest zones." },
-  "Illegal Charcoal Production": { icon: "skillet", desc: "Unauthorized burning of wood for commercial charcoal." },
-  "Timber Smuggling": { icon: "local_shipping", desc: "Illicit transport and sale of harvested timber." },
-  "Encroachment in Protected Area": { icon: "fence", desc: "Settlement or development within restricted forest reserves." },
-  "Unauthorized Land Clearing": { icon: "do_not_disturb_on", desc: "Bulldozing or clearing vegetation without authorization." },
-  "Deforestation": { icon: "nature_people", desc: "Large-scale permanent removal of forest canopy." },
-  "Illegal Gathering of Forest Products": { icon: "eco", desc: "Unlicensed collection of wild flora, rattan, or wood." },
+  // ── Forest Incidents ──
+  "Illegal Logging": { icon: "park", desc: "Harvesting timber and clearing forests without permission." },
+  "Slash-and-Burn Farming (Kaingin)": { icon: "local_fire_department", desc: "Burning forest areas to create agricultural land." },
+  "Forest Fire": { icon: "fire_truck", desc: "An uncontrolled fire burning through a forest or wildland." },
+  "Illegal Charcoal Making": { icon: "skillet", desc: "Burning wood to produce and sell charcoal illegally." },
+  "Timber Smuggling": { icon: "local_shipping", desc: "Illegally transporting and selling harvested wood." },
+  "Forest Encroachment": { icon: "fence", desc: "Building structures or settling inside restricted forest reserves." },
+  "Unauthorized Land Clearing": { icon: "do_not_disturb_on", desc: "Bulldozing or removing plants and trees without authorization." },
+  "Forest Product Extraction": { icon: "eco", desc: "Collecting wild flora, rattan, or wood without a license." },
+  "Illegal Agricultural Activities": { icon: "agriculture", desc: "Farming or planting crops in unauthorized or protected natural areas." },
 
-  "Wildlife Hunting": { icon: "target", desc: "Unauthorized hunting or poaching of wild animals." },
+  // ── Wildlife Incidents ──
+  "Wildlife Poaching": { icon: "target", desc: "Illegally hunting wild animals." },
   "Wildlife Capture": { icon: "catching_pokemon", desc: "Trapping or capturing protected fauna species." },
-  "Wildlife Trafficking": { icon: "shopping_bag", desc: "Commercial trade or transport of wild animals." },
-  "Habitat Destruction": { icon: "broken_image", desc: "Damage to natural breeding or nesting environments." },
+  "Wildlife Trafficking": { icon: "shopping_bag", desc: "The commercial trade, transport, or selling of wild animals." },
+  "Habitat Destruction": { icon: "broken_image", desc: "Damaging the natural environments where animals breed or nest." },
   "Killing of Endangered Species": { icon: "priority_high", desc: "Lethal harm caused to threatened or endangered fauna." },
   "Illegal Wildlife Possession": { icon: "home_pin", desc: "Unlawful keeping of wild animals as pets or stock." },
   "Disturbance of Wildlife Habitat": { icon: "volume_up", desc: "Disruption to fauna feeding or nesting grounds." },
 
+  // ── Water Resource Incidents ──
+  "Illegal Water Use": { icon: "water_drop", desc: "Extracting or using water from natural sources without the required permits." },
   "Water Pollution": { icon: "water_ph", desc: "Contamination of freshwater or coastal water bodies." },
   "River Contamination": { icon: "waves", desc: "Pollutants, runoff, or toxins introduced into river systems." },
   "Illegal Waste Disposal in Waterways": { icon: "delete", desc: "Dumping garbage or debris into streams or rivers." },
@@ -186,7 +205,17 @@ export const INCIDENT_TYPE_META = {
   "Land Conversion Violation": { icon: "alt_route", desc: "Converting forest/agricultural land without permit." },
   "Destruction of Natural Landscape": { icon: "visibility_off", desc: "Defacing or altering natural landmarks and terrain." },
   "Cave Disturbance": { icon: "explore", desc: "Damage or unauthorized exploitation of cave ecosystems." },
-  "Wetland Destruction": { icon: "water", desc: "Draining or filling protected marshlands and swamps." }
+  "Wetland Destruction": { icon: "water", desc: "Draining or filling protected marshlands and swamps." },
+
+  // ── Backward-compatibility aliases for legacy incident types ──
+  "Kaingin / Slash-and-Burn": { icon: "local_fire_department", desc: "Burning forest areas to create agricultural land." },
+  "Illegal Tree Cutting": { icon: "content_cut", desc: "Cutting of trees without necessary permits." },
+  "Illegal Charcoal Production": { icon: "skillet", desc: "Burning wood to produce and sell charcoal illegally." },
+  "Encroachment in Protected Area": { icon: "fence", desc: "Building structures or settling inside restricted forest reserves." },
+  "Deforestation": { icon: "nature_people", desc: "Bulldozing or removing plants and trees without authorization." },
+  "Illegal Gathering of Forest Products": { icon: "eco", desc: "Collecting wild flora, rattan, or wood without a license." },
+  "Wildlife Hunting": { icon: "target", desc: "Illegally hunting wild animals." },
+  "Violation of Water Code / Illegal Utilization": { icon: "water_drop", desc: "Extracting or using water from natural sources without the required permits." }
 };
 
 
@@ -280,3 +309,33 @@ export const formatIncidentDate = (dateStr) => {
     return dateStr || "—";
   }
 };
+
+/**
+ * Normalization dictionary for mapping legacy incident type strings to the latest client taxonomy.
+ * @type {Record<string, string>}
+ */
+export const LEGACY_INCIDENT_TYPE_MAP = {
+  "kaingin / slash-and-burn": "Slash-and-Burn Farming (Kaingin)",
+  "illegal charcoal production": "Illegal Charcoal Making",
+  "encroachment in protected area": "Forest Encroachment",
+  "deforestation": "Unauthorized Land Clearing",
+  "illegal gathering of forest products": "Forest Product Extraction",
+  "wildlife hunting": "Wildlife Poaching",
+  "violation of water code / illegal utilization": "Illegal Water Use",
+  "illegal tree cutting": "Illegal Logging"
+};
+
+/**
+ * Normalizes an incident type string to the latest taxonomy standard.
+ * If the input matches a legacy name, returns the modern replacement;
+ * otherwise returns the typeName as-is.
+ *
+ * @param {string} [typeName] - Raw incident type string from storage or user input.
+ * @returns {string} Normalized incident type label.
+ */
+export const normalizeIncidentType = (typeName) => {
+  if (!typeName || typeof typeName !== "string") return typeName || "";
+  const lower = typeName.toLowerCase().trim();
+  return LEGACY_INCIDENT_TYPE_MAP[lower] || typeName;
+};
+

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { subscribeToReporterIncidents } from "../firebase/services/incidentService";
 import DashboardLayout from "../components/layout/DashboardLayout";
+import { normalizeIncidentType } from "../utils/incidentConstants";
 
 function Dashboard() {
   const { currentUser, profileData } = useAuth();
@@ -146,7 +147,7 @@ function Dashboard() {
               {recentReports.map((report) => (
                 <div key={report.id} className="recent-report-item">
                   <div className="recent-report-item__main">
-                    <span className="recent-report-item__title">{report.incidentType}</span>
+                    <span className="recent-report-item__title">{normalizeIncidentType(report.incidentType)}</span>
                     <span className="recent-report-item__meta">
                       {report.category} • {report.location}
                     </span>

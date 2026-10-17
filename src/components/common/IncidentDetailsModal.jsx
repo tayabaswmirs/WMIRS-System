@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useAuth } from "../../hooks/useAuth";
-import { CATEGORY_META, LOG_STATUS, getSeverityClass, getStatusClass, formatIncidentDate } from "../../utils/incidentConstants";
+import { CATEGORY_META, LOG_STATUS, getSeverityClass, getStatusClass, formatIncidentDate, normalizeIncidentType } from "../../utils/incidentConstants";
+import { exportSingleLogDossier } from "../../utils/dossierPdfService";
 import WorkflowStepper from "./WorkflowStepper";
 import WorkflowActionModal from "./WorkflowActionModal";
 import UserProfileModal from "./UserProfileModal";
@@ -54,7 +55,7 @@ function IncidentDetailsModal({ incident, onClose, onStatusChange }) {
 /* ─── Internal drawer content ───────────────────────────────────────────── */
 
 function DrawerContent({ incident, onClose, onStatusChange }) {
-  const { userRole, currentUser } = useAuth();
+  const { userRole, currentUser, staffScope } = useAuth();
   const catMeta = CATEGORY_META[incident.category] ?? { icon: "report", color: "#00ed64" };
   const [actionType, setActionType] = useState(null); // e.g. { type: 'approve', nextStatus: 'assigned', title: '...', confirmLabel: '...' }
   const [actionModalOpen, setActionModalOpen] = useState(false);
@@ -62,6 +63,30 @@ function DrawerContent({ incident, onClose, onStatusChange }) {
   const [teamPickerOpen, setTeamPickerOpen] = useState(false);
   const [isProcessingDuplicate, setIsProcessingDuplicate] = useState(false);
   const [duplicateDismissed, setDuplicateDismissed] = useState(false);
+  const [isExportingDossier, setIsExportingDossier] = useState(false);
+
+  // RBAC: Admin (all), Staff (incidents scope), Ranger (own)
+  const canExportDossier = useMemo(() => {
+    if (!incident) return false;
+    if (userRole === "admin") return true;
+    if (userRole === "staff") {
+      return staffScope === "incidents";
+    }
+    if (userRole === "ranger") return true;
+    return false;
+  }, [userRole, staffScope, incident]);
+
+  const handleExportDossier = async () => {
+    if (isExportingDossier || !incident) return;
+    setIsExportingDossier(true);
+    try {
+      await exportSingleLogDossier(incident);
+    } catch (err) {
+      console.error("Single dossier export failed:", err);
+    } finally {
+      setIsExportingDossier(false);
+    }
+  };
 
   const handleActionClick = (type, nextStatus, title, confirmLabel, variant = 'primary') => {
     setActionType({ type, nextStatus, title, confirmLabel, variant });
@@ -142,17 +167,46 @@ function DrawerContent({ incident, onClose, onStatusChange }) {
           </div>
           <div>
             <span className="inc-drawer__eyebrow">{incident.category}</span>
-            <h2 id="inc-drawer-title" className="inc-drawer__title">{incident.incidentType}</h2>
+            <h2 id="inc-drawer-title" className="inc-drawer__title">{normalizeIncidentType(incident.incidentType)}</h2>
           </div>
         </div>
-        <button
-          className="inc-drawer__close-btn"
-          onClick={onClose}
-          aria-label="Close details panel"
-          type="button"
-        >
-          <span className="material-symbols-outlined">close</span>
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {canExportDossier && (
+            <button
+              className="inc-drawer__export-btn"
+              onClick={handleExportDossier}
+              disabled={isExportingDossier}
+              type="button"
+              title="Export Official Field Dossier (PDF)"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "6px 12px",
+                borderRadius: "20px",
+                fontSize: "12px",
+                fontWeight: "600",
+                backgroundColor: "#001e2b",
+                color: "#00ed64",
+                border: "1px solid rgba(0, 237, 100, 0.4)",
+                cursor: isExportingDossier ? "not-allowed" : "pointer"
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
+                {isExportingDossier ? "sync" : "picture_as_pdf"}
+              </span>
+              <span>{isExportingDossier ? "Exporting..." : "Export Dossier"}</span>
+            </button>
+          )}
+          <button
+            className="inc-drawer__close-btn"
+            onClick={onClose}
+            aria-label="Close details panel"
+            type="button"
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
       </div>
 
       {/* Status & Severity badges */}

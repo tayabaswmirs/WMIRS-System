@@ -6,6 +6,7 @@ import AssignmentFilterToolbar from "../components/common/AssignmentFilterToolba
 import AssignmentCard from "../components/common/AssignmentCard";
 import AssignmentModals from "../components/common/AssignmentModals";
 import { subscribeToOpenAssignments, resolveAssignmentByRanger } from "../firebase/services/incidentService";
+import { normalizeIncidentType } from "../utils/incidentConstants";
 import "../styles/dashboard.css";
 import "../styles/workflow.css";
 
@@ -49,7 +50,8 @@ function OpenAssignments() {
       const q = searchQuery.toLowerCase();
       list = list.filter((a) => 
         a.category?.toLowerCase().includes(q) || a.subcategory?.toLowerCase().includes(q) ||
-        a.incidentType?.toLowerCase().includes(q) || a.location?.toLowerCase().includes(q) ||
+        a.incidentType?.toLowerCase().includes(q) || normalizeIncidentType(a.incidentType).toLowerCase().includes(q) ||
+        a.location?.toLowerCase().includes(q) ||
         a.description?.toLowerCase().includes(q)
       );
     }

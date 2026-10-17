@@ -3,6 +3,7 @@ import ChartCard from "./ChartCard";
 import PendingQueueHeader from "./PendingQueueHeader";
 import PendingQueueTable from "./PendingQueueTable";
 import Pagination from "./Pagination";
+import { normalizeIncidentType } from "../../utils/incidentConstants";
 
 const PAGE_SIZE = 10;
 
@@ -12,7 +13,7 @@ const PAGE_SIZE = 10;
 const normalizeIncident = (inc) => ({
   id: inc.id,
   domain: "incident",
-  title: inc.incidentType || "Incident Report",
+  title: normalizeIncidentType(inc.incidentType) || "Incident Report",
   category: inc.category || "General",
   location: inc.location || "—",
   reporterName: inc.reporter?.name || "Ranger",

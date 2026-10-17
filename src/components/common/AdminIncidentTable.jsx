@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CATEGORY_META, STATUS_METADATA, getSeverityClass, getStatusClass, formatIncidentDate } from "../../utils/incidentConstants";
+import { CATEGORY_META, STATUS_METADATA, getSeverityClass, getStatusClass, formatIncidentDate, normalizeIncidentType } from "../../utils/incidentConstants";
 import { isCriticalActive } from "../../utils/filterUtils";
 import Pagination from "./Pagination";
 
@@ -75,7 +75,7 @@ function AdminIncidentTable({ incidents, onViewDetails, stageId = null }) {
                 </td>
 
                 {/* Incident Type */}
-                <td className="inc-table__td inc-table__td--bold">{inc.incidentType}</td>
+                <td className="inc-table__td inc-table__td--bold">{normalizeIncidentType(inc.incidentType)}</td>
 
                 {/* Reporter name */}
                 <td className="inc-table__td inc-table__td--muted">
@@ -116,7 +116,7 @@ function AdminIncidentTable({ incidents, onViewDetails, stageId = null }) {
                       type="button"
                       onClick={() => onViewDetails(inc)}
                       className="inc-table__view-btn"
-                      aria-label={`View details for ${inc.incidentType}`}
+                      aria-label={`View details for ${normalizeIncidentType(inc.incidentType)}`}
                       title="View full details"
                     >
                       <span className="material-symbols-outlined">visibility</span>
@@ -126,7 +126,7 @@ function AdminIncidentTable({ incidents, onViewDetails, stageId = null }) {
                         type="button"
                         onClick={() => inc.onDelete(inc)}
                         className="inc-table__view-btn inc-table__view-btn--delete"
-                        aria-label={`Delete ${inc.incidentType}`}
+                        aria-label={`Delete ${normalizeIncidentType(inc.incidentType)}`}
                         title="Permanently Delete"
                       >
                         <span className="material-symbols-outlined">delete</span>

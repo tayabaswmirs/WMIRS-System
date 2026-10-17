@@ -1,4 +1,4 @@
-import { getSeverityClass } from "../../utils/incidentConstants";
+import { getSeverityClass, normalizeIncidentType } from "../../utils/incidentConstants";
 
 /**
  * AssignmentCard — Clean card representation for field patrol assignments.
@@ -78,7 +78,7 @@ export default function AssignmentCard({
 
       {/* Main Content */}
       <h3 className="assignment-card__title">
-        {assignment.subcategory || assignment.incidentType || assignment.category}
+        {assignment.subcategory || normalizeIncidentType(assignment.incidentType) || assignment.category}
       </h3>
       
       <p className="assignment-card__location">

@@ -4,7 +4,7 @@ import { subscribeToReporterIncidents } from "../firebase/services/incidentServi
 import { useLogFilters } from "../hooks/useLogFilters";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import IncidentDetailsModal from "../components/common/IncidentDetailsModal";
-import { CATEGORY_META, getSeverityClass, getStatusClass, getStatusLabel, formatIncidentDate } from "../utils/incidentConstants";
+import { CATEGORY_META, getSeverityClass, getStatusClass, getStatusLabel, formatIncidentDate, normalizeIncidentType } from "../utils/incidentConstants";
 import { isCriticalSubmitted } from "../utils/filterUtils";
 import StatPill from "../components/common/StatPill";
 import SearchFilterBar from "../components/common/SearchFilterBar";
@@ -143,7 +143,7 @@ function IncidentHistory() {
                             <span className="inc-cat-cell__label">{rep.category}</span>
                           </div>
                         </td>
-                        <td className="inc-table__td inc-table__td--bold">{rep.incidentType}</td>
+                        <td className="inc-table__td inc-table__td--bold">{normalizeIncidentType(rep.incidentType)}</td>
                         <td className="inc-table__td inc-table__td--muted">{rep.location}</td>
                         <td className="inc-table__td inc-table__td--muted">{formatIncidentDate(rep.dateTime)}</td>
                         <td className="inc-table__td">
@@ -165,7 +165,7 @@ function IncidentHistory() {
                               onClick={() => setSelectedIncident(rep)}
                               className="inc-table__view-btn"
                               type="button"
-                              aria-label={`View details for ${rep.incidentType}`}
+                              aria-label={`View details for ${normalizeIncidentType(rep.incidentType)}`}
                               title="View details"
                             >
                               <span className="material-symbols-outlined">visibility</span>

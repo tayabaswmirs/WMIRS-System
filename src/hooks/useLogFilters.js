@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
-import { STATUS_GROUPS } from "../utils/incidentConstants";
+import { STATUS_GROUPS, normalizeIncidentType } from "../utils/incidentConstants";
 import { parseLogDate, isDateInRange, sortIncidentsWithPriority } from "../utils/filterUtils";
 import { TAYABAS_BARANGAYS, resolveBarangay } from "../utils/tayabasBarangays";
 
@@ -50,7 +50,7 @@ export function useLogFilters(items = [], options = {}) {
     const filtered = items.filter((item) => {
       if (q) {
         const itemText = mode === "incident"
-          ? `${item.incidentType || ""} ${item.category || ""} ${item.barangay || ""} ${item.sitioStreet || ""} ${item.location || ""} ${item.reporter?.name || ""} ${item.description || ""}`
+          ? `${item.incidentType || ""} ${normalizeIncidentType(item.incidentType)} ${item.category || ""} ${item.barangay || ""} ${item.sitioStreet || ""} ${item.location || ""} ${item.reporter?.name || ""} ${item.description || ""}`
           : `${item.category || ""} ${item.subcategory || ""} ${item.barangay || ""} ${item.sitioStreet || ""} ${item.location || ""} ${item.reporter?.name || ""} ${item.speciesName || ""} ${item.waterBody || ""}`;
         if (!itemText.toLowerCase().includes(q)) return false;
       }

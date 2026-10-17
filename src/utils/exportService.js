@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { normalizeIncidentType } from "./incidentConstants";
 
 /**
  * Safely formats timestamp values (Firestore Timestamp, Date, string, or number) into standard string.
@@ -167,7 +168,7 @@ export const transformIncidentRecord = (item) => {
   return {
     "Incident ID": item.id || "",
     "Incident Category": item.category || "Uncategorized",
-    "Incident Type": item.incidentType || "General Incident",
+    "Incident Type": normalizeIncidentType(item.incidentType) || "General Incident",
     "Severity Level": item.severity || "Standard",
     "Location": item.location || "Unspecified",
     "Coordinates": item.coordinates ? `${item.coordinates.latitude || ""}, ${item.coordinates.longitude || ""}` : "",
@@ -214,7 +215,7 @@ export const normalizeExportRecords = (data, scope) => {
     return {
       "Record ID": item.id || "",
       "Category": item.category || "General",
-      "Subcategory": item.subcategory || item.incidentType || "",
+      "Subcategory": item.subcategory || normalizeIncidentType(item.incidentType) || "",
       "Location": item.location || item.barangay || "",
       "Status": item.status || "Submitted",
       "Reporter": item.reporter?.name || "Unknown",

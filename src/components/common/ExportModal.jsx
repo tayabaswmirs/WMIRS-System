@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { exportToCSV, exportToPDF } from "../../utils/exportService";
+import { exportBatchLogDossiers } from "../../utils/dossierPdfService";
 
 const SUBCATEGORY_MAP = {
   BMS: [
@@ -54,18 +55,21 @@ function ExportModalDialog({
   onClose,
   scope = "Incidents",
   data = [],
-  onExport = null
+  onExport = null,
+  isScopeLocked = false,
+  lockedScope = null
 }) {
   const [format, setFormat] = useState("csv");
   const [includeAnalytics, setIncludeAnalytics] = useState(true);
   const [selectedSubcategory, setSelectedSubcategory] = useState("all");
-  const [selectedGlobalCategory, setSelectedGlobalCategory] = useState("all");
+  const [selectedGlobalCategory, setSelectedGlobalCategory] = useState(lockedScope || "all");
   const [dateRange, setDateRange] = useState("all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [isExporting, setIsExporting] = useState(false);
 
-  const isGlobalMonitoring = scope === "All Monitoring" || scope === "Monitoring Logs";
+  const isGlobalMonitoring = (scope === "All Monitoring" || scope === "Monitoring Logs") && !isScopeLocked;
   const isIncidents = scope === "Incidents" || scope.toLowerCase().includes("incident");
 
   // Handle escape key listener
@@ -186,36 +190,45 @@ function ExportModalDialog({
     endDate
   ]);
 
-  const handleDownload = () => {
-    if (filteredData.length === 0) return;
+  const handleDownload = async () => {
+    if (filteredData.length === 0 || isExporting) return;
+    setIsExporting(true);
 
-    const dateStamp = new Date().toISOString().split("T")[0];
-    const safeScope = scope.replace(/\s+/g, "_");
-    const subScope = selectedSubcategory !== "all" ? `_${selectedSubcategory.replace(/\s+/g, "_")}` : "";
-    const filename = `WMIRS_${safeScope}${subScope}_${dateStamp}`;
-    const docTitle = `WMIRS ${scope} Export Report`;
+    try {
+      const dateStamp = new Date().toISOString().split("T")[0];
+      const safeScope = scope.replace(/\s+/g, "_");
+      const subScope = selectedSubcategory !== "all" ? `_${selectedSubcategory.replace(/\s+/g, "_")}` : "";
+      const filename = `WMIRS_${safeScope}${subScope}_${dateStamp}`;
+      const docTitle = `WMIRS ${scope} Export Report`;
 
-    if (onExport) {
-      onExport({
-        format,
-        includeAnalytics,
-        dateRange,
-        category: selectedGlobalCategory,
-        subcategory: selectedSubcategory,
-        statusFilter,
-        filteredData
-      });
+      if (onExport) {
+        onExport({
+          format,
+          includeAnalytics,
+          dateRange,
+          category: selectedGlobalCategory,
+          subcategory: selectedSubcategory,
+          statusFilter,
+          filteredData
+        });
+        onClose();
+        return;
+      }
+
+      if (format === "csv") {
+        exportToCSV(filteredData, scope, filename, { includeAnalytics });
+      } else if (format === "dossier") {
+        await exportBatchLogDossiers(filteredData, scope, `${filename}_Photo_Dossiers.pdf`);
+      } else {
+        exportToPDF(filteredData, scope, filename, docTitle, { includeAnalytics });
+      }
+
       onClose();
-      return;
+    } catch (err) {
+      console.error("Export generation failed:", err);
+    } finally {
+      setIsExporting(false);
     }
-
-    if (format === "csv") {
-      exportToCSV(filteredData, scope, filename, { includeAnalytics });
-    } else {
-      exportToPDF(filteredData, scope, filename, docTitle, { includeAnalytics });
-    }
-
-    onClose();
   };
 
   return (
@@ -259,7 +272,7 @@ function ExportModalDialog({
           {/* 1. Choose File Format Cards */}
           <div className="export-section">
             <label className="export-section__label">1. Choose File Format</label>
-            <div className="export-format-grid">
+            <div className="export-format-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))" }}>
               <button
                 type="button"
                 className={`export-format-card ${format === "csv" ? "export-format-card--active" : ""}`}
@@ -270,7 +283,7 @@ function ExportModalDialog({
                 </div>
                 <div className="export-format-card__content">
                   <span className="export-format-card__title">CSV Spreadsheet</span>
-                  <span className="export-format-card__desc">Complete raw data with specialized domain fields & time-series summaries</span>
+                  <span className="export-format-card__desc">Raw structured data & time-series metrics</span>
                 </div>
               </button>
 
@@ -283,37 +296,64 @@ function ExportModalDialog({
                   <span className="material-symbols-outlined">picture_as_pdf</span>
                 </div>
                 <div className="export-format-card__content">
-                  <span className="export-format-card__title">PDF Document</span>
-                  <span className="export-format-card__desc">Executive dossier with embedded vector trend graphs & audit table</span>
+                  <span className="export-format-card__title">PDF Summary</span>
+                  <span className="export-format-card__desc">Executive dossier with vector trend charts & audit tables</span>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                className={`export-format-card ${format === "dossier" ? "export-format-card--active" : ""}`}
+                onClick={() => setFormat("dossier")}
+              >
+                <div className="export-format-card__icon-wrap" style={{ backgroundColor: "rgba(0, 237, 100, 0.15)", color: "#00684a" }}>
+                  <span className="material-symbols-outlined">photo_library</span>
+                </div>
+                <div className="export-format-card__content">
+                  <span className="export-format-card__title">Photo Dossiers (PDF)</span>
+                  <span className="export-format-card__desc">Full multi-page binder with forms & embedded evidence photos</span>
                 </div>
               </button>
             </div>
           </div>
 
           {/* 2. Visual Analytics Graphs Toggle */}
-          <div className="export-toggle-card">
-            <label className="export-toggle-label">
-              <input
-                type="checkbox"
-                checked={includeAnalytics}
-                onChange={(e) => setIncludeAnalytics(e.target.checked)}
-                className="export-toggle-checkbox"
-              />
-              <div className="export-toggle-content">
-                <div className="export-toggle-title">
-                  <span className="material-symbols-outlined export-toggle-icon">auto_graph</span>
-                  <span>Include Visual Analytics Graphs & Trend Summaries</span>
+          {format !== "dossier" && (
+            <div className="export-toggle-card">
+              <label className="export-toggle-label">
+                <input
+                  type="checkbox"
+                  checked={includeAnalytics}
+                  onChange={(e) => setIncludeAnalytics(e.target.checked)}
+                  className="export-toggle-checkbox"
+                />
+                <div className="export-toggle-content">
+                  <div className="export-toggle-title">
+                    <span className="material-symbols-outlined export-toggle-icon">auto_graph</span>
+                    <span>Include Visual Analytics Graphs & Trend Summaries</span>
+                  </div>
+                  <p className="export-toggle-desc">
+                    {format === "pdf"
+                      ? "Generates Executive KPI cards, Temporal Activity Line Graphs, and Domain Distribution Charts on Page 1."
+                      : "Pre-pends an aggregated Time-Series Trend & Classification summary before detailed record rows."}
+                  </p>
                 </div>
-                <p className="export-toggle-desc">
-                  {format === "pdf"
-                    ? "Generates Executive KPI cards, Temporal Activity Line Graphs, and Domain Distribution Charts on Page 1."
-                    : "Pre-pends an aggregated Time-Series Trend & Classification summary before detailed record rows."}
-                </p>
-              </div>
-            </label>
-          </div>
+              </label>
+            </div>
+          )}
 
-          {/* 3. Global Monitoring Category (if applicable) */}
+          {/* 3. Locked Category Scope for Staff */}
+          {isScopeLocked && (
+            <div className="export-section">
+              <label className="export-section__label">2. Category Jurisdiction (Staff Scoped)</label>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "8px 14px", backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "8px", fontSize: "12px", fontWeight: "600", color: "#166534" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>lock</span>
+                <span>Assigned Scope: {lockedScope || scope}</span>
+              </div>
+            </div>
+          )}
+
+          {/* 4. Global Monitoring Category (if applicable & not locked) */}
           {isGlobalMonitoring && (
             <div className="export-section">
               <label className="export-section__label">2. Category Scope</label>
@@ -442,11 +482,19 @@ function ExportModalDialog({
             <button
               type="button"
               onClick={handleDownload}
-              disabled={filteredData.length === 0}
+              disabled={filteredData.length === 0 || isExporting}
               className="export-btn export-btn--primary"
             >
-              <span className="material-symbols-outlined">download</span>
-              <span>Download {format.toUpperCase()}</span>
+              <span className="material-symbols-outlined">
+                {isExporting ? "sync" : "download"}
+              </span>
+              <span>
+                {isExporting
+                  ? "Compiling Dossiers..."
+                  : format === "dossier"
+                  ? "Download Photo Dossiers (PDF)"
+                  : `Download ${format.toUpperCase()}`}
+              </span>
             </button>
           </div>
         </div>
@@ -456,20 +504,24 @@ function ExportModalDialog({
 }
 
 /**
- * Modern, responsive MongoDB-styled Export Modal for WMIRS Admin reports.
+ * Modern, responsive MongoDB-styled Export Modal for WMIRS Admin & Staff reports.
  * @param {Object} props
  * @param {boolean} props.isOpen
  * @param {() => void} props.onClose
  * @param {string} [props.scope]
  * @param {Array<Object>} [props.data]
  * @param {Function} [props.onExport]
+ * @param {boolean} [props.isScopeLocked]
+ * @param {string|null} [props.lockedScope]
  */
 export default function ExportModal({
   isOpen,
   onClose,
   scope = "Incidents",
   data = [],
-  onExport = null
+  onExport = null,
+  isScopeLocked = false,
+  lockedScope = null
 }) {
   if (!isOpen) return null;
 
@@ -479,6 +531,8 @@ export default function ExportModal({
       scope={scope}
       data={data}
       onExport={onExport}
+      isScopeLocked={isScopeLocked}
+      lockedScope={lockedScope}
     />
   );
 }

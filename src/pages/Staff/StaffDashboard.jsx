@@ -6,6 +6,7 @@ import ChartCard from "../../components/common/ChartCard";
 import StatusGauge from "../../components/common/StatusGauge";
 import RecentLogsList from "../../components/common/RecentLogsList";
 import StatPill from "../../components/common/StatPill";
+import ExportModal from "../../components/common/ExportModal";
 import { subscribeToAllIncidents } from "../../firebase/services/incidentService";
 import { subscribeToCategoryMonitoring } from "../../firebase/services/monitoringService";
 import {
@@ -121,6 +122,7 @@ function StaffDashboard() {
   const { staffScope } = useAuth();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isExportOpen, setIsExportOpen] = useState(false);
 
   // Range and filter states for incident charts
   const [timeRange, setTimeRange] = useState("1M");
@@ -1296,6 +1298,30 @@ function StaffDashboard() {
                 Visual field intelligence, severity metrics, and processing velocity scoped to your review domain.
               </p>
             </div>
+            <div className="inc-hero__stats" style={{ display: "flex", alignItems: "center" }}>
+              <button
+                type="button"
+                onClick={() => setIsExportOpen(true)}
+                className="inc-export-btn"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "8px 16px",
+                  borderRadius: "20px",
+                  backgroundColor: "#00ed64",
+                  color: "#001e2b",
+                  fontWeight: "600",
+                  fontSize: "12px",
+                  border: "none",
+                  cursor: "pointer",
+                  boxShadow: "0 2px 6px rgba(0, 237, 100, 0.2)"
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>download</span>
+                <span>Export Incidents</span>
+              </button>
+            </div>
           </div>
 
           {/* Scoped KPI Grid */}
@@ -2251,6 +2277,14 @@ function StaffDashboard() {
               </div>
             </>
           )}
+          <ExportModal
+            isOpen={isExportOpen}
+            onClose={() => setIsExportOpen(false)}
+            scope="Incidents"
+            data={items}
+            isScopeLocked={true}
+            lockedScope="Incidents"
+          />
         </div>
       </DashboardLayout>
     );
@@ -2274,6 +2308,28 @@ function StaffDashboard() {
           <div className="inc-hero__stats">
             <StatPill icon="task_alt" label="Actioned" count={analytics.completedCount} color="#00ed64" />
             <StatPill icon="pending_actions" label="Pending Verification" count={analytics.resolvedCount} color="#00a35c" />
+            <button
+              type="button"
+              onClick={() => setIsExportOpen(true)}
+              className="inc-export-btn"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "8px 16px",
+                borderRadius: "20px",
+                backgroundColor: "#00ed64",
+                color: "#001e2b",
+                fontWeight: "600",
+                fontSize: "12px",
+                border: "none",
+                cursor: "pointer",
+                boxShadow: "0 2px 6px rgba(0, 237, 100, 0.2)"
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>download</span>
+              <span>Export {staffScope} Reports</span>
+            </button>
           </div>
         </div>
 
@@ -2380,6 +2436,14 @@ function StaffDashboard() {
             </LocalChartCard>
           </div>
         )}
+        <ExportModal
+          isOpen={isExportOpen}
+          onClose={() => setIsExportOpen(false)}
+          scope={staffScope}
+          data={items}
+          isScopeLocked={true}
+          lockedScope={staffScope}
+        />
       </div>
     </DashboardLayout>
   );

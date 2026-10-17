@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { formatLogDate, getStatusClass } from "../../../utils/monitoringUtils";
 import { LOG_STATUS } from "../../../utils/incidentConstants";
+import { exportSingleLogDossier } from "../../../utils/dossierPdfService";
 import WorkflowStepper from "../WorkflowStepper";
 import WorkflowActionModal from "../WorkflowActionModal";
 import UserProfileModal from "../UserProfileModal";
@@ -34,7 +35,6 @@ function MonitoringDetailsModal({ log, onClose, onStatusChange }) {
           <DrawerContent
             log={log}
             onClose={onClose}
-            onClose={onClose}
             onStatusChange={onStatusChange}
           />
         )}
@@ -44,11 +44,35 @@ function MonitoringDetailsModal({ log, onClose, onStatusChange }) {
 }
 
 function DrawerContent({ log, onClose, onStatusChange }) {
-  const { userRole } = useAuth();
+  const { userRole, staffScope } = useAuth();
   const catMeta = CATEGORY_MAP[log.category] ?? { icon: "report", color: "#00ed64", label: log.category };
   const [actionModalOpen, setActionModalOpen] = useState(false);
   const [actionType, setActionType] = useState(null);
   const [inspectedUser, setInspectedUser] = useState(null);
+  const [isExportingDossier, setIsExportingDossier] = useState(false);
+
+  // RBAC: Admin (all), Staff (matching category), Ranger (own)
+  const canExportDossier = useMemo(() => {
+    if (!log) return false;
+    if (userRole === "admin") return true;
+    if (userRole === "staff") {
+      return staffScope?.toLowerCase() === log.category?.toLowerCase();
+    }
+    if (userRole === "ranger") return true;
+    return false;
+  }, [userRole, staffScope, log]);
+
+  const handleExportDossier = async () => {
+    if (isExportingDossier || !log) return;
+    setIsExportingDossier(true);
+    try {
+      await exportSingleLogDossier(log);
+    } catch (err) {
+      console.error("Single dossier export failed:", err);
+    } finally {
+      setIsExportingDossier(false);
+    }
+  };
 
   const handleActionClick = (type, nextStatus, title, confirmLabel, variant = 'primary') => {
     setActionType({ type, nextStatus, title, confirmLabel, variant });
@@ -92,14 +116,43 @@ function DrawerContent({ log, onClose, onStatusChange }) {
             <h2 id="mon-drawer-title" className="inc-drawer__title">{log.subcategory}</h2>
           </div>
         </div>
-        <button
-          className="inc-drawer__close-btn"
-          onClick={onClose}
-          aria-label="Close details panel"
-          type="button"
-        >
-          <span className="material-symbols-outlined">close</span>
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {canExportDossier && (
+            <button
+              className="inc-drawer__export-btn"
+              onClick={handleExportDossier}
+              disabled={isExportingDossier}
+              type="button"
+              title="Export Official Field Dossier (PDF)"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "6px 12px",
+                borderRadius: "20px",
+                fontSize: "12px",
+                fontWeight: "600",
+                backgroundColor: "#001e2b",
+                color: "#00ed64",
+                border: "1px solid rgba(0, 237, 100, 0.4)",
+                cursor: isExportingDossier ? "not-allowed" : "pointer"
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
+                {isExportingDossier ? "sync" : "picture_as_pdf"}
+              </span>
+              <span>{isExportingDossier ? "Exporting..." : "Export Dossier"}</span>
+            </button>
+          )}
+          <button
+            className="inc-drawer__close-btn"
+            onClick={onClose}
+            aria-label="Close details panel"
+            type="button"
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
       </div>
 
       {/* Badge Row */}
