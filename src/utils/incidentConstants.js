@@ -48,7 +48,8 @@ export const INCIDENT_MAP = {
   "Ecosystem Protection Incidents": [
     "Soil Erosion", "Illegal Quarrying", "Land Conversion Violation",
     "Destruction of Natural Landscape", "Cave Disturbance", "Wetland Destruction"
-  ]
+  ],
+  "Others": []
 };
 
 /**
@@ -87,6 +88,11 @@ export const CATEGORY_META = {
     icon: "landscape",
     color: "#00684a",
     desc: "Soil erosion, illegal land quarrying, wetland destruction, and landscape damage."
+  },
+  "Others": {
+    icon: "more_horiz",
+    color: "#5c6c7a",
+    desc: "Unlisted, edge-case, or cross-cutting environmental concerns."
   },
 
   // ── Backward-compatibility aliases for legacy category strings ──

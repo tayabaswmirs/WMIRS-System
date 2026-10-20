@@ -30,7 +30,11 @@ function IncidentForm({ onSubmit, isSubmitting, uploadProgress, formFeedback, se
     setCategory(catName);
     setIncidentType("");
     if (setFormFeedback) setFormFeedback({ type: "", message: "" });
-    setStep(2);
+    if (catName === "Others") {
+      setStep(3);
+    } else {
+      setStep(2);
+    }
   };
 
   const handleIncidentTypeClick = (typeName) => {
@@ -92,7 +96,14 @@ function IncidentForm({ onSubmit, isSubmitting, uploadProgress, formFeedback, se
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!category || !incidentType || !locationData.barangay || !locationData.sitioStreet || !dateTime || !description) {
+    if (category === "Others" && !incidentType.trim()) {
+      if (setFormFeedback) {
+        setFormFeedback({ type: "error", message: "Please specify the incident type before submitting." });
+      }
+      return;
+    }
+
+    if (!category || !incidentType.trim() || !locationData.barangay || !locationData.sitioStreet || !dateTime || !description) {
       if (setFormFeedback) {
         setFormFeedback({ type: "error", message: "Please fill out all required fields before submitting." });
       }
@@ -101,7 +112,7 @@ function IncidentForm({ onSubmit, isSubmitting, uploadProgress, formFeedback, se
 
     const formData = {
       category,
-      incidentType,
+      incidentType: incidentType.trim(),
       barangay: locationData.barangay,
       sitioStreet: locationData.sitioStreet,
       coordinates: locationData.coordinates,
@@ -229,41 +240,62 @@ function IncidentForm({ onSubmit, isSubmitting, uploadProgress, formFeedback, se
         )}
 
         {/* ── STEP 3: Incident Details & Evidence Upload ── */}
-        {step === 3 && category && incidentType && (
+        {step === 3 && category && (category === "Others" || incidentType) && (
           <div className="mon-step" key="step-3">
             {/* Breadcrumb trail */}
-            <div className="mon-breadcrumb">
-              <button
-                type="button"
-                className="mon-breadcrumb__back"
-                onClick={handleBackToIncidentTypes}
-                aria-label="Go back to incident type selection"
-              >
-                <span className="material-symbols-outlined">arrow_back</span>
-                Back
-              </button>
-              <span className="mon-breadcrumb__sep">
-                <span className="material-symbols-outlined">chevron_right</span>
-              </span>
-              <button
-                type="button"
-                className="mon-breadcrumb__chip mon-breadcrumb__chip--muted"
-                onClick={handleBackToCategories}
-                style={{ background: "none", border: "none", cursor: "pointer" }}
-              >
-                <span className="material-symbols-outlined">{activeCategoryMeta?.icon || "category"}</span>
-                {category}
-              </button>
-              <span className="mon-breadcrumb__sep">
-                <span className="material-symbols-outlined">chevron_right</span>
-              </span>
-              <span className="mon-breadcrumb__chip">
-                <span className="material-symbols-outlined">
-                  {INCIDENT_TYPE_META[incidentType]?.icon || "warning"}
+            {category === "Others" ? (
+              <div className="mon-breadcrumb">
+                <button
+                  type="button"
+                  className="mon-breadcrumb__back"
+                  onClick={handleBackToCategories}
+                  aria-label="Go back to category selection"
+                >
+                  <span className="material-symbols-outlined">arrow_back</span>
+                  Back
+                </button>
+                <span className="mon-breadcrumb__sep">
+                  <span className="material-symbols-outlined">chevron_right</span>
                 </span>
-                {incidentType}
-              </span>
-            </div>
+                <span className="mon-breadcrumb__chip">
+                  <span className="material-symbols-outlined">{activeCategoryMeta?.icon || "more_horiz"}</span>
+                  {category}
+                </span>
+              </div>
+            ) : (
+              <div className="mon-breadcrumb">
+                <button
+                  type="button"
+                  className="mon-breadcrumb__back"
+                  onClick={handleBackToIncidentTypes}
+                  aria-label="Go back to incident type selection"
+                >
+                  <span className="material-symbols-outlined">arrow_back</span>
+                  Back
+                </button>
+                <span className="mon-breadcrumb__sep">
+                  <span className="material-symbols-outlined">chevron_right</span>
+                </span>
+                <button
+                  type="button"
+                  className="mon-breadcrumb__chip mon-breadcrumb__chip--muted"
+                  onClick={handleBackToCategories}
+                  style={{ background: "none", border: "none", cursor: "pointer" }}
+                >
+                  <span className="material-symbols-outlined">{activeCategoryMeta?.icon || "category"}</span>
+                  {category}
+                </button>
+                <span className="mon-breadcrumb__sep">
+                  <span className="material-symbols-outlined">chevron_right</span>
+                </span>
+                <span className="mon-breadcrumb__chip">
+                  <span className="material-symbols-outlined">
+                    {INCIDENT_TYPE_META[incidentType]?.icon || "warning"}
+                  </span>
+                  {incidentType}
+                </span>
+              </div>
+            )}
 
             <div className="mon-step-label">
               <span className="mon-step-label__num">3</span>
@@ -279,6 +311,26 @@ function IncidentForm({ onSubmit, isSubmitting, uploadProgress, formFeedback, se
                   <span className="material-symbols-outlined inc-form__section-icon">description</span>
                   <span className="inc-form__section-label">Incident Details</span>
                 </div>
+
+                {/* Specific Incident Type for "Others" category */}
+                {category === "Others" && (
+                  <div className="inc-form__group inc-form__group--full" style={{ marginBottom: "16px" }}>
+                    <label className="inc-form__label" htmlFor="inc-custom-type">
+                      <span className="material-symbols-outlined inc-form__label-icon">edit</span>
+                      Specific Incident Type <span className="inc-form__required">*</span>
+                    </label>
+                    <input
+                      id="inc-custom-type"
+                      type="text"
+                      value={incidentType}
+                      onChange={(e) => setIncidentType(e.target.value)}
+                      placeholder="e.g., Unidentified dumping, illegal construction, unauthorized excavation..."
+                      maxLength={100}
+                      className="inc-form__input"
+                      required
+                    />
+                  </div>
+                )}
 
                 {/* 3-Tier Address & Geolocation */}
                 <div style={{ marginBottom: "16px" }}>
